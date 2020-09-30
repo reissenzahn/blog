@@ -40,7 +40,7 @@ body {
   padding: 0;
   color: var(--text-primary);
   background: var(--background);
-  font-size: 12px;
+  font-size: 14px;
   font-family: Arial, Helvetica, sans-serif;
 
   box-sizing: border-box;
