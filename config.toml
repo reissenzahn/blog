@@ -1,0 +1,8 @@
+baseURL = "/"
+title = "reissenzahn"
+languageCode = "en-us"
+disableKinds = ["RSS", "sitemap", "taxonomyTerm", "taxonomy"]
+
+[params]
+header="rei97"
+quote="Take care of the sense and the sounds will take care of themselves."
