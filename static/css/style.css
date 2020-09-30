@@ -11,6 +11,11 @@
   --dialog-gray: #808080;
   --dialog-gray-light: #b5b5b5;
   --link-blue: #0000ff;
+/* 
+  --border-raised-outer: inset -1px -1px var(--window-frame),
+    inset 1px 1px var(--button-highlight);
+  --border-raised-inner: inset -2px -2px var(--button-shadow),
+    inset 2px 2px var(--button-face); */
 }
 
 /* bad */
@@ -24,6 +29,10 @@
 
 .home img {
   margin-top: 30px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
 }
 
 pre {
@@ -98,6 +107,7 @@ article h2 {
 
 article h3 {
   margin-top: 20px;
+  margin-bottom: 0px;
 }
 
 article time {
@@ -215,6 +225,51 @@ ul.contents details > summary:before {
 ul.contents details[open] > summary:before {
   content: "-";
 }
+
+/* scroll */
+/* ::-webkit-scrollbar {
+  width: 16px;
+}
+::-webkit-scrollbar:horizontal {
+  height: 17px;
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--button-face);
+}
+
+::-webkit-scrollbar-track {
+  background-image: url("../icon/scrollbar-background.svg");
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--button-face);
+  box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+}
+
+::-webkit-scrollbar-button:horizontal:start:decrement,
+::-webkit-scrollbar-button:horizontal:end:increment,
+::-webkit-scrollbar-button:vertical:start:decrement,
+::-webkit-scrollbar-button:vertical:end:increment {
+  display: block;
+}
+
+::-webkit-scrollbar-button:vertical:start {
+  height: 17px;
+  background-image: url("../icon/button-up.svg");
+}
+::-webkit-scrollbar-button:vertical:end {
+  height: 17px;
+  background-image: url("../icon/button-down.svg");
+}
+::-webkit-scrollbar-button:horizontal:start {
+  width: 16px;
+  background-image: url("../icon/button-left.svg");
+}
+::-webkit-scrollbar-button:horizontal:end {
+  width: 16px;
+  background-image: url("../icon/button-right.svg");
+} */
 
 @media (max-width: 800px) {
   body {
