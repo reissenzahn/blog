@@ -6,13 +6,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <script>
+    MathJax = {
+      options: {
+        enableMenu: false,
+      },
+    };
+  </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/vs.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
   <link rel="stylesheet" href="/css/style.css">
-</head>
 <body>
 	<header>
   <h1><a href="/">rei97</a></h1>
   <hr>
-  <p>“Take care of the sense and the sounds will take care of themselves.”</p>
+  
 </header>
 	
 	<main>
@@ -20,10 +35,62 @@
       <h2>Gossip Protocols</h2>
       <time>Sep 29, 2020</time>
       
+<ul class="contents">
+	<li>
+    <span>Gossip Protocols</span>
+		<ul>
+				<li><a href="#heading">Introduction</a></li>
+				<li><a href="#heading">SWIM</a></li>
+				<li><a href="#heading">Newscast</a></li>
+				<li><a href="#heading">Simulation</a></li>
+		</ul>
+	</li>
+</ul>
+
+<h3>Section</h3>
+
+
 <p>
-  This is an article on gossip protocols.
+  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Reprehenderit asperiores, deserunt magni beatae minus sequi fuga voluptatibus nemo modi voluptas iusto, reiciendis maxime culpa eum repellendus quaerat! Repellendus, consequuntur autem.
 </p>
-      <a href="/">← back</a>
+
+
+<h3>Section</h3>
+
+<p>
+  When \(a \ne 0\), there are two solutions to \(ax^2 + bx + c = 0\) and they are
+  \[x = {-b \pm \sqrt{b^2-4ac} \over 2a}\]
+</p>
+
+<p>
+  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Mollitia expedita recusandae impedit nulla maiores corporis temporibus enim perspiciatis? Omnis maxime non fugiat architecto nemo con sequuntur inventore officiis est aliquam placeat.
+</p>
+
+<pre><code class="go">
+func NewConsensusModule(id int, peerIds []int, server *Server, ready <-chan interface{}) *ConsensusModule {
+  cm := ConsensusModule{}
+
+  cm.id = id
+  cm.peerIds = peerIds
+  cm.server = server
+  cm.state = Follower
+  cm.votedFor = -1
+
+  go func() {
+    // The CM is quiescent until ready is signaled; then, it starts a countdown for leader election.
+    <-ready
+    cm.mu.Lock()
+    cm.electionResetEvent = time.Now()
+    cm.mu.Unlock()
+    cm.runElectionTimer()
+  }()
+
+  return cm
+}
+</code></pre>
+      <div class="back">
+        <a href="/">← back</a>
+      </div>
     </article>
 	</main>
 

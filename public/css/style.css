@@ -13,6 +13,27 @@
   --link-blue: #0000ff;
 }
 
+/* bad */
+.back {
+  margin-top: 30px;
+}
+
+.hljs {
+  background: var(--background) !important;
+}
+
+.home img {
+  margin-top: 30px;
+}
+
+pre {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
 body {
   display: block;
   margin: 0;
@@ -23,7 +44,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 
   box-sizing: border-box;
-  width: 60%;
+  width: 50%;
   padding: 10px;
   margin: 20px auto;
 }
@@ -75,8 +96,13 @@ article h2 {
   margin-bottom: 5px;
 }
 
+article h3 {
+  margin-top: 20px;
+}
+
 article time {
   font-style: italic;
+  color: rgb(100, 100, 100);
 }
 
 article ul.contents {
