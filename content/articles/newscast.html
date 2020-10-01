@@ -17,57 +17,50 @@ draft: false
 <h3 id="introduction">Introduction</h3>
 
 <p>
-  Newscast is a general approach for communication in large agent-based distributed systems. It provides both membership management and information dissemination services using the same gossip protocol. Agents can join and leave the network at virtually no cost at all, and without affecting the information-dissemination properties of the protocol.
+  Newscast is a gossip protocol proposed by Jelasity et al. for communication in large-scale distributed systems. It provides both membership management and information dissemination services using the same gossip protocol. Agents can join and leave the network at virtually no cost at all, and without affecting the information-dissemination properties of the protocol.
 </p>
 
-In this paper, we concentrate on information-dissemination based systems that deploy epidemic protocols.
 
-Traditional protocols supported this random selection by providing a list of all other participating peers. Clearly, such an approach cannot scale to large networks. 
-
-In newscast, a large group of agents is connected through a simple peer-to-peer data exchange protocol. The protocol is extremely simple: each agent knows only a (continuously changing) small set of peers of which one is randomly chosen to exchange information.
-
-
-<h3 id="resources">Agencies</h3>
+<h3 id="news-agencies">Agents and Agencies</h3>
 
 <p>
-  The two main building blocks of the newscast model are a collective of <i>agents</i> and a <i>news agency</i>. The basic idea is that the news agency asks all agents regularly for news by means of a callback function <code>getNews()</code>. In addition, the news agency provides each agent with news about the other agents in the collective through a callback function <code>newsUpdate(news[])</code>.
+  The two primary components of the newscast model are a collective of <i>agents</i> and a <i>news agency</i>. The agents perform computations that result in application specific news. The news agency regularly asks all agents for news using a <code>getNews()</code> callback and also provides each agent with news about the other agents by means of the <code>newsUpdate(news[])</code> callback.
 </p>
 
 <figure>
-  <img src="/img/newscast/news-agency.svg" height="300" alt="">
+  <img src="/img/newscast/news-agency.svg" style="max-height: 300px;" alt="">
   <figcaption>
     Figure 1
   </figcaption>
 </figure>
 
-
-<p>
-  Agents perform computations and based on those computations and the information they have collected they must provide the news agency with news when asked. The definition of <i>news</i> is application dependent. 
-</p>
-
-<figure>
-  <img src="/img/newscast/cache-entry.svg" height="130" alt="">
-  <figcaption>
-    Figure 1
-  </figcaption>
-</figure>
 
 <h3 id="resources">Correspondents</h3>
 
 <p>
-  Each agent has an associated <i>correspondent</i> that runs on the same machine hosting the agent. The correspondents jointly form the distributed implementation of the news agency. Each correspondent maintains a fixed-sized cache of \(c\) news items. Whenever an agent passes a news item to its correspondent, the later timestamps the item, adds its own network address and subsequently caches the item. A news item itself consists of an agent identifier and the actual news as provided by the agent.
+  Each agent has an associated <i>correspondent</i> running on the same machine. These correspondents jointly form the distributed implementation of the news agency. Each correspondent maintains a fixed-sized cache of \(c\) cache entries where \(c\) is a parameter. Correspondents are passed news from agents in the form of <i>news items</i> consisting of an agent identifier and the application specific news. The correspondent adds these news items to its cache along with the current timestamp and the correspondent's network address.
 </p>
 
+<figure>
+  <img src="/img/newscast/cache-entry.svg" style="max-height: 130px;" alt="">
+  <figcaption>
+    Figure 2
+  </figcaption>
+</figure>
+
+
+<h3 id="resources">Cache Exchanges</h3>
+
 <p>
-  Correspondents regularly exchange caches. Each correspondent executes the following five steps once every \(\Delta t\) time units (\(\Delta t\) is referred to as the <i>refresh interval</i>):
+  Correspondents regularly exchange caches. Each correspondent executes the following five steps once every <i>refresh interval</i> \(\Delta t\):
 </p>
 
 <ol>
   <li>
-    Request a fresh news item from the local agent by calling <code>getNews()</code>. Add the item to the cache.
+    Request a fresh news item from the local agent by calling <code>getNews()</code> and add the item to the cache.
   </li>
   <li>
-    Randomly select a peer correspondent by considering the network address of other (and available) correspondent as found in the cache.
+    Randomly select a peer correspondent by considering the network address of other available correspondents as found in the cache.
   </li>
   <li>
     Send all cache entries to the selected peer and, in turn, receive all the peer's cache entries. Merge the received entries into the local cache.
@@ -76,20 +69,23 @@ In newscast, a large group of agents is connected through a simple peer-to-peer 
     Pass the received cache entries from the peer agent to the local agent by calling <code>newsUpdate()</code>.
   </li>
   <li>
-    The correspondent now has \(2c\) cache entries; it subsequently throws away the \(c\) oldest ones.
+    The correspondent now has \(2c\) cache entries and so it throws away the \(c\) oldest ones.
   </li>
 </ol>
 
 <p>
-  The selected peer correspondent executes the last three steps as well, so that after the exchange both correspondents have the same cache. Note, however, that as soon as any of these two correspondents executes the protocol again, their respective caches will most likely be different again.
+  We assume that the communication time between two correspondents is negligible in comparison to \(\Delta T\) (which is generally in the order of minutes). If \(\Delta T\) is chosen to be so small that this assumption is violated then newscast will not be able to work correctly since in each cycle at least one communication has to  be completed according to the protocol.
+</p>
+
+
+<h3 id="resources">Merging Caches</h3>
+
+<p>  
+  When a correspondent \(A\) passes its cache to \(B\), it also sends along its current local time, \(T_A\). When \(B\) receives the cache entries, it adjusts the timestamp of each entry with a value \(T_A - T_B\). This effectively normalizes the time of each new entry to those already cached. As such, newscast does not require that the clocks of correspondents are synchronized as only the timestamps of news items in a single cache need to be mutually consistent.
 </p>
 
 <p>
-  The protocol does not require that the clocks of correspondents are synchronized, but only that the timestamps of news items in a single cache are mutually consistent. We assume that the communication time between two correspondents is negligible in comparison to \(\Delta T\) (which is generally in the order of minutes).
-</p>
 
-<p>
-  When a correspondent \(A\) passes its cache to \(B\), it also sends along its current local time, \(T_A\). When \(B\) receives the cache entries, it subsequently adjusts the timestamp of each entry with a value \(T_A - T_B\), effectively normalizing the time of each new entry to those already cached.
 </p>
 
 
@@ -104,9 +100,6 @@ In newscast, a large group of agents is connected through a simple peer-to-peer 
   </li>
   <li>
     <a href="https://link.springer.com/chapter/10.1007/978-3-319-31204-0_20">Reducing Efficiency of Connectivity-Splitting Attack on Newscast via Limited Gossip</a>
-  </li>
-  <li>
-    <a href="https://github.com/nstehr/go-mansbridge">Golang Implementation</a>
   </li>
 </ul>
 
