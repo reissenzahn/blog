@@ -1,0 +1,493 @@
+---
+title: "BitTorrent Protocol"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  BitTorrent is a protocol for peer-to-peer file sharing initially proposed by Bram Cohen in 2001. The protocol facilitates decentralized file transfers across unreliable networks. In contrast to a traditional client/server relationship where downloaders all connect to a central server, BitTorrent uses a peer-to-peer model where participants download pieces of files from each other.
+</p>
+
+
+
+<h3 id="introduction">Overview</h3>
+
+<p>
+  To publish a file using BitTorrent we must first create a metainfo file. This is done by dividing the original file into smaller pieces and calculating the SHA-1 hash code of each piece. These hash codes along with the URL of the associated tracker as well as other metadata are included in the metainfo file. By convention, metainfo files have a <code>.torrent</code> file extension and are frequently referred to as "torrent files".
+</p>
+
+<p>
+  After a metainfo file has been created, the pieces need to be made available to the network. This requires an original "seed" client to upload an entire copy of the file. Once an entire copy is distributed amongst the other peers downloading the file, the "seed" can stop uploading provided all the pieces of the file are available. For a popular file one complete copy from the seed may be enough while for a less popular file, continues uploading by the seed may be necessary.
+</p>
+
+<p>
+  Metainfo files can then be distributed and opened with a BitTorrent client to download the associated file. The client users the information in the metainfo file to download the various pieces of the file from its peers and uses the SHA-1 hashes of those pieces to verify their integrity. This makes BitTorrent resistent to accidental corruption or intentional tampering. After all the pieces have been verified, they are assembled into the desired file. 
+</p>
+
+<p>
+  The typical process for downloading a file using BitTorrent starts with a user obtaining a torrent file and opening it with a BitTorrent client. The client connects to the tracker server using the address provided in the torrent file to receive a list of peers currently transferring pieces of the file. The client connects to those peers to obtain the various pieces of the file.
+</p>
+
+
+
+<h3 id="introduction">Metainfo File</h3>
+
+<p>
+  To publish a file using BitTorrent we must first create a metainfo file. This is done by dividing the original file into smaller pieces and calculating the SHA-1 hash code of each piece. These hash codes along with the URL of the associated tracker as well as other metadata are included in the metainfo file. By convention, metainfo files have a <code>.torrent</code> file extension and are frequently referred to as "torrent files".
+</p>
+
+<p>
+  After a metainfo file has been created, the pieces need to be made available to the network. This requires an original "seed" client to upload an entire copy of the file. Once an entire copy is distributed amongst the other peers downloading the file, the "seed" can stop uploading provided all the pieces of the file are available. For a popular file one complete copy from the seed may be enough while for a less popular file, continues uploading by the seed may be necessary.
+</p>
+
+<p>
+  Metainfo files can then be distributed and opened with a BitTorrent client to download the associated file. The client users the information in the metainfo file to download the various pieces of the file from its peers and uses the SHA-1 hashes of those pieces to verify their integrity. This makes BitTorrent resistent to accidental corruption or intentional tampering. After all the pieces have been verified, they are assembled into the desired file. 
+</p>
+
+<p>
+  When dividing a file into pieces for hashing, the size of each piece is determined by the <i>piece length</i>. This value constrained by the fact that too-large piece sizes cause inefficiency and too-small piece sizes result in a large metainfo file. Typically, the piece size is kept to 512 KB or less even if this results in a large metainfo file.
+</p>
+
+<p>
+  For the purposes of piece boundaries in the multi-file case, the file data is considered as one long continuous stream, composed of the concatenation of each file in the order listed in the files list. The number of pieces and their boundaries are then determined in the same manner as the case of a single file. Pieces may overlap file boundaries.
+</p>
+
+
+<h4 id="introduction">Structure</h4>
+
+<p>
+  The metainfo file consists of a bencoded dictionary with the following keys:
+</p>
+
+<table style="width:100%">
+  <tr>
+    <td>
+      <code>announce</code>
+    </td>
+    <td>
+      Announce tracker URL.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>info</code>
+    </td>
+    <td>
+      A dictionary that describes the file(s) of the torrent.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>created by</code>
+    </td>
+    <td>
+      Name and version of the program used to create the torrent (optional).
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>creation date</code>
+    </td>
+    <td>
+      The creation time of the torrent as a UNIX timestamp (optional).
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>encoding</code>
+    </td>
+    <td>
+      The string encoding format used to generate the pieces part of the info dictionary (optional).
+    </td>
+  </tr>
+</table>
+
+<p>
+  The <code>info</code> dictionary can take on one of two forms depending if the torrent is a "single-file" torrent with no directory structure or a "multi-file" torrent. The following keys are common to both forms:  
+</p>
+
+<table style="width:100%">
+  <tr>
+    <td>
+      <code>piece length</code>
+    </td>
+    <td>
+      The number of bytes in each piece.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>pieces</code>
+    </td>
+    <td>
+      Byte string consisting of the concatenation of all 20-byte SHA-1 hash values.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>private</code>
+    </td>
+    <td>
+      Integer value with 1 indicating the client must publish its presence to get other peers only via the trackers explicitly described in the metainfo file and 0 or a non-existing key indicating that the client may obtain peer from other means (optional).
+    </td>
+  </tr>
+</table>
+
+<p>
+  For the case of the single-file mode, the <code>info</code> dictionary contains the following keys:
+</p>
+
+<table style="width:100%">
+  <tr>
+    <td>
+      <code>name</code>
+    </td>
+    <td>
+      The filename.
+    </td>
+  </tr>
+</table>
+
+<p>
+  
+</p>
+
+
+<h4 id="introduction">Example</h4>
+
+<p>
+  As an example of a metainfo file, we can consider the following torrent for the Debian Linux distribution:
+</p>
+
+<pre>d
+  8: announce
+    41: http://bttracker.debian.org:6969announce
+  7: comment
+    35: "Debian CD from cdimage.debian.org"
+  13: creation date
+    i1596287345e
+  4: info
+    d
+      6: length
+        i365953024e
+      4: name
+        31: debian-10.5.0-amd64-netinst.iso
+      12: piece length
+        i262144e
+      6: pieces
+        27920: Y�E�]�2�}Ax�ЀvJ�r�K� ... 
+    e
+e</pre>
+
+
+
+<h3 id="resources">Tracker HTTP Protocol</h3>
+
+<p>
+  A tracker is an HTTP service which maintains a log of peers and the pieces that those peers are holding. A client sends a GET request to the tracker to obtain a list of peers who are holding the pieces that the client is interested in. The client can use the information in the tracker's response to begin downloading the required pieces.
+</p>
+
+<p>
+  The tracker base URL consists of the announce URL specified in the metainfo file and the parameters are included using query parameters. All binary data in the URL must be properly escaped. The tracker response is a text/plain document consisting of a bencoded dictionary.
+</p>
+
+<p>
+  The info hash uniquely identifies the file we’re trying to download.
+</p>
+
+
+<h4 id="introduction">Request Parameters</h4>
+
+<p>
+  The request parameters are as follows:
+</p>
+
+<ul>
+  <li>
+    <code>info_hash</code>: urlencoded SHA-1 hash of the value of the <code>info</code> key from the Metainfo file.
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+  <li>
+    <code></code>:
+  </li>
+</ul>
+
+
+<h3 id="introduction">Choking and Interest</h3>
+
+<p>
+  After the handshake has been performed, it is necessary to check whether the peer is ready to accept messages. We initially assume that the peer has choked our client; which is to say it is unwilling to receive messages. We will need to wait until we have received an "unchoke" message from the peer following which we can start sending requests for pieces.
+</p>
+
+<p>
+  We also need to keep our peers informed as to whether or not we are interested in them. A client usually sends a message to a peer to express interest in that peer if the peer has a piece that the client wants to obtain. This message indicates that the client will begin requesting pieces when the client unchokes them.
+</p>
+
+<p>
+  A client should keep this state information up-to-date with each peer even if the client is choked. This will allow peers to know if the client will begin downloading when it is unchoked (and vice-versa). A piece is downloaded by the client when the client is interested in a peer, and that peer is not choking the client. A block is uploaded by a client when the client is not choking a peer, and that peer is interested in the client.
+</p>
+
+<p>
+  As such, a client must maintain four pieces of state for each connection that is has with a remote peer:
+</p>
+
+<ul>
+  <li>
+    <i>am_choking</i>: Whether this client is choking the peer.
+  </li>
+  <li>
+    <i>peer_choking</i>: Whether the peer is choking this client.
+  </li>
+  <li>
+    <i>am_interested</i>: Whether this client is interested in the peer.
+  </li>
+  <li>
+    <i>peer_interested</i>: Whether the  peer is interested in this client.
+  </li>
+</ul>
+
+<p>
+  All client connections start out as choked and not interested.
+</p>
+
+
+<h3 id="resources">Peer TCP Protocol</h3>
+
+<p>
+  Once a client has obtained a list of peers from a tracker, it needs to connect to those peers and start downloading required pieces. The client starts by establishing a TCP connection with a particular peer and completes a two-way handshake. Following a successful handshake, the client and the peer can start exchanging messages to start sharing pieces.
+</p>
+
+
+<h4 id="introduction">Handshake</h4>
+
+<p>
+  A well-formed handshake must be completed between the client and a peer before any other messages can be exchanged. To initiate a handshake, the client must send a string of bytes to the peer with the following structure:
+</p>
+
+<ul>
+  <li>
+    <code>pstrlen</code>: Length of the <code>pstr</code> field as a single byte.
+  </li>
+  <li>
+    <code>pstr</code>: String identifier of the protocol;  "BitTorrent protocol" is used in version 1.0 of BitTorrent.
+  </li>
+  <li>
+    <code>reserved</code>: Eight reserved bytes; typically all set to zero.
+  </li>
+  <li>
+    <code>info_hash</code>: SHA-1 hash of the <code>info</code> key in the metainfo file of the desired file.
+  </li>
+  <li>
+    <code>peer_id</code>: 20-byte string used as a unique client identifier.
+  </li>
+</ul>
+
+<p>
+  After a handshake has been sent, the client should receive a handshake back with the same structure. The <code>info_hash</code> should match the one sent or else the connection must be dropped. If the peer receives a handshake with an <code>info_hash</code> that it is not currently serving then the connection must also be dropped.
+</p>
+
+
+<h4 id="introduction">Messages</h4>
+
+<p>
+  Once the handshake has been performed, the client and peer can start to exchange messages. Each message has the following formats:
+</p>
+
+<ul>
+  <li>
+    <code>length_prefix</code>: A four byte big-endian integer which indicates the length of the message.
+  </li>
+  <li>
+    <code>message_id</code>: A byte that indicates the type of message.
+  </li>
+  <li>
+    <code>payload</code>: An optional message-specific payload.
+  </li>
+</ul>
+
+<p>
+  The simplest message is the keep-alive message which has a length of zero as it has no message ID and no payload. Peers may close a connection if they receive no messages for a certain period of time, so a keep-alive message must be sent to maintain the connection alive if no other command has been sent for a given amount of time (generally two minutes).
+</p>
+
+
+<h4 id="introduction">Bitfields</h4>
+
+<p>
+  The bitfield message is used to communicate which pieces a peer is able to send. It has ID 5 and a variable length payload containing a bitfield. A bitfield consists of a sequence of bytes. The high bit in the first byte corresponds to piece index 0. Set bits indicate a valid and available piece and cleared bits indicate a missing piece. Spare bits at the end are set to zero.
+</p>
+
+<p>
+  The bitfield message may only be send immediately after the handshaking process is completed and before any other messages it is sent. The message is option and need not be sent if a client has no pieces. A bitfield of the wrong length is considered an error. Clients should drop the connection if they receive bitfields that are not of the correct size, or if the bitfield has any of the spare bits set.
+</p>
+
+
+<h4 id="introduction">Choking and Interest</h4>
+
+<p>
+  The choke message has ID 0 and is used to choke a peer, while the unchoke message has ID 1 and is used to unchoke a peer. Similarly the interested message has ID 2 is used to express interest in a peer, while the not interested message has ID 3 and is used to express disinterest in a peer. All of these messages have a fixed length and have no payload.
+</p>
+
+
+<h4 id="introduction">Have</h4>
+
+<p>
+  The have message is fixed length. The payload is the zero-based index of a piece that has just been successfully downloaded and verified via the hash. A peer receiving this message must validate the index and drop the connection if this index is not within the expected bounds. Also, a peer receiving this message MUST send an interested message to the sender if indeed it lacks the piece announced. Further, it MAY also send a request for that piece.
+</p>
+
+<p>
+  Because peers are extremely unlikely to download pieces that they already have, a peer may choose not to advertise having a piece to a peer that already has that piece.
+</p>
+
+
+<h4 id="introduction">Requesting Pieces</h4>
+
+<p>
+  The request message is used to request a block. The payload contains the following information:
+
+  index: integer specifying the zero-based piece index
+begin: integer specifying the zero-based byte offset within the piece
+length: integer specifying the requested length.
+</p>
+
+<p>
+  The piece message is variable length, where X is the length of the block. The payload contains the following information:
+
+index: integer specifying the zero-based piece index
+begin: integer specifying the zero-based byte offset within the piece
+block: block of data, which is a subset of the piece specified by index.
+</p>
+
+<p>
+  The cancel message is fixed length, and is used to cancel block requests. The payload is identical to that of the "request" message. It is typically used during "End Game" (see the Algorithms section below).
+</p>
+
+
+<h4 id="introduction">Message Summary</h4>
+
+<pre>
+keep-alive: &lt;len=0000&gt;
+choke: &lt;len=0001&gt;&lt;id=0&gt;
+unchoke: &lt;len=0001&gt;&lt;id=1&gt;
+interested: &lt;len=0001&gt;&lt;id=2&gt;
+not interested: &lt;len=0001&gt;&lt;id=3&gt;
+have: &lt;len=0005&gt;&lt;id=4&gt;&lt;piece index&gt;
+bitfield: &lt;len=0001+X&gt;&lt;id=5&gt;&lt;bitfield&gt;
+request: &lt;len=0013&gt;&lt;id=6&gt;&lt;index&gt;&lt;begin&gt;&lt;length&gt;
+piece: &lt;len=0009+X&gt;&lt;id=7&gt;&lt;index&gt;&lt;begin&gt;&lt;block&gt;
+cancel: &lt;len=0013&gt;&lt;id=8&gt;&lt;index&gt;&lt;begin&gt;&lt;length&gt;
+</pre>
+
+
+<h3 id="resources">Glossary</h3>
+
+<ul>
+  <li>
+    <i>Peer</i>: A peer is a node in a network participating in file sharing. It can simultaneously act both as a server and a client to other nodes on the network. 
+  </li>
+  <li>
+    <i>Neighboring peers</i>: Peers to which a client has an active point to point TCP connection.
+  </li>
+  <li>
+    <i>Client</i>: A client is a user agent that acts as a peer on behalf of a user.
+  </li>
+  <li>
+    <i>Torrent</i>: A torrent is the term for the file (single-file torrent) or group of files (multi-file torrent) the client is downloading.
+  </li>
+  <li>
+    <i>Swarm</i>: A network of peers that actively operate on a given torrent.
+  </li>
+  <li>
+    <i>Seeder</i>: A peer that has a complete copy of a torrent.
+  </li>
+  <li>
+    <i>Tracker</i>: A tracker is a centralized server that holds information about one or more torrents and associated swarms. It functions as a gateway for peers into a swarm.
+  </li>
+  <li>
+    <i>Tracker</i>: A tracker is a centralized server that holds information about one or more torrents and associated swarms. It functions as a gateway for peers into a swarm.
+  </li>
+  <li>
+    <i>Metainfo file</i>: A text file that holds information about the torrent, e.g. the URL of the tracker. It usually has the extension .torrent.
+  </li>
+  <li>
+    <i>Peer ID</i>: A 20-byte string that identifies the peer. How the peer ID is obtained is outside the scope of this document, but a peer must make sure that the peer ID it uses has a very high probability of being unique in the swarm.
+  </li>
+  <li>
+    <i>Info hash</i>: A SHA1 hash that uniquely identifies the torrent. It is calculated from data in the metainfo file.
+  </li>
+</ul>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://web.archive.org/web/20080129085545/http://finance.groups.yahoo.com/group/decentralization/message/3160">Initial BitTorrent Announcement by Bram Cohen</a>
+  </li>
+  <li>
+    <a href="http://www.bittorrent.org/beps/bep_0003.html">BitTorrent Specification</a>
+  </li>
+  <li>
+    <a href="https://wiki.theory.org/BitTorrentSpecification">Unofficial BitTorrent Specification</a>
+  </li>
+  <li>
+    <a href="http://jonas.nitro.dk/bittorrent/bittorrent-rfc.html">Another BitTorrent Specification</a>
+  </li>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Glossary_of_BitTorrent_terms">Glossary of BitTorrent Terms (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="http://dandylife.net/docs/BitTorrent-Protocol.pdf">Understanding the BitTorrent Protocol</a>
+  </li>
+  <li>
+    <a href="https://blog.jse.li/posts/torrent/">Building a BitTorrent Client from the Ground Up in Go</a>
+  </li>
+  <li>
+    <a href="http://bittorrent.org/beps/bep_0012.html">Announce List Specification</a>
+  </li>
+</ul>
