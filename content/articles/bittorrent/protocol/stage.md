@@ -1,23 +1,4 @@
-1. Introduction
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119Bradner, S., “Key words for use in RFCs to Indicate Requirement Levels,” March 1997.[3].
 
-The File Transfer Protocol (FTP)[1] with the recent additions of security extensions, still remains the standard for secure and reliable transmission of large files over the Internet. However, its highly centralized client-server approach also means, it is inadequate for mass publication of files, where a single point may expect to be requested by a critically large number of clients simultaneously. To remedy this situation many organizations either implement a cap on the number of simultaneous requests, or spread the load on multiple mirror servers. Needless to say both approaches have their drawbacks, and a solution that addresses these problems is highly needed.
-
-The approach in BitTorrent Protocol (BTP) is to spread the load not on mirror servers, but to the clients themselves by having them upload bits of the file to each other while downloading it. Since the clients usually do not utilize their upload capacity while fetching a file, this approach does not put the clients in any disadvantage. This has the added advantage that even small organizations with limited resources can publish large files on the Internet without having to invest in costly infrastructure.
-
-1.1 Extensions
-Since the introduction of BTP many modifications and extensions have been proposed by individuals and community forums. To the extent that these extensions have become part of what the BitTorrent community considers best practice they have been included in this document. However, many extensions have been omitted either because they have been deemed to lack interoperability with existing implementations, or because they are not regarded as being sufficiently mature.
-
-1.2 Audience
-This document is aimed at developers who wish to implement BTP for a particular platform. Also, system administrators and architects may use this document to fully understand the implications of installing an implementation of BTP. In particular, it is advised to study the security implications in more detail, before installing an implementation on a machine that also contains sensitive data. Security implications are discussed in Section 7.
-
-1.3 Terminology
-Peer:
-A peer is a node in a network participating in file sharing. It can simultaneously act both as a server and a client to other nodes on the network.
-Neighboring peers:
-Peers to which a client has an active point to point TCP connection.
-Client:
-A client is a user agent (UA) that acts as a peer on behalf of a user.
 Torrent:
 A torrent is the term for the file (single-file torrent) or group of files (multi-file torrent) the client is downloading.
 Swarm:
@@ -32,7 +13,10 @@ Peer ID:
 A 20-byte string that identifies the peer. How the peer ID is obtained is outside the scope of this document, but a peer must make sure that the peer ID it uses has a very high probability of being unique in the swarm.
 Info hash:
 A SHA1 hash that uniquely identifies the torrent. It is calculated from data in the metainfo file.
+
+
 1.4 Overall Operation
+
 BTP consists of two logically distinct protocols, namely the Tracker HTTP Protocol (THP), and the Peer Wire Protocol (PWP). THP defines a method for contacting a tracker for the purposes of joining a swarm, reporting progress etc. PWP defines a mechanism for communication between peers, and is thus responsible for carrying out the actual download and upload of the torrent.
 
 In order for a client to download a torrent the following steps must be carried through:
@@ -40,73 +24,23 @@ In order for a client to download a torrent the following steps must be carried 
 A metainfo file must be retrieved.
 Instructions that will allow the client to contact other peers must be periodically requested from the tracker using THP.
 The torrent must be downloaded by connecting to peers in the swarm and trading pieces using PWP.
+
 To publish a torrent the following steps must be taken:
 
 A tracker must be set up.
 A metainfo file pointing to the tracker and containing information on the structure of the torrent must be produced and published.
 At least one seeder with access to the complete torrent must be set up.
 
- TOC 
-2. Bencoding
-Bencoding encodes data in a platform independent way. In BTP/1.0 the metainfo file and all responses from the tracker are encoded in the bencoding format. The format specifies two scalar types (integers and strings) and two compound types (lists and dictionaries).
-
-The Augmented BNF syntax[5] for bencoding format is:
-
-   dictionary = "d" 1*(string anytype) "e" ; non-empty dictionary
-   list       = "l" 1*anytype "e"          ; non-empty list
-   integer    = "i" signumber "e"
-   string     = number ":" <number long sequence of any CHAR>
-   anytype    = dictionary / list / integer / string
-   signumber  = "-" number / number
-   number     = 1*DIGIT
-   CHAR       = %x00-FF                    ; any 8-bit character
-   DIGIT      = "0" / "1" / "2" / "3" / "4" /
-                "5" / "6" / "7" / "8" / "9"
-2.1 Scalar Types
-Integers are encoded by prefixing a string containing the base ten representation of the integer with the letter "i" and postfixing it with the letter "e". E.g. the integer 123 is encoded as i123e.
-
-Strings are encoded by prefixing the string content with the length of the string followed by a colon. E.g. the string "announce" is encoded as "8:announce".
-
-2.2 Compound Types
-The compound types provides a mean to structure elements of any bencoding type.
-
-Lists are an arbitrary number of bencoded elements prefixed with the letter "l" and postfixed with the letter "e". It follows that lists can contain nested lists and dictionaries. For instance "li2e3:fooe" defines a list containing the integer "2" and the string "foo".
-
-Dictionaries are an arbitrary number of key/value pairs delimited by the letter "d" at the beginning and the letter "e" at the end. All keys are bencoded strings while the associated value can be any bencoded element. E.g. "d5:monthi4e4:name5:aprile" defines a dictionary holding the associations: "month" => "4" and "name" => "april". All dictionary keys MUST be sorted.
+ 
 
 
- TOC 
-3. Pieces and Blocks
-This section describes how a torrent is organized in pieces and blocks. The torrent is divided into one or more pieces. Each piece represents a range of data which it is possible to verify using a piece SHA1 hash. When distributing data over PWP pieces are divided into one or more blocks, as shown in the following diagram:
 
-              ---------------------------------------
-              | Piece #0 | Piece #1 | .. | Piece #N |
-              ---------------------------------------
-                      _-´            `-_
-                   _-´                  `-_
-                 ----------------------------
-                 | Block #0 | .. | Block #M |
-                 ----------------------------
-3.1 Pieces
-The number of pieces in the torrent is indicated in the metainfo file. The size of each piece in the torrent remains fixed and can be calculated using the following formula:
 
-	fixed_piece_size = size_of_torrent / number_of_pieces
-where "/" is the integer division operator. Only the last piece of the torrent is allowed to have fewer bytes than the fixed piece size.
 
-The size of a piece is determined by the publisher of the torrent. A good recommendation is to use a piece size so that the metainfo file does not exceed 70 kilobytes.
 
-For the sake of calculating the correct position of a piece within a file, or files, the torrent is regarded as a single continuous byte stream. In case the torrent consists of multiple files, it is to be viewed as the concatenation of these files in the order of their appearance in the metainfo file. Conceptually, the torrent is only translated into files when all its pieces have been downloaded and verified using their respective SHA1 values; although in practice an implementation may choose a better approach in accordance with local operating system and filesystem specific demands.
 
-3.2 Blocks
-The size of a block is an implementation defined value that is not dependant on the fixed piece size. Once a fixed size is defined, the number of blocks per piece can be calculated using the formula:
 
-	number_of_blocks = (fixed_piece_size / fixed_block_size)
-			 + !!(fixed_piece_size % fixed_block_size)
-where "%" denotes the modulus operator, and "!" the negation operator. The negation operator is used to ensure that the last factor only adds a value of 0 or 1 to the sum. Given the start offset of the block its index within a piece can be calculated using the formula:
 
-	block_index = block_offset % fixed_block_size
-
- TOC 
 4. The Metainfo File
 The metainfo file provides the client with information on the tracker location as well as the torrent to be downloaded. Besides listing which files will result from downloading the torrent, it also lists how the client should split up and verify individual pieces making up the complete torrent.
 
@@ -211,7 +145,11 @@ This is a REQUIRED string value indicating the IP address of the peer. This may 
 'port':
 This is an integer value. It must contain the self-designated port number of the peer. This key is REQUIRED.
 
- TOC 
+
+
+
+
+
 6. The Peer Wire Protocol
 The aim of the PWP, is to facilitate communication between neighboring peers for the purpose of sharing file content. PWP describes the steps taken by a peer after it has read in a metainfo file and contacted a tracker to gather information about other peers it may communicate with. PWP is layered on top of TCP and handles all its communication using asynchronous messages.
 
@@ -353,42 +291,3 @@ The peers are sorted according to their rating with regard to the above mentione
 The only lacking element from the above algorithm is the capability to ensure that new peers can have a fair chance of downloading a piece, even though they would evaluate poorly in the above schema. A simple method is to make sure that a random peer is selected periodically regardless of how it evaluates. Since this process is repeated in a round robin manner, it ensures that ultimately even new peers will have a chance of being unchoked.
 
 
- TOC 
-7. Security Consideration
-This section examines security considerations for BTP/1.0.The discussion does not include definitive solutions to the problems revealed, though it does make some suggestions for reducing security risks.
-
-7.1 Tracker HTTP Protocol Issues
-The use of the HTTP protocol for communication between the tracker and the client makes BTP/1.0 vulnerable to the attacks mentioned in the security consideration section of RFC 2616[6].
-
-7.2 Denial of Service Attacks on Trackers
-The nature of the tracker is to serve many clients. By mounting a denial of service attack against the tracker the swarm attached to the tracker can be starved. This type of attack is hard to defend against, however, the metainfo file allows for multiple trackers to be specified, making it possible to spread the load on a number of trackers, and thus containing such an attack.
-
-7.3 Peer Identity Issues
-There is no strong authentication of clients when they contact the tracker. The main option for trackers is to check peer ID and the IP address of the client. The lack of authentication can be used to mount an attack where a client can shut down another client if the two clients are running on the same host and thus are sharing the same IP address. In addition, a rogue peer may masquerade its identity by using multiple peer IDs. Clients should there refrain from taking the peer ID at face value.
-
-7.4 DNS Spoofing
-Clients using BTP/1.0 rely heavily on the Domain Name Service, which can be used for both specifying the URI of the tracker and how to contact a peer. Clients are thus generally prone to security attacks based on the deliberate mis-association of IP addresses and DNS names. Clients need to be cautious in assuming the continuing validity of an IP address/DNS name association.
-
-In particular, BTP/1.0 clients SHOULD rely on their name resolver for confirmation of an IP number/DNS name association, rather than caching the result of previous host name lookups. If clients cache the results of host name lookups in order to achieve a performance improvement, they MUST observe the TTL information reported by DNS.
-
-If clients do not observe this rule, they could be spoofed when a previously-accessed peers or trackers IP address changes. As network renumbering is expected to become increasingly common according to RFC 1900[2], the possibility of this form of attack will grow. Observing this requirement reduces this potential security vulnerability.
-
-7.5 Issues with File and Directory Names
-The metainfo file provides a way to suggest a name of the downloaded file for single-file torrents and the top-most directory for multi-file torrents. This functionality is very like the Content-Disposition header field documented in RFC 2183[4] and the security considerations mentioned in this RFC also apply to BitTorrent clients. In short, BTP clients SHOULD verify that the suggested file names in the metainfo file do not compromise services on the local system. Furthermore, care must be taken for multi-file torrents to validate that individual files are relative to the top-most directory and that the paths do not contain path elements to the parent (that is directory elevators such as ``..''), which can be used to place files outside the top-most directory.
-
-Using UNIX as an example, some hazards would be:
-
-Creating startup files (e.g., ".login").
-Creating or overwriting system files (e.g., "/etc/passwd").
-Overwriting any existing file.
-Placing executable files into any command search path (e.g., "~/bin/more").
-Sending the file to a pipe (e.g., "| sh").
-It is very important to note that this is not an exhaustive list; it is intended as a small set of examples only. Implementers must be alert to the potential hazards on their target systems. In general, the BTP client SHOULD NOT name or place files such that they will get interpreted or executed without the user explicitly initiating the action.
-
-7.6 Validating the Integrity of Data Exchanged Between Peers
-By default, all content served to the client from other peers should be considered tainted and the client SHOULD validate the integrity of the data before accepting it. The metainfo file contains information for checking both individual pieces using SHA1, and optionally individual files using MD5. SHA1, being the strongest of the two, is preferred. Furthermore, sole reliance on whole-file checking can potentially render otherwise valid pieces invalid, and should only be considered for small files, to limit the amount of data being discarded.
-
-Trusting the validity of the resulting file or files ends up being a matter of trusting the content of the metainfo file. Ensuring the validity of the metainfo file is beyond the scope of this document.
-
-7.7 Transfer of Sensitive Information
-Some clients include information about themselves when generating the peer ID string. Clients should be aware that this information can potentially be used to determine whether a specific client has a exploitable security hole.

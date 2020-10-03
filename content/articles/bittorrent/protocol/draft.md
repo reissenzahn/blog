@@ -1,41 +1,9 @@
 # Draft
 
-
-# Metainfo File
-
-## Structure
-
-
-
-
-For the case of the single-file mode, the `info` dictionary contains the following keys:
-
-- `length`: length of the file in bytes.
-- `md5sum`: (optional) a 32-character hexadecimal string corresponding to the MD5 sum of the file. This is not used by BitTorrent but it is included by some programs for greater compatibility.
-
-For the case of the multi-file mode, the info dictionary contains the following keys:
-
-- `name`: the name of the directory in which to store all the files.
-- `files`: a list of dictionaries, one for each file.
-
-Each dictionary in the `files` list contains the following keys:
-
-- `length`: length of the file in bytes (integer)
-- `md5sum`: (optional) a 32-character hexadecimal string corresponding to the MD5 sum of the file. This is not used by BitTorrent at all, but it is included by some programs for greater compatibility.
-- `path`: a list containing one or more string elements that together represent the path and filename. Each element in the list corresponds to either a directory name or (in the case of the final element) the filename. For example, a the file "dir1/dir2/file.ext" would consist of three string elements: "dir1", "dir2", and "file.ext". This is encoded as a bencoded list of strings such as l4:dir14:dir28:file.exte
-
-
-
-
-
 # Tracker HTTP Protocol
 
 ## Request Parameters
 
-- `peer_id`: urlencoded 20-byte string used as a unique ID for the client.
-- `port`: The port number that the client is listening on. Ports reserved for BitTorrent are typically 6881-6889.
-- `uploaded`: The total number of bytes uploaded uploaded since the client sent the 'started' event to the tracker in base ten ASCII.
-- `downloaded`: The total number of bytes downloaded (since the client sent the 'started' event to the tracker) in base ten ASCII.
 - `left`: The number of bytes this client still has to download in base ten ASCII.
 - `compact`: Setting this to 1 indicates that the client accepts a compact response. The peers list is replaced by a peers string with 6 bytes per peer. The first four bytes are the host and the last two bytes are the port.
 - `no_peer_id`: Indicates that the tracker can omit peer id field in peers dictionary. This option is ignored if compact is enabled.
@@ -43,44 +11,11 @@ Each dictionary in the `files` list contains the following keys:
 - `started`: The first request to the tracker must include the event key with this value.
 - `stopped`: Must be sent to the tracker if the client is shutting down gracefully.
 - `completed`: Must be sent to the tracker when the download completes. However, must not be sent if the download was already 100% complete when the client started. Presumably, this is to allow the tracker to increment the "completed downloads" metric based solely on this event.
-- `ip`: Optional. The true IP address of the client machine, in dotted quad format or rfc3513 defined hexed IPv6 address. This parameter is is only needed in the case where the IP address that the request came in on is not the IP address of the client. It also is necessary when both the client and the tracker are on the same local side of a NAT gateway.
+- `ip`: Optional. The true IP address of the client machine, in dotted quad format or hexed IPv6 address. This parameter is is only needed in the case where the IP address that the request came in on is not the IP address of the client. It also is necessary when both the client and the tracker are on the same local side of a NAT gateway.
 - `numwant`: Optional. Number of peers that the client would like to receive from the tracker. This value is permitted to be zero. If omitted, typically defaults to 50 peers.
 - `key`: Optional. An additional identification that is not shared with any other peers. It is intended to allow a client to prove their identity should their IP address change.
 - `trackerid`: Optional. If a previous announce contained a tracker id, it should be set here.
 
-
-## Response
-
-The tracker responds with "text/plain" document consisting of a bencoded dictionary with the following keys:
-
-- `failure reason`: A human-readable error message as to why the request failed. If present, then no other keys may be present.
-- `warning message`: (optional) Similar to failure reason, but the response still gets processed normally. The warning message is shown just like an error.
-- `interval`: Interval in seconds that the client should wait between sending regular requests to the tracker.
-- `min interval`: (optional) Minimum announce interval. If present clients must not re-announce more frequently than this.
-- `tracker id`: A string that the client should send back on its next announcements. If absent and a previous announce sent a tracker id, do not discard the old value; keep using it.
-- `complete`: number of peers with the entire file.
-- `incomplete`: number of non-seeder peers.
-- `peers`: The value is a list of dictionaries, each with the following keys:
-  - `peer id`: peer's self-selected ID, as described above for the tracker request.
-  - `ip`: peer's IP address either IPv6 (hexed) or IPv4 (dotted quad) or DNS name.
-  - `port`: peer's port number.
-- `peers`: Instead of using the dictionary model described above, the peers value may be a string consisting of multiples of 6 bytes. The first 4 bytes are the IP address and last 2 bytes are the port number of the peer. All in big endian notation.
-
-
-## Example
-
-```
-d
-  8:interval
-    i900e
-  5:peers
-    252: (binary blob)
-e
-```
-
-Interval tells us how often we’re supposed to connect to the tracker again to refresh our list of peers. A value of 900 means we should reconnect every 15 minutes (900 seconds).
-
-Peers is another long binary blob containing the IP addresses of each peer. It’s made out of groups of six bytes. The first four bytes in each group represent the peer’s IP address—each byte represents a number in the IP. The last two bytes represent the port, as a big-endian uint16. Big-endian, or network order, means that we can interpret a group of bytes as an integer by just squishing them together left to right. For example, the bytes 0x1A, 0xE1 make 0x1AE1, or 6881 in decimal.*
 
 
 
@@ -197,8 +132,6 @@ The port message is sent by newer versions of the Mainline that implements a DHT
 
 - _Downloader_: A downloader is any peer that is currently downloading a particular file (or files) but does not yet have a complete copy of the file.
 
-- _Interested_: A downloading client 
-
 - _Leecher_: A leecher is any peer that is currently downloading a particular file (or files) but does not yet have a complete copy of the file. Frequently used to refer to a peer that has a negative influence on the swarm by downloading much more than they upload.
 
 - _Peer_: A peer is one instance of a BitTorrent client running on a computer on the Internet to which other clients connect and transfer data. 
@@ -223,6 +156,8 @@ The port message is sent by newer versions of the Mainline that implements a DHT
 - `scrape`: This is when a client sends a request to the tracker for information about the statistics of the torrent, like who to share the file with and how well those other users are sharing.
 
 
+
+
 # Appendix
 
 Interval tells us how often we’re supposed to connect to the tracker again to refresh our list of peers. A value of 900 means we should reconnect every 15 minutes (900 seconds).
@@ -232,8 +167,43 @@ Interval tells us how often we’re supposed to connect to the tracker again to 
 
 
 
+block
+A block is a piece of a file. When a file is distributed via BitTorrent, it is broken into smaller
+pieces, or blocks. Typically the block is 250kb in size, but it can vary with the size of the
+file being distributed. Breaking the file into pieces allows it to be distributed as efficiently
+as possible. Users get their files faster using less bandwidth.
+client
+the BitTorrent software used to download and upload files. The BitTorrent client can be
+downloaded here.
+leech or leecher
+usually refers to a peer that is downloading while uploading very little, or nothing at all.
+Sometimes this is unintentional and due to firewall issues. The term leech is also
+sometimes used to simply refer to a peer that is not seeding yet.
+peer
+one of a group of clients downloading the same file.
+re-seed
+Re-seeding is the act of putting up a new complete copy of a file after no more seeds are
+available to download from. This is done to allow clients with only partial downloads to
+complete the download process and increases availability
 
 
+scrape
+This is when a client sends a request to the tracker for information about the statistics of
+the torrent, like who to share the file with and how well those other users are sharing.
+seed
+a complete copy of the file being made available for download.
+seeder/seeding
+a peer that is done downloading a file and is now just making it available to others.
+swarm
+a group of seeds and peers sharing the same torrent.
+torrent
+generally, the instance of a file or group of files being distributed via BitTorrent.
+torrent file
+a file which describes what file or files are being distributed, where to find parts, and other
+info needed for the distribution of the file.
+tracker
+a server that keeps track of the peers and seeds in a swarm. A tracker does not have a
+copy of the file itself, but it helps manage the file transfer process.
 
 
 

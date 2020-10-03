@@ -45,6 +45,32 @@ draft: false
 </p>
 
 
+<h3 id="introduction">Pieces and Blocks</h3>
+
+<p>
+  A torrent is divided into one or more pieces. Each piece represents a range of data represents a range of data which it is possible to verify using a piece SHA1 hash. When distributing data over PWP pieces are divided into one or more blocks.
+</p>
+
+<p>
+  The number of pieces in the torrent is dictated in the metainfo file. The size of each piece in the torrent remains fixed and can be calculated as \(\text{piece size} = \text{torrent size} / \text{number of pieces}\) using integer division. Only the last piece of the torrent is allowed to have fewer bytes than the fixed piece size. The size of a piece is determined by the publisher of the torrent.
+</p>
+
+<p>
+  For the sake of calculating the correct position of a piece within a file, or files, the torrent is regarded as a single continuous byte stream. In case the torrent consists of multiple files, it is to be viewed as the concatenation of these files in the order of their appearance in the metainfo file. Conceptually, the torrent is only translated into files when all its pieces have been downloaded and verified using their respective SHA1 values; although in practice an implementation may choose a better approach in accordance with local operating system and filesystem specific demands.
+</p>
+
+<p>
+  The size of a block is an implementation defined value that is not dependant on the fixed piece size. Once a fixed size is defined, the number of blocks per piece can be calculated using the formula:
+
+	number_of_blocks = (fixed_piece_size / fixed_block_size)
+			 + !!(fixed_piece_size % fixed_block_size)
+
+where "%" denotes the modulus operator, and "!" the negation operator. The negation operator is used to ensure that the last factor only adds a value of 0 or 1 to the sum. Given the start offset of the block its index within a piece can be calculated using the formula:
+
+	block_index = block_offset % fixed_block_size
+</p>
+
+
 
 <h3 id="introduction">Metainfo File</h3>
 
@@ -165,8 +191,46 @@ draft: false
 </table>
 
 <p>
-  
+  For the case of the single-file mode, the <code>info</code> dictionary contains the following keys:
 </p>
+
+<ul>
+  <li>
+    <code>length</code>: Length of the file in bytes.
+  </li>
+  <li>
+    <code>md5sum</code>: The MD5 sum of the file (Optional).
+  </li>
+</ul>
+
+<p>
+  For the case of the multi-file mode, the info dictionary contains the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>name</code>: The name of the directory in which to store all the files.
+  </li>
+  <li>
+    <code>files</code>: A list of dictionaries, one for each file.
+  </li>
+</ul>
+
+<p>
+  Each dictionary in the <code>files</code> list contains the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>length</code>: Length of the file in bytes.
+  </li>
+  <li>
+    <code>md5sum</code>: The MD5 sum of the file (optional).
+  </li>
+  <li>
+    <code>path</code>: A list containing one or more string elements that together represent the path and filename. Each element in the list corresponds to either a directory name or (in the case of the final element) the filename. For example, the file "dir1/dir2/file.ext" would consist of three string elements: "dir1", "dir2", and "file.ext". This is encoded as a bencoded list of strings such as l4:dir14:dir28:file.exte
+  </li>
+</ul>
 
 
 <h4 id="introduction">Example</h4>
@@ -223,7 +287,31 @@ e</pre>
     <code>info_hash</code>: urlencoded SHA-1 hash of the value of the <code>info</code> key from the Metainfo file.
   </li>
   <li>
-    <code></code>:
+    <code>peer_id</code>: urlencoded 20-byte string used as a unique ID for the client.
+  </li>
+  <li>
+    <code>port</code>: The port number that the client is listening on. Ports reserved for BitTorrent are typically 6881-6889.
+  </li>
+  <li>
+    <code>uploaded</code>: The total number of bytes uploaded uploaded since the client sent the "started" event to the tracker in base ten ASCII.
+  </li>
+  <li>
+    <code>downloaded</code>: The total number of bytes downloaded since the client sent the "started" event to the tracker in base ten ASCII.
+  </li>
+  <li>
+    <code>failure reason</code>: A human-readable error message as to why the request failed. If present, then no other keys may be present.
+  </li>
+  <li>
+    <code>warning message</code>: Similar to failure reason, but the response still gets processed normally. The warning message is shown just like an error (optional).
+  </li>
+  <li>
+    <code>interval</code>: Interval in seconds that the client should wait between sending regular requests to the tracker.
+  </li>
+  <li>
+    <code>min interval</code>: Minimum announce interval. If present clients must not re-announce more frequently than this (optional).
+  </li>
+  <li>
+    <code>tracker id</code>: A string that the client should send back on its next announcements. If absent and a previous announce sent a tracker id, do not discard the old value; keep using it.
   </li>
   <li>
     <code></code>:
@@ -231,29 +319,38 @@ e</pre>
   <li>
     <code></code>:
   </li>
+</ul>
+
+
+<h4 id="introduction">Response</h4>
+
+<p>
+  The tracker responds with <code>text/plain</code> document consisting of a bencoded dictionary with the following keys:
+</p>
+
+<ul>
   <li>
-    <code></code>:
+    <code>complete</code>: Number of peers with the entire file.
   </li>
   <li>
-    <code></code>:
+    <code>incomplete</code>: Number of non-seeder peers.
   </li>
   <li>
-    <code></code>:
+    <code>peers</code>: The value is a list of dictionaries, each with the following keys:
+    <ul>
+      <li>
+        <code>peer id</code>: The peer's peer ID.
+      </li>
+      <li>
+        <code>ip</code>: The peer's IP address either IPv6 (hexed) or IPv4 (dotted quad) or DNS name.
+      </li>
+      <li>
+        <code>port</code>: The peer's port number.
+      </li>
+    </ul>
   </li>
   <li>
-    <code></code>:
-  </li>
-  <li>
-    <code></code>:
-  </li>
-  <li>
-    <code></code>:
-  </li>
-  <li>
-    <code></code>:
-  </li>
-  <li>
-    <code></code>:
+    <code>peers</code>: Instead of using the dictionary model described above, the peers value may be a string consisting of multiples of 6 bytes. The first 4 bytes are the IP address and last 2 bytes are the port number of the peer. All in big endian notation.
   </li>
 </ul>
 
@@ -421,6 +518,73 @@ request: &lt;len=0013&gt;&lt;id=6&gt;&lt;index&gt;&lt;begin&gt;&lt;length&gt;
 piece: &lt;len=0009+X&gt;&lt;id=7&gt;&lt;index&gt;&lt;begin&gt;&lt;block&gt;
 cancel: &lt;len=0013&gt;&lt;id=8&gt;&lt;index&gt;&lt;begin&gt;&lt;length&gt;
 </pre>
+
+
+<h3 id="introduction">Bencode</h3>
+
+<p>
+  Bencode is a platform independent encoding format. It supports the following types: byte strings, integers, lists and dictionaries. Both strings and integers are encoded in base ten ASCII. The contents of the compound types are bencoded.
+</p>
+
+<table style="width:100%">
+  <tr>
+    <th>
+      Type
+    </th>
+    <th>
+      Format
+    </th>
+    <th>
+      Example
+    </th>
+  </tr>
+  <tr>
+    <td>
+      String
+    </td>
+    <td>
+      <code>&lt;length&gt;:&lt;data&gt;<code>
+    </td>
+    <td>
+      <code>7:network</code>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Integer
+    </td>
+    <td>
+      <code>i&lt;integer&gt;e<code>
+    </td>
+    <td>
+      <code>i123e</code>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      List
+    </td>
+    <td>
+      <code>l&lt;bencoded items&gt;e<code>
+    </td>
+    <td>
+      <code>l8:advanced7:networke</code>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Dictionary
+    </td>
+    <td>
+      <code>d&lt;key&gt;&lt;value&gt;e<code>
+    </td>
+    <td>
+      <code>d3:onei1e3:twoi2e5:threei3e4:four
+        i4ee</code>
+    </td>
+  </tr>
+</table>
+
 
 
 <h3 id="resources">Glossary</h3>
