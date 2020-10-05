@@ -1,0 +1,66 @@
+---
+title: "Linked Lists"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li><a href="#introduction">Introduction</a></li>
+				<li><a href="#resources">Resources</a></li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="singly-linked-lists">Singly Linked Lists</h3>
+
+<p>
+  A linked list, in its simplest form, is a collection of nodes that collectively form a linear sequence. In a singly linked list, each node stores a reference to an object that is an element of the sequence as well as a reference to the next node of the list (or null if there is no further node).
+  
+  The list instance maintains a member named <code>head</code> that refers to the first node of the list and another member named <code>tail</code> that refers to the last node of the list.
+
+  An important property of a linked list is that is does not have a predetermined fixed size; it uses space proportional to its current number of elements.
+</p>
+
+<p>
+  A linked list's representation relies on the collaboration of many objects. Minimally, the linked list instance must keep a reference to the first node of the list, known as the head. Without an explicit reference to the head, there would be no way to locate that node (or indirectly, any others). The last node of the list is known as the tail. The tail of a list can be found by traversing the linked list--starting at the head and moving from one node to another by following each node's <code>next</code> reference. We can identify the tail as the node having <code>null</code> as its <code>next</code> reference. However, storing an explicit reference to the tail node is a common efficiency to avoid such a traversal. In similar regard, it is common for a linked list instance to keep a count of the total number of nodes that comprise the list (also known as the size of the list), to avoid traversing the list to count nodes.
+</p>
+
+
+<h4 id="">Inserting an Element at the Head</h4>
+
+<p>
+  We can easily insert an element at the head of the list by creating a new node, setting its element to the new element, setting its next link to refer to the current head and then setting the list's head to point to the new node.
+</p>
+
+
+
+<h3 id="circularly-linked-lists">Circularly Linked Lists</h3>
+
+<p>
+  A circularly linked list is essentially a singularly linked list in which the <code>next</code> reference of the tail node is set to refer back to the head of the list rather than <code>null</code>.
+
+  We add a new operation called rotate which moves the first element to the end of the list. To this end, we can simply advance the tail reference to point to the node that follows it (the implicit head of the list).
+
+  We no longer need to explicitly maintain the <code>head</code> reference. So long as we maintain a reference to the tail, we can located the head as <code>tail.getNext()</code>
+</p>
+
+
+
+<h3 id="resources">Doubly Linked List</h3>
+
+
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+</ul>
+

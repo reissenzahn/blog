@@ -2,19 +2,6 @@
 
 # Plate
 
-- BitTorrent
-  - Protocol
-- Consensus
-  - Raft
-- Gossip
-  - Newscast
-  - SWIM
-- DHT
-  - Chord
-
-
-Manually set URL???
-
 https://gohugo.io/content-management/organization/
 
 

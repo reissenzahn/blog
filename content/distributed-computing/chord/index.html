@@ -1,0 +1,61 @@
+---
+title: "Chord"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li><a href="#introduction">Introduction</a></li>
+				<li><a href="#resources">Resources</a></li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  The Chord protocol
+specifies how to find the locations of keys, how new nodes
+join the system, and how to recover from the failure (or planned
+departure) of existing nodes.
+</p>
+
+
+<h3 id="introduction">Overview</h3>
+
+<p>
+  Chord provides fast distributed computation of a hash function mapping keys to nodes responsible for them. Chord assigns keys to nodes with consistent hashing. With high probability the hash function balances load so that all nodes receive roughly the same number of keys. Also with high probability, when an N-th node joins (or leaves) the network, only O(1/N) fraction of the keys are moved to a different location which is the minimum necessary to maintain a balanced load.
+
+  Chord improves the scalability of consistent hashing by avoiding the requirement that every node know about every other node. A Chord node needs only a small amount of "routing" information about other nodes. Because this information is distributed, a node resolves the hash function by communicating with other nodes. In an N-node network, each node maintains information about only O(\log N) other nodes and a lookup requires O(\log N) messages.
+</p>
+
+
+
+<h3 id="resources">Consistent Hashing</h3>
+
+<p>
+</p>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://pdos.csail.mit.edu/papers/ton:chord/paper-ton.pdf">Chord: A Scalable Peer-to-peer Lookup Service for Internet Applications</a>
+  </li>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Chord_(peer-to-peer)">Chord (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://medium.com/techlog/chord-building-a-dht-distributed-hash-table-in-golang-67c3ce17417b">Chord: Building a DHT (Distributed Hash Table) in Golang</a>
+  </li>
+  <li>
+    <a href="http://web.mit.edu/6.829/www/currentsemester/materials/chord.pdf">Distributed Hash Tables and Chord</a>
+  </li>
+</ul>
+
