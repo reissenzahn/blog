@@ -1,0 +1,234 @@
+---
+title: "Kademlia (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li><a href="#introduction">Introduction</a></li>
+				<li><a href="#resources">Resources</a></li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 class="identifiers">Identifiers</h3>
+
+<p>
+  <!-- what is are node IDs and keys -->
+
+  Each Kademlia node has a 160-bit identifier call its node ID. These node IDs can either be randomly chosen or consist of the SHA-1 hash of the node's IP address. Keys are also 160-bit quantities such as the SHA-1 hash of some larger data. A given ⟨key, value⟩ pair is assigned to a node with an ID "close" to the key for some definition of distance.
+</p>
+
+<figure>
+  <img src="/img/kademlia/keys-and-nodes.svg" style="max-height: 230px;" alt="">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+<p>
+  When computing the distance, it is important to use a metric that satisfies certain desirable properties. For instance, consider the simplified 4-bit identifier space in <i>figure 2</i>. If we were to the Euclidean distance \(d(x,y) = |x-y|\), then the distance between Key 2 and Node A would be \(|5-3|=2\). However, the distance between Key 2 and Node B would also be \(|5-7|=2\). Addressing these kinds of ambiguities would introduce undesirable complexity.
+</p>
+
+<figure>
+  <img src="/img/kademlia/keys-and-nodes-simplified.svg" style="max-height: 230px;" alt="">
+  <figcaption>
+    <i>figure 2</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 class="xor-metric">XOR Metric</h3>
+
+<p>
+  Many of the benefits of Kademlia result from its usage of a novel XOR metric. Kademlia defines the distance between two 160-bit identifiers \(x\) and \(y\) as their bitwise exclusive or (XOR) interpreted as an integer \(d(x,y) = x \oplus y\). This is a valid, albeit non-Euclidean, metric as it satisfies the necessary properties:
+</p>
+
+<ul>
+  <li>
+    \(d(x,y) = 0 \Leftrightarrow x = y\) (identity of indiscernibles)
+  </li>
+  <li>
+    \(d(x,y) = d(y,x)\) (symmetry)
+  </li>
+  <li>
+    \(d(x,y) + d(y,z) \ge d(x,z)\) (triangle inequality)
+  </li>
+  <li>
+    \(d(x,y) \ge 0\) (non-negativity)
+  </li>
+</ul>
+
+<p>
+  XOR is also uni-directional; that is, for any given point \(x\) and distance \(\Delta > 0\), there is exactly one point \(y\) such that \(d(x,y) = \Delta\). Indeed, in the case of <i>figure 2</i>, the distance between Key 2 and Node A is \(0101 \oplus 0011 = 0110\) or \(6\), whereas the distance between Key 2 and Node B is \(0101 \oplus 0111 = 0010\) or \(2\).
+</p>
+
+
+<h3 class="binary-tree-representation">Binary Tree Representation</h3>
+
+<p>
+  We can visualize nodes as leaves in a binary tree with each node's position being determined by the shortest unique prefix of its ID. For any given node, we divide the binary tree into a series of successively lower subtrees. The highest subtree consists of the half of the binary that not containing the node. The next subtree consists of the half of the remaining tree not containing the node, and so forth.
+</p>
+
+<!-- case where binary tree is not full -->
+
+<p>
+  The case of node ID \(1011\) is depicted in <i>figure 4</i> using the simplified 4-bit identifier space.
+</p>
+
+<figure>
+  <img src="/img/kademlia/subtree-partitions.svg" style="max-height: 230px;">
+  <figcaption>
+    <i>figure 3</i>
+  </figcaption>
+</figure>
+
+
+
+
+<h3 class="k-buckets"><i>k</i>-Buckets</h3>
+
+<p>
+  Kademlia nodes store contact information about each other. For each \(0 \le i &lt; 160\), every node keeps a list of ⟨IP address, UDP port, node ID⟩ triples for nodes of distance between \(2^i\) and \(2^{i+1}\) from itself. These lists of contact information are called <i>k</i>-buckets and are depicted in <i>figure 4</i>. Each <i>k</i>-bucket is kept sorted with the least-recently seen node at the head and the most-recently seen node at the tail.
+</p>
+
+<figure>
+  <img src="/img/kademlia/k-buckets.svg" style="max-height: 230px;">
+  <figcaption>
+    <i>figure 4</i>
+  </figcaption>
+</figure>
+
+<p>
+  For small values of \(i\), the <i>k</i>-buckets will generally be empty as no appropriate nodes will exist. For large values of \(i\), the <i>k</i>-buckets are able to grow up to size \(k\), where \(k\) is a system-wide replication parameter that is chosen such that any given \(k\) nodes are very unlikely to fail within an hour of each other (e.g. \(k = 20\)).
+</p>
+
+<p>
+
+</p>
+
+<p>
+  This approach implements a least-recently seen eviction policy, except that live nodes are never removed. This preference for old contacts was motivated by analysis of Gnutella trace data that showed the longer a node has been up, the more likely it was to remain up another hour. Furthermore, this approach also provides resistance to certain DoS attacks as an attacker cannot flush nodes' routing state by flooding the system with new nodes.
+</p>
+
+
+
+<h3 id="remote-procedure-calls">Remote Procedure Calls</h3>
+
+<p>
+  The Kademlia protocol consists of four RPCs:
+</p>
+
+<ul>
+  <li>
+    <code>PING</code>: Probes the recipient to see if its online.
+  </li>
+  <li>
+    <code>STORE</code>: Instructs the recipient to store a ⟨key, value⟩ pair.
+  </li>
+  <li>
+    <code>FIND_NODE</code>: Instructs the recipient to return ⟨IP address, UDP port, node ID⟩ triples for the \(k\) nodes in the node's k-buckets that are closest to a given target ID argument. These triples can come from a single k-bucket or they may come from multiple k-buckets if the closest k-bucket is not full. If there are fewer than \(k\) nodes in all the node's k-buckets combined then it returns every node it knows about.
+  </li>
+  <li>
+    <code>FIND_VALUE</code>: Behaves like <code>FIND_NODE</code> with the exception that if the recipient has received a <code>STORE</code> RPC for the key then it just returns the stored value.
+  </li>
+</ul>
+
+<p>
+  In all RPCs, the recipient must echo a random 160-bit ID which provides some resistance to address forgery. <code>PING</code> RPCs can also be piggy-backed on RPC replies for the RPC recipient to obtain additional assurance of the sender's network address.
+</p>
+
+
+<h3 id="remote-procedure-calls">Operations</h3>
+
+<h4 id="lookup-operations">Node Lookups</h4>
+
+<p>
+  The procedure a node performs to locate the \(k\) closest nodes to some given node ID is called a node lookup. Kademlia employs a recursive algorithm for node lookups. Given a system-wide concurrency parameter \(\alpha\), a node lookup proceeds as follows:
+</p>
+
+<ul>
+  <li>
+    The lookup initiator picks \(\alpha\) nodes from the closest non-empty k-bucket (or, if that bucket has fewer than \(\alpha\) contacts, it just takes the closest \(\alpha\) nodes it knows of).
+  </li>
+  <li>
+    The initiator then sends parallel asynchronous <code>FIND_NODE</code> RPCs to those \(\alpha\) nodes.
+  </li>
+  <li>
+    In the recursive step, the initiator then resends the <code>FIND_NODE</code> RPCs to nodes it has learned about from previous RPCs. This recursion can begin before all \(\alpha\) of the previous RPCs have returned.
+  </li>
+  <li>
+    Of the \(k\) nodes the initiator has heard of closest to the target, it picks \(\alpha\) that it has not queried and resends the <code>FIND_NODE</code> RPC to them.
+  </li>
+  <li>
+    Nodes that fail to respond are quickly removed from consideration until and unless they do respond.
+  </li>
+  <li>
+    If a round of <code>FIND_NODE</code> RPCs fails to return a node any closer than the closest already seen, the initiator resends the <code>FIND_NODE</code> to all of the \(k\) closest nodes it has not already queried.
+  </li>
+  <li>
+    The lookup terminates when the initiator has queried and gotten responses from the \(k\) closest nodes it has seen.
+  </li>
+</ul>
+
+
+<h4 id="storing-and-finding-values">Storing and Finding Values</h4>
+
+<p>
+  To store a ⟨key, value⟩ pair, a node performs a lookup for the \(k\) closest nodes to the key and sends them <code>STORE</code> RPCs. Additionally, each node re-publishes ⟨key, value⟩ pairs as necessary to keep them alive. This ensures persistence of the key-value pair with very high probability.
+</p>
+
+<p>
+  To find a ⟨key, value⟩ pair, a node performs a lookup 
+</p>
+
+
+
+<h3 id="routing-table">Routing Table</h3>
+
+<p>
+  While <i>figure 4</i> provides a illustration of the notion of <i>k</i>-buckets, the actual process of constructing the routing table is more subtle. The routing table is a binary 
+</p>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="http://www.scs.stanford.edu/~dm/home/papers/kpos.pdf">Kademlia: A Peer-to-peer Information System Based on the XOR Metric</a>
+  </li>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Metric_(mathematics)#Definition">Metric Definition (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://developpaper.com/kademlia-protocol/">Kademlia Protocol Overview</a>
+  </li>
+  <li>
+    <a href="https://stackoverflow.com/questions/25751928/kademlia-xor-metric-properties-purposes">Purposes of XOR Metric Properties</a>
+  </li>
+  <li>
+    <a href="http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html">Kademlia: A Design Specification</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=w9UObz8o8lY">XOR Distance and Basic Routing (YouTube)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=A5Y4HcTp-Ks">Distributed Hash Tables, Video, and Fun! (YouTube)</a>
+  </li>
+</ul>
+
+<!-- 
+  https://www.youtube.com/watch?v=w9UObz8o8lY
+
+  https://www.youtube.com/watch?v=mJgN3PzepqI
+
+  
+  VVV VERY NICE SLIDES FOR THE K-BUCKET BINARY TREE FIASCO
+
+  https://docs.google.com/presentation/d/11qGZlPWu6vEAhA7p3qsQaQtWH7KofEC9dMeBFZ1gYeA/edit#slide=id.g1718cc2bc_0661
+
+-->

@@ -19,6 +19,10 @@
 }
 
 /* bad */
+pre code {
+  padding: 0 !important;
+}
+
 table {
   /* width: 100%; */
   margin-top: 14px;
@@ -84,7 +88,8 @@ figure {
 
 figcaption {
   margin-top: 10px;
-  font-style: italic;
+  /* font-size: 1rem; */
+  /* font-style: italic; */
 }
 
 pre {
@@ -158,7 +163,7 @@ article h2 {
 }
 
 article h3 {
-  margin-top: 20px;
+  margin-top: 30px;
   margin-bottom: 0px;
 }
 
@@ -175,8 +180,8 @@ article time {
 }
 
 article ul.contents {
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: 15px;
+  margin-bottom: 0;
 }
 
 

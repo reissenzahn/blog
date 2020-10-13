@@ -9,18 +9,18 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.2"
-   width="284.34mm"
-   height="103.96mm"
-   viewBox="0 0 28434 10396"
+   width="244.11mm"
+   height="88.190002mm"
+   viewBox="0 0 24411 8819.0002"
    preserveAspectRatio="xMidYMid"
    fill-rule="evenodd"
    stroke-width="28.222"
    stroke-linejoin="round"
    xml:space="preserve"
-   id="svg683"
+   id="svg694"
    sodipodi:docname="k-buckets.svg"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"><metadata
-   id="metadata687"><rdf:RDF><cc:Work
+   id="metadata698"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
          rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><sodipodi:namedview
    pagecolor="#ffffff"
@@ -31,17 +31,17 @@
    guidetolerance="10"
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
-   inkscape:window-width="759"
-   inkscape:window-height="480"
-   id="namedview685"
+   inkscape:window-width="1920"
+   inkscape:window-height="1013"
+   id="namedview696"
    showgrid="false"
    inkscape:zoom="1.0608532"
-   inkscape:cx="540.0189"
-   inkscape:cy="240.07559"
-   inkscape:window-x="0"
-   inkscape:window-y="0"
-   inkscape:window-maximized="0"
-   inkscape:current-layer="svg683" />
+   inkscape:cx="463.86142"
+   inkscape:cy="13.880383"
+   inkscape:window-x="-9"
+   inkscape:window-y="-9"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="svg694" />
  <defs
    class="ClipPathGroup"
    id="defs8">
@@ -282,8 +282,8 @@
    id="missing-glyph84" />
    <glyph
    unicode="1"
-   horiz-adv-x="911"
-   d="M 156,0 L 156,153 515,153 515,1237 197,1010 197,1180 530,1409 696,1409 696,153 1039,153 1039,0 156,0 Z"
+   horiz-adv-x="572"
+   d="M 763,0 L 583,0 583,1147 C 540,1106 483,1064 413,1023 342,982 279,951 223,930 L 223,1104 C 324,1151 412,1209 487,1276 562,1343 616,1409 647,1472 L 763,1472 763,0 Z"
    id="glyph86" />
   </font>
  </defs>
@@ -292,7 +292,7 @@
    id="defs93">
   <g
    ooo:slide="id1"
-   ooo:id-list="id3 id4 id5 id6 id7 id8 id9 id10 id11 id12 id13 id14 id15 id16 id17 id18 id19 id20 id21 id22 id23 id24 id25 id26 id27 id28 id29 id30 id31 id32 id33 id34 id35 id36 id37 id38 id39 id40 id41 id42 id43 id44 id45 id46 id47"
+   ooo:id-list="id3 id4 id5 id6 id7 id8 id9 id10 id11 id12 id13 id14 id15 id16 id17 id18 id19 id20 id21 id22 id23 id24 id25 id26 id27 id28 id29 id30 id31 id32 id33 id34 id35 id36 id37 id38 id39 id40 id41 id42 id43 id44 id45 id46 id47 id48"
    id="g91" />
  </defs>
  <defs
@@ -371,7 +371,7 @@
  </defs>
  <g
    id="g130"
-   transform="translate(-562,-4148)">
+   transform="translate(-2577,-4147)">
   <g
    id="id2"
    class="Master_Slide">
@@ -385,10 +385,10 @@
  </g>
  <g
    class="SlideGroup"
-   id="g681"
-   transform="translate(-562,-4148)">
+   id="g692"
+   transform="translate(-2577,-4147)">
   <g
-   id="g679">
+   id="g690">
    <g
    id="container-id1">
     <g
@@ -397,7 +397,7 @@
    clip-path="url(#presentation_clip_path)">
      <g
    class="Page"
-   id="g675">
+   id="g686">
       <g
    class="com.sun.star.drawing.CustomShape"
    id="g137">
@@ -407,15 +407,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="3742"
-   y="5523"
-   width="2571"
-   height="1195"
+   x="5257"
+   y="5295"
+   width="2220"
+   height="1053"
    id="rect132" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 5027,6716 H 3743 V 5524 h 2568 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6367,6327 H 5277 V 5315 h 2179 v 1012 z"
    id="path134" />
        </g>
       </g>
@@ -428,25 +430,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="4886"
-   y="5970"
-   width="2553"
-   height="301"
+   x="6247"
+   y="5670"
+   width="2167"
+   height="302"
    id="rect139" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 5166,6120 H 7172"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6528,5821 H 8066"
    id="path141" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 5183,6147 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 6544,5848 -8,27 -13,27 -19,25 -25,19 -27,14 -27,7 -28,4 -27,-4 -28,-7 -27,-14 -24,-19 -19,-25 -13,-27 -9,-27 -2,-28 2,-27 9,-28 13,-26 19,-24 24,-19 27,-14 28,-8 27,-3 28,3 27,8 27,14 25,19 19,24 13,26 8,28 4,27 z"
    id="path143" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 7174,6199 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 8070,5924 -21,27 363,-130 -363,-130 20,26 15,31 11,34 4,37 -3,37 -11,36 z"
    id="path145" />
        </g>
       </g>
@@ -459,15 +463,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="3742"
-   y="7540"
-   width="2571"
-   height="1195"
+   x="5257"
+   y="7007"
+   width="2220"
+   height="1051"
    id="rect150" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 5027,8733 H 3743 V 7541 h 2568 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6367,8037 H 5277 V 7027 h 2179 v 1010 z"
    id="path152" />
        </g>
       </g>
@@ -480,25 +486,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="4886"
-   y="7987"
-   width="2568"
-   height="301"
+   x="6247"
+   y="7381"
+   width="2180"
+   height="302"
    id="rect157" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 5166,8137 H 7187"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6528,7532 H 8079"
    id="path159" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 5183,8164 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 6544,7559 -8,27 -13,27 -19,25 -25,19 -27,14 -27,7 -28,4 -27,-4 -28,-7 -27,-14 -24,-19 -19,-25 -13,-27 -9,-27 -2,-28 2,-27 9,-28 13,-26 19,-24 24,-19 27,-14 28,-8 27,-3 28,3 27,8 27,14 25,19 19,24 13,26 8,28 4,27 z"
    id="path161" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 7189,8216 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 8082,7635 -20,27 363,-130 -363,-130 19,26 16,31 11,34 4,37 -3,37 -11,36 z"
    id="path163" />
        </g>
       </g>
@@ -511,15 +519,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="7451"
-   y="7540"
-   width="2570"
-   height="1195"
+   x="8405"
+   y="7007"
+   width="2219"
+   height="1051"
    id="rect168" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 8736,8733 H 7452 V 7541 h 2567 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 9514,8037 H 8425 V 7027 h 2178 v 1010 z"
    id="path170" />
        </g>
       </g>
@@ -532,25 +542,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="8595"
-   y="7987"
-   width="2561"
-   height="301"
+   x="9393"
+   y="7381"
+   width="2174"
+   height="302"
    id="rect175" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 8875,8137 h 2014"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 9674,7532 h 1546"
    id="path177" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 8892,8164 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 9690,7559 -7,27 -14,27 -19,25 -25,19 -27,14 -27,7 -28,4 -27,-4 -28,-7 -27,-14 -23,-19 -19,-25 -14,-27 -9,-27 -2,-28 2,-27 9,-28 14,-26 19,-24 23,-19 27,-14 28,-8 27,-3 28,3 27,8 27,14 25,19 19,24 14,26 7,28 4,27 z"
    id="path179" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 10891,8216 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 11223,7635 -21,27 364,-130 -364,-130 20,26 15,31 11,34 4,37 -3,37 -11,36 z"
    id="path181" />
        </g>
       </g>
@@ -563,20 +575,22 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="4927"
-   y="6715"
-   width="201"
-   height="827"
+   x="6237"
+   y="6307"
+   width="261"
+   height="721"
    id="rect186" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 5027,6716 v 559"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 6367,6327 v 354"
    id="path188" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 4948,7277 -21,-15 100,279 100,-279 -20,15 -24,12 -26,8 -29,3 -28,-3 -27,-8 z"
+   d="m 6264,6684 -27,-20 130,363 130,-363 -26,19 -31,16 -34,11 -38,3 -37,-3 -35,-10 z"
    id="path190" />
        </g>
       </g>
@@ -589,15 +603,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="3742"
-   y="9557"
-   width="2571"
-   height="1195"
+   x="5257"
+   y="8717"
+   width="2220"
+   height="1053"
    id="rect195" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 5027,10750 H 3743 V 9558 h 2568 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6367,9749 H 5277 V 8737 h 2179 v 1012 z"
    id="path197" />
        </g>
       </g>
@@ -610,25 +626,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="4886"
-   y="10004"
-   width="2568"
-   height="301"
+   x="6247"
+   y="9092"
+   width="2180"
+   height="302"
    id="rect202" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 5166,10154 H 7187"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6528,9243 H 8079"
    id="path204" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 5183,10181 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 6544,9270 -8,27 -13,27 -19,25 -25,19 -27,14 -27,7 -28,4 -27,-4 -28,-7 -27,-14 -24,-19 -19,-25 -13,-27 -9,-27 -2,-28 2,-27 9,-28 13,-26 19,-24 24,-19 27,-14 28,-8 27,-3 28,3 27,8 27,14 25,19 19,24 13,26 8,28 4,27 z"
    id="path206" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 7189,10233 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 8082,9346 -20,27 363,-130 -363,-130 19,26 16,31 11,34 4,37 -3,37 -11,36 z"
    id="path208" />
        </g>
       </g>
@@ -641,15 +659,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="7451"
-   y="9557"
-   width="2570"
-   height="1195"
+   x="8405"
+   y="8717"
+   width="2219"
+   height="1053"
    id="rect213" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 8736,10750 H 7452 V 9558 h 2567 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 9514,9749 H 8425 V 8737 h 2178 v 1012 z"
    id="path215" />
        </g>
       </g>
@@ -662,25 +682,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="8595"
-   y="10004"
-   width="2568"
-   height="301"
+   x="9393"
+   y="9092"
+   width="2180"
+   height="302"
    id="rect220" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 8875,10154 h 2021"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 9674,9243 h 1552"
    id="path222" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 8892,10181 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 9690,9270 -7,27 -14,27 -19,25 -25,19 -27,14 -27,7 -28,4 -27,-4 -28,-7 -27,-14 -23,-19 -19,-25 -14,-27 -9,-27 -2,-28 2,-27 9,-28 14,-26 19,-24 23,-19 27,-14 28,-8 27,-3 28,3 27,8 27,14 25,19 19,24 14,26 7,28 4,27 z"
    id="path224" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 10898,10233 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 11229,9346 -21,27 363,-130 -363,-130 20,26 15,31 11,34 4,37 -3,37 -11,36 z"
    id="path226" />
        </g>
       </g>
@@ -693,20 +715,22 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="4927"
-   y="8732"
-   width="201"
-   height="827"
+   x="6237"
+   y="8017"
+   width="261"
+   height="721"
    id="rect231" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 5027,8733 v 559"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 6367,8037 v 354"
    id="path233" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 4948,9294 -21,-15 100,279 100,-279 -20,15 -24,12 -26,8 -29,3 -28,-3 -27,-8 z"
+   d="m 6264,8394 -27,-20 130,363 130,-363 -26,19 -31,16 -34,11 -38,3 -37,-3 -35,-10 z"
    id="path235" />
        </g>
       </g>
@@ -719,10 +743,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="7438"
-   y="5524"
-   width="1485"
-   height="1193"
+   x="8413"
+   y="5315"
+   width="1259"
+   height="1013"
    id="rect240" />
         <text
    class="TextShape"
@@ -733,8 +757,8 @@
      font-weight="400"
      id="tspan246"><tspan
        class="TextPosition"
-       x="7689"
-       y="6341"
+       x="8551"
+       y="6042"
        id="tspan244"><tspan
          fill="#000000"
          stroke="none"
@@ -750,10 +774,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="11137"
-   y="7541"
-   width="1485"
-   height="1193"
+   x="11549"
+   y="7027"
+   width="1260"
+   height="1011"
    id="rect253" />
         <text
    class="TextShape"
@@ -764,8 +788,8 @@
      font-weight="400"
      id="tspan259"><tspan
        class="TextPosition"
-       x="11388"
-       y="8358"
+       x="11687"
+       y="7753"
        id="tspan257"><tspan
          fill="#000000"
          stroke="none"
@@ -781,15 +805,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="11160"
-   y="9557"
-   width="2571"
-   height="1195"
+   x="11549"
+   y="8717"
+   width="2220"
+   height="1053"
    id="rect266" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 12445,10750 H 11161 V 9558 h 2568 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 12659,9749 H 11569 V 8737 h 2179 v 1012 z"
    id="path268" />
        </g>
       </g>
@@ -802,25 +828,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="12304"
-   y="10004"
-   width="2570"
-   height="301"
+   x="12540"
+   y="9092"
+   width="2181"
+   height="302"
    id="rect273" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 12584,10154 h 2023"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 12820,9243 h 1554"
    id="path275" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 12601,10181 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 12837,9270 -8,27 -13,27 -20,25 -24,19 -27,14 -27,7 -28,4 -27,-4 -28,-7 -27,-14 -24,-19 -19,-25 -13,-27 -9,-27 -3,-28 3,-27 9,-28 13,-26 19,-24 24,-19 27,-14 28,-8 27,-3 28,3 27,8 27,14 24,19 20,24 13,26 8,28 3,27 z"
    id="path277" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 14609,10233 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 14377,9346 -21,27 364,-130 -364,-130 20,26 15,31 11,34 4,37 -3,37 -11,36 z"
    id="path279" />
        </g>
       </g>
@@ -833,15 +861,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="14872"
-   y="9557"
-   width="2570"
-   height="1195"
+   x="14700"
+   y="8717"
+   width="2219"
+   height="1053"
    id="rect284" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 16157,10750 H 14873 V 9558 h 2567 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 15809,9749 H 14720 V 8737 h 2178 v 1012 z"
    id="path286" />
        </g>
       </g>
@@ -854,25 +884,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="16016"
-   y="10004"
-   width="2568"
-   height="301"
+   x="15689"
+   y="9092"
+   width="2179"
+   height="302"
    id="rect291" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 16296,10154 h 2021"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 15969,9243 h 1552"
    id="path293" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 16313,10181 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 15986,9270 -8,27 -14,27 -19,25 -24,19 -27,14 -27,7 -28,4 -27,-4 -28,-7 -28,-14 -23,-19 -19,-25 -13,-27 -9,-27 -3,-28 3,-27 9,-28 13,-26 19,-24 23,-19 28,-14 28,-8 27,-3 28,3 27,8 27,14 24,19 19,24 14,26 8,28 3,27 z"
    id="path295" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 18319,10233 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 17524,9346 -21,27 364,-130 -364,-130 20,26 16,31 10,34 4,37 -3,37 -10,36 z"
    id="path297" />
        </g>
       </g>
@@ -885,15 +917,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="3734"
-   y="11577"
-   width="2571"
-   height="1195"
+   x="5251"
+   y="10430"
+   width="2219"
+   height="1052"
    id="rect302" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 5019,12770 H 3735 v -1192 h 2568 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6360,11461 H 5271 v -1011 h 2178 v 1011 z"
    id="path304" />
        </g>
       </g>
@@ -906,25 +940,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="4886"
-   y="12024"
-   width="2568"
-   height="301"
+   x="6247"
+   y="10806"
+   width="2180"
+   height="302"
    id="rect309" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 5166,12174 H 7187"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6528,10956 H 8079"
    id="path311" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 5183,12201 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 6544,10984 -8,27 -13,27 -19,25 -25,19 -27,13 -27,8 -28,3 -27,-3 -28,-8 -27,-13 -24,-19 -19,-25 -13,-27 -9,-27 -2,-28 2,-27 9,-28 13,-26 19,-25 24,-19 27,-13 28,-8 27,-4 28,4 27,8 27,13 25,19 19,25 13,26 8,28 4,27 z"
    id="path313" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 7189,12253 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 8082,11059 -20,27 363,-130 -363,-130 19,27 16,31 11,34 4,37 -3,37 -11,35 z"
    id="path315" />
        </g>
       </g>
@@ -937,15 +973,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="7451"
-   y="11577"
-   width="2570"
-   height="1195"
+   x="8405"
+   y="10430"
+   width="2219"
+   height="1052"
    id="rect320" />
         <path
    fill="none"
    stroke="#000000"
-   d="M 8736,12770 H 7452 v -1192 h 2567 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 9514,11461 H 8425 v -1011 h 2178 v 1011 z"
    id="path322" />
        </g>
       </g>
@@ -958,25 +996,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="8595"
-   y="12024"
-   width="2568"
-   height="301"
+   x="9393"
+   y="10806"
+   width="2180"
+   height="302"
    id="rect327" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 8875,12174 h 2021"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 9674,10956 h 1552"
    id="path329" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 8892,12201 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 9690,10984 -7,27 -14,27 -19,25 -25,19 -27,13 -27,8 -28,3 -27,-3 -28,-8 -27,-13 -23,-19 -19,-25 -14,-27 -9,-27 -2,-28 2,-27 9,-28 14,-26 19,-25 23,-19 27,-13 28,-8 27,-4 28,4 27,8 27,13 25,19 19,25 14,26 7,28 4,27 z"
    id="path331" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 10898,12253 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 11229,11059 -21,27 363,-130 -363,-130 20,27 15,31 11,34 4,37 -3,37 -11,35 z"
    id="path333" />
        </g>
       </g>
@@ -989,15 +1029,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="11160"
-   y="11577"
-   width="2571"
-   height="1195"
+   x="11549"
+   y="10430"
+   width="2220"
+   height="1052"
    id="rect338" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 12445,12770 h -1284 v -1192 h 2568 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 12659,11461 h -1090 v -1011 h 2179 v 1011 z"
    id="path340" />
        </g>
       </g>
@@ -1010,25 +1052,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="12304"
-   y="12024"
-   width="2309"
-   height="301"
+   x="12540"
+   y="10806"
+   width="1960"
+   height="302"
    id="rect345" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 12584,12174 h 1762"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 12820,10956 h 1332"
    id="path347" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 12601,12201 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 12837,10984 -8,27 -13,27 -20,25 -24,19 -27,13 -27,8 -28,3 -27,-3 -28,-8 -27,-13 -24,-19 -19,-25 -13,-27 -9,-27 -3,-28 3,-27 9,-28 13,-26 19,-25 24,-19 27,-13 28,-8 27,-4 28,4 27,8 27,13 24,19 20,25 13,26 8,28 3,27 z"
    id="path349" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 14348,12253 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 14155,11059 -20,27 363,-130 -363,-130 19,27 16,31 11,34 4,37 -3,37 -11,35 z"
    id="path351" />
        </g>
       </g>
@@ -1041,14 +1085,14 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="4670"
-   y="10750"
-   width="858"
-   height="829"
+   x="6064"
+   y="9749"
+   width="728"
+   height="703"
    id="rect356" />
         <text
    class="TextShape"
-   transform="rotate(89.9,4879,10975)"
+   transform="rotate(89.9,6208,9910)"
    id="text364"><tspan
      class="TextParagraph"
      font-family="Arial, sans-serif"
@@ -1056,8 +1100,8 @@
      font-weight="400"
      id="tspan362"><tspan
        class="TextPosition"
-       x="4879"
-       y="10975"
+       x="6208"
+       y="9910"
        id="tspan360"><tspan
          fill="#000000"
          stroke="none"
@@ -1073,15 +1117,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="16363"
-   y="11577"
-   width="2571"
-   height="1195"
+   x="15963"
+   y="10430"
+   width="2220"
+   height="1052"
    id="rect369" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 17648,12770 h -1284 v -1192 h 2568 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 17073,11461 h -1090 v -1011 h 2179 v 1011 z"
    id="path371" />
        </g>
       </g>
@@ -1094,25 +1140,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="17506"
-   y="12024"
-   width="2568"
-   height="301"
+   x="16953"
+   y="10806"
+   width="2179"
+   height="302"
    id="rect376" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 17786,12174 h 2021"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 17233,10956 h 1552"
    id="path378" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 17803,12201 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 17250,10984 -8,27 -14,27 -19,25 -24,19 -27,13 -27,8 -28,3 -27,-3 -28,-8 -28,-13 -23,-19 -19,-25 -14,-27 -9,-27 -2,-28 2,-27 9,-28 14,-26 19,-25 23,-19 28,-13 28,-8 27,-4 28,4 27,8 27,13 24,19 19,25 14,26 8,28 3,27 z"
    id="path380" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 19809,12253 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 18788,11059 -21,27 364,-130 -364,-130 20,27 16,31 10,34 4,37 -3,37 -10,35 z"
    id="path382" />
        </g>
       </g>
@@ -1125,15 +1173,17 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="20059"
-   y="11577"
-   width="2571"
-   height="1195"
+   x="19100"
+   y="10430"
+   width="2219"
+   height="1052"
    id="rect387" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 21344,12770 h -1284 v -1192 h 2568 v 1192 z"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 20209,11461 h -1089 v -1011 h 2178 v 1011 z"
    id="path389" />
        </g>
       </g>
@@ -1146,25 +1196,27 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="21215"
-   y="12024"
-   width="2568"
-   height="301"
+   x="20099"
+   y="10806"
+   width="2180"
+   height="302"
    id="rect394" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 21495,12174 h 2021"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 20379,10956 h 1552"
    id="path396" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 21512,12201 -8,28 -14,27 -19,24 -24,19 -27,14 -28,8 -27,3 -27,-3 -29,-8 -27,-14 -23,-19 -19,-24 -14,-27 -9,-28 -2,-28 2,-26 9,-29 14,-26 19,-24 23,-19 27,-14 29,-8 27,-3 27,3 28,8 27,14 24,19 19,24 14,26 8,29 3,26 z"
+   d="m 20396,10984 -8,27 -13,27 -19,25 -25,19 -27,13 -27,8 -28,3 -27,-3 -28,-8 -27,-13 -24,-19 -19,-25 -13,-27 -9,-27 -3,-28 3,-27 9,-28 13,-26 19,-25 24,-19 27,-13 28,-8 27,-4 28,4 27,8 27,13 25,19 19,25 13,26 8,28 3,27 z"
    id="path398" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 23518,12253 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 21934,11059 -20,27 363,-130 -363,-130 19,27 16,31 11,34 3,37 -3,37 -10,35 z"
    id="path400" />
        </g>
       </g>
@@ -1177,10 +1229,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="18581"
-   y="9558"
-   width="1486"
-   height="1193"
+   x="17865"
+   y="8737"
+   width="1260"
+   height="1013"
    id="rect405" />
         <text
    class="TextShape"
@@ -1191,8 +1243,8 @@
      font-weight="400"
      id="tspan411"><tspan
        class="TextPosition"
-       x="18833"
-       y="10375"
+       x="18003"
+       y="9464"
        id="tspan409"><tspan
          fill="#000000"
          stroke="none"
@@ -1208,14 +1260,14 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="14600"
-   y="11580"
-   width="781"
-   height="1191"
+   x="14488"
+   y="10452"
+   width="663"
+   height="1011"
    id="rect418" />
         <text
    class="TextShape"
-   transform="rotate(-90,15211,12364)"
+   transform="rotate(-90,15040,11146)"
    id="text426"><tspan
      class="TextParagraph"
      font-family="Arial, sans-serif"
@@ -1223,8 +1275,8 @@
      font-weight="400"
      id="tspan424"><tspan
        class="TextPosition"
-       x="15211"
-       y="12364"
+       x="15040"
+       y="11146"
        id="tspan422"><tspan
          fill="#000000"
          stroke="none"
@@ -1240,20 +1292,22 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="15491"
-   y="12074"
-   width="873"
-   height="201"
+   x="15224"
+   y="10826"
+   width="761"
+   height="262"
    id="rect431" />
         <path
    fill="none"
    stroke="#000000"
-   d="m 15492,12174 h 605"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="m 15245,10956 h 393"
    id="path433" />
         <path
    fill="#000000"
    stroke="none"
-   d="m 16099,12253 -15,21 279,-100 -279,-100 15,20 12,24 8,26 3,29 -3,28 -8,27 z"
+   d="m 15641,11059 -21,27 363,-130 -363,-130 20,27 15,31 11,34 4,37 -3,37 -11,35 z"
    id="path435" />
        </g>
       </g>
@@ -1266,10 +1320,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="23782"
-   y="11578"
-   width="1485"
-   height="1193"
+   x="22276"
+   y="10450"
+   width="1260"
+   height="1012"
    id="rect440" />
         <text
    class="TextShape"
@@ -1280,8 +1334,8 @@
      font-weight="400"
      id="tspan446"><tspan
        class="TextPosition"
-       x="24033"
-       y="12395"
+       x="22414"
+       y="11176"
        id="tspan444"><tspan
          fill="#000000"
          stroke="none"
@@ -1297,10 +1351,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="571"
-   y="5524"
-   width="3823"
-   height="1193"
+   x="3544"
+   y="5315"
+   width="464"
+   height="1013"
    id="rect453" />
         <text
    class="TextShape"
@@ -1311,8 +1365,8 @@
      font-weight="400"
      id="tspan459"><tspan
        class="TextPosition"
-       x="2307"
-       y="6341"
+       x="3600"
+       y="6042"
        id="tspan457"><tspan
          fill="#000000"
          stroke="none"
@@ -1328,10 +1382,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="571"
-   y="7541"
-   width="3823"
-   height="1193"
+   x="3438"
+   y="7027"
+   width="676"
+   height="1011"
    id="rect466" />
         <text
    class="TextShape"
@@ -1342,8 +1396,8 @@
      font-weight="400"
      id="tspan472"><tspan
        class="TextPosition"
-       x="2307"
-       y="8358"
+       x="3600"
+       y="7753"
        id="tspan470"><tspan
          fill="#000000"
          stroke="none"
@@ -1359,10 +1413,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="571"
-   y="9558"
-   width="3823"
-   height="1193"
+   x="3528"
+   y="8737"
+   width="496"
+   height="1013"
    id="rect479" />
         <text
    class="TextShape"
@@ -1373,8 +1427,8 @@
      font-weight="400"
      id="tspan485"><tspan
        class="TextPosition"
-       x="2307"
-       y="10375"
+       x="3600"
+       y="9464"
        id="tspan483"><tspan
          fill="#000000"
          stroke="none"
@@ -1390,10 +1444,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="3186"
-   y="13351"
-   width="3667"
-   height="1193"
+   x="4745"
+   y="11954"
+   width="3271"
+   height="1012"
    id="rect492" />
         <text
    class="TextShape"
@@ -1404,8 +1458,8 @@
      font-weight="400"
      id="tspan498"><tspan
        class="TextPosition"
-       x="3364"
-       y="14168"
+       x="4704"
+       y="12680"
        id="tspan496"><tspan
          fill="#000000"
          stroke="none"
@@ -1421,10 +1475,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="19511"
-   y="13351"
-   width="3667"
-   height="1193"
+   x="18576"
+   y="11954"
+   width="3305"
+   height="1012"
    id="rect505" />
         <text
    class="TextShape"
@@ -1435,8 +1489,8 @@
      font-weight="400"
      id="tspan511"><tspan
        class="TextPosition"
-       x="19669"
-       y="14168"
+       x="18534"
+       y="12680"
        id="tspan509"><tspan
          fill="#000000"
          stroke="none"
@@ -1452,10 +1506,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="1013"
-   y="4148"
-   width="2830"
-   height="1193"
+   x="2577"
+   y="4147"
+   width="2401"
+   height="1012"
    id="rect518" />
         <text
    class="TextShape"
@@ -1466,8 +1520,8 @@
      font-weight="400"
      id="tspan526"><tspan
        class="TextPosition"
-       x="1229"
-       y="4965"
+       x="2578"
+       y="4873"
        id="tspan524"><tspan
          font-style="italic"
          fill="#000000"
@@ -1487,10 +1541,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="562"
-   y="11578"
-   width="3825"
-   height="1193"
+   x="3238"
+   y="10450"
+   width="1076"
+   height="1012"
    id="rect533" />
         <text
    class="TextShape"
@@ -1501,8 +1555,8 @@
      font-weight="400"
      id="tspan539"><tspan
        class="TextPosition"
-       x="1947"
-       y="12395"
+       x="3248"
+       y="11176"
        id="tspan537"><tspan
          fill="#000000"
          stroke="none"
@@ -1518,10 +1572,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="25413"
-   y="7541"
-   width="2617"
-   height="1193"
+   x="24261"
+   y="7027"
+   width="2220"
+   height="1011"
    id="rect546" />
         <text
    class="TextShape"
@@ -1532,34 +1586,34 @@
      font-weight="400"
      id="tspan568"><tspan
        class="TextPosition"
-       x="25794"
-       y="8358"
+       x="24443"
+       y="7753"
        id="tspan550"><tspan
          fill="#000000"
          stroke="none"
          id="tspan548">[2</tspan></tspan><tspan
        class="TextPosition"
-       y="8148"
+       y="7543"
        id="tspan554"><tspan
          font-size="368px"
          fill="#000000"
          stroke="none"
          id="tspan552">1</tspan></tspan><tspan
        class="TextPosition"
-       y="8358"
+       y="7753"
        id="tspan558"><tspan
          fill="#000000"
          stroke="none"
          id="tspan556">, 2</tspan></tspan><tspan
        class="TextPosition"
-       y="8148"
+       y="7543"
        id="tspan562"><tspan
          font-size="368px"
          fill="#000000"
          stroke="none"
          id="tspan560">2</tspan></tspan><tspan
        class="TextPosition"
-       y="8358"
+       y="7753"
        id="tspan566"><tspan
          fill="#000000"
          stroke="none"
@@ -1575,10 +1629,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="25159"
-   y="5524"
-   width="3125"
-   height="1193"
+   x="24047"
+   y="5315"
+   width="2651"
+   height="1013"
    id="rect575" />
         <text
    class="TextShape"
@@ -1589,34 +1643,34 @@
      font-weight="400"
      id="tspan597"><tspan
        class="TextPosition"
-       x="25794"
-       y="6341"
+       x="24445"
+       y="6042"
        id="tspan579"><tspan
          fill="#000000"
          stroke="none"
          id="tspan577">[2</tspan></tspan><tspan
        class="TextPosition"
-       y="6131"
+       y="5832"
        id="tspan583"><tspan
          font-size="368px"
          fill="#000000"
          stroke="none"
          id="tspan581">0</tspan></tspan><tspan
        class="TextPosition"
-       y="6341"
+       y="6042"
        id="tspan587"><tspan
          fill="#000000"
          stroke="none"
          id="tspan585">, 2</tspan></tspan><tspan
        class="TextPosition"
-       y="6131"
+       y="5832"
        id="tspan591"><tspan
          font-size="368px"
          fill="#000000"
          stroke="none"
          id="tspan589">1</tspan></tspan><tspan
        class="TextPosition"
-       y="6341"
+       y="6042"
        id="tspan595"><tspan
          fill="#000000"
          stroke="none"
@@ -1632,10 +1686,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="25413"
-   y="9558"
-   width="2617"
-   height="1193"
+   x="24261"
+   y="8737"
+   width="2220"
+   height="1013"
    id="rect604" />
         <text
    class="TextShape"
@@ -1646,34 +1700,34 @@
      font-weight="400"
      id="tspan626"><tspan
        class="TextPosition"
-       x="25794"
-       y="10375"
+       x="24443"
+       y="9464"
        id="tspan608"><tspan
          fill="#000000"
          stroke="none"
          id="tspan606">[2</tspan></tspan><tspan
        class="TextPosition"
-       y="10165"
+       y="9254"
        id="tspan612"><tspan
          font-size="368px"
          fill="#000000"
          stroke="none"
          id="tspan610">2</tspan></tspan><tspan
        class="TextPosition"
-       y="10375"
+       y="9464"
        id="tspan616"><tspan
          fill="#000000"
          stroke="none"
          id="tspan614">, 2</tspan></tspan><tspan
        class="TextPosition"
-       y="10165"
+       y="9254"
        id="tspan620"><tspan
          font-size="368px"
          fill="#000000"
          stroke="none"
          id="tspan618">3</tspan></tspan><tspan
        class="TextPosition"
-       y="10375"
+       y="9464"
        id="tspan624"><tspan
          fill="#000000"
          stroke="none"
@@ -1689,10 +1743,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="25185"
-   y="11578"
-   width="3811"
-   height="1193"
+   x="23756"
+   y="10450"
+   width="3232"
+   height="1012"
    id="rect633" />
         <text
    class="TextShape"
@@ -1703,34 +1757,34 @@
      font-weight="400"
      id="tspan655"><tspan
        class="TextPosition"
-       x="25756"
-       y="12395"
+       x="24038"
+       y="11176"
        id="tspan637"><tspan
          font-size="635px"
          fill="#000000"
          stroke="none"
          id="tspan635">[2</tspan></tspan><tspan
        class="TextPosition"
-       y="12185"
+       y="10966"
        id="tspan641"><tspan
          fill="#000000"
          stroke="none"
          id="tspan639">159</tspan></tspan><tspan
        class="TextPosition"
-       y="12395"
+       y="11176"
        id="tspan645"><tspan
          font-size="635px"
          fill="#000000"
          stroke="none"
          id="tspan643">, 2</tspan></tspan><tspan
        class="TextPosition"
-       y="12185"
+       y="10966"
        id="tspan649"><tspan
          fill="#000000"
          stroke="none"
          id="tspan647">160</tspan></tspan><tspan
        class="TextPosition"
-       y="12395"
+       y="11176"
        id="tspan653"><tspan
          font-size="635px"
          fill="#000000"
@@ -1747,10 +1801,10 @@
    class="BoundingBox"
    stroke="none"
    fill="none"
-   x="25406"
-   y="4148"
-   width="2830"
-   height="1193"
+   x="24172"
+   y="4147"
+   width="2400"
+   height="1012"
    id="rect662" />
         <text
    class="TextShape"
@@ -1761,12 +1815,45 @@
      font-weight="400"
      id="tspan668"><tspan
        class="TextPosition"
-       x="25641"
-       y="4965"
+       x="24192"
+       y="4873"
        id="tspan666"><tspan
          fill="#000000"
          stroke="none"
          id="tspan664">distance</tspan></tspan></tspan></text>
+       </g>
+      </g>
+      <g
+   class="com.sun.star.drawing.LineShape"
+   id="g684">
+       <g
+   id="id48">
+        <rect
+   class="BoundingBox"
+   stroke="none"
+   fill="none"
+   x="6247"
+   y="5670"
+   width="2167"
+   height="302"
+   id="rect675" />
+        <path
+   fill="none"
+   stroke="#000000"
+   stroke-width="40"
+   stroke-linejoin="round"
+   d="M 6528,5821 H 8066"
+   id="path677" />
+        <path
+   fill="#000000"
+   stroke="none"
+   d="m 6544,5848 -8,27 -13,27 -19,25 -25,19 -27,14 -27,7 -28,4 -27,-4 -28,-7 -27,-14 -24,-19 -19,-25 -13,-27 -9,-27 -2,-28 2,-27 9,-28 13,-26 19,-24 24,-19 27,-14 28,-8 27,-3 28,3 27,8 27,14 25,19 19,24 13,26 8,28 4,27 z"
+   id="path679" />
+        <path
+   fill="#000000"
+   stroke="none"
+   d="m 8070,5924 -21,27 363,-130 -363,-130 20,26 15,31 11,34 4,37 -3,37 -11,36 z"
+   id="path681" />
        </g>
       </g>
      </g>

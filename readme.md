@@ -5,6 +5,13 @@
 https://gohugo.io/content-management/organization/
 
 
+Scuttlebutt is some gossip protocol social network thing. Nice documentation available.
+
+https://ssbc.github.io/scuttlebutt-protocol-guide/
+
+
+
+
 # Horizon
 
 - [Tapestry](https://sites.cs.ucsb.edu/~ravenben/publications/CSD-01-1141.pdf)
@@ -26,6 +33,12 @@ https://gohugo.io/content-management/organization/
 
 
 ```html
+---
+title: ""
+date: 2020-09-29
+draft: false
+---
+
 <ul class="contents">
 	<li>
 		<ul>
@@ -38,6 +51,13 @@ https://gohugo.io/content-management/organization/
 <h3 id="introduction">Introduction</h3>
 
 
+
+<figure>
+  <img src="/img/raft/previous-terms.svg" style="max-height: 230px;" alt="">
+  <figcaption>
+    Figure X
+  </figcaption>
+</figure>
 
 
 <h3 id="resources">Resources</h3>
