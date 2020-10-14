@@ -11,6 +11,12 @@ https://ssbc.github.io/scuttlebutt-protocol-guide/
 
 
 
+design patterns
+  resiliency
+    circuit breaker
+
+
+
 
 # Horizon
 
