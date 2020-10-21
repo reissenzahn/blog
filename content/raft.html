@@ -1,5 +1,5 @@
 ---
-title: "Raft"
+title: "Raft (DRAFT)"
 date: 2020-09-30
 draft: false
 ---
@@ -7,9 +7,12 @@ draft: false
 <ul class="contents">
 	<li>
 		<ul>
-				<li><a href="#introduction">Introduction</a></li>
-				<li><a href="#failure-detection">Failure Detection</a></li>
-				<li><a href="#resources">Resources</a></li>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
 		</ul>
 	</li>
 </ul>
@@ -19,9 +22,8 @@ draft: false
 <h3 id="introduction">Introduction</h3>
 
 <p>
-  Raft is an algorithm for managing a replicated log among a cluster of several servers. Raft achieves consensus by electing one server as the leader and making this leader solely responsible for managing the replicated log. The leader accepts log entries from clients, replicates them on other servers and tells the other servers when it is safe to apply log entries to their state machines. If the leader fails, a new leader is elected.
+  Raft is a consensus algorithm proposed by Ongaro et al. in 2014. The algorithm manages a replicated log among a cluster of servers. This is achieved by electing one server as the leader and making that leader responsible for managing the replicated log. The leader accepts log entries from clients, replicates them across its followers and tells those followers when it is safe to apply log entries to their state machines.
 </p>
-
 
 
 <h3 id="introduction">Guarantees</h3>
@@ -49,19 +51,18 @@ draft: false
 </ol>
 
 
-
-<h3 id="introduction">Server State</h3>
+<h3 id="introduction">Server States</h3>
 
 <p>
-  At any given time, each server is in one of three states:
+  A Raft cluster contains several servers which can each be in one of three states:
 </p>
 
 <ul>
   <li>
-    <i>Follower</i>: A passive server that only responds to requests from leaders and candidates. When a server starts, it begins as a follower.
+    <i>Leader</i>: The server responsible for handling client requests and replicating the log. Under normal circumstances, there is exactly one leader.
   </li>
   <li>
-    <i>Leader</i>: The server responsible for handling client requests and replicating the log. Under normal circumstances, there is exactly one leader.
+    <i>Follower</i>: A passive server that only responds to requests from leaders and candidates. When a server starts, it begins as a follower.
   </li>
   <li>
     <i>Candidate</i>: Followers enter the candidate state to attempt to be elected as the leader.
@@ -69,9 +70,9 @@ draft: false
 </ul>
 
 <figure>
-  <img src="/img/raft/server-states.svg" style="max-height: 180px;" alt="">
+  <img src="/img/raft/server-states.svg" style="max-width: 480px;">
   <figcaption>
-    Figure 1
+    <i>figure 1</i>
   </figcaption>
 </figure>
 
@@ -119,37 +120,46 @@ draft: false
 
 
 
-<h3 id="introduction">Terms</h3>
+<h3 id="resources">Log Structure</h3>
 
 <p>
-  Raft divides time into arbitrary length periods called <i>terms</i>. Terms are numbered with consecutive integers. Each term begins with a leader election in which one or more candidates attempt to become leader. If a candidate wins the election, it becomes the leader for the rest of the term. if the election results in a split vote, then the term ends without a leader and a new election will start a new term.
+  Each server maintains a logs are composed of log entries. A log entry stores a state machine command along with the term number when the entry was received by the leader. Each log entry also has a log index which identifies its position in the log. An entry is considered committed if it is safe for that entry to be applied to state machines. Raft guarantees that committed entries are durable and will eventually be executed by all of the available state machines.
 </p>
 
 <figure>
-  <img src="/img/raft/terms.svg" style="max-height: 170px;" alt="">
+  <img src="/img/raft/log-structure.svg" style="max-width: 550px;">
   <figcaption>
-    Figure 1
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+<h3 id="terms">Terms</h3>
+
+<p>
+  Raft divides time into arbitrary length periods called <i>terms</i> which are numbered with consecutive integers. Each term begins with a leader election in which one or more candidates attempt to become leader. If a candidate wins the election, it becomes the leader for the rest of the term. if the election results in a split vote, then the term ends without a leader and the next election will start a new term.
+</p>
+
+<figure>
+  <img src="/img/raft/terms.svg" style="max-width: 500px;">
+  <figcaption>
+    <i>figure 1</i>
   </figcaption>
 </figure>
 
 <p>
-  There is no global view of terms as each server stores its own <code>currentTerm</code> which increases monotonically over time. As a result, different servers may observe the transitions between terms at different times and, in some situations, a server may not observe an election or even entire terms.
+  There is no global view of the current term as each server stores its own <code>currentTerm</code>. Rather, terms act as a logical clock that allow servers to detect obsolete information. Servers exchange their <code>currentTerm</code> state in each RPC. If a server encounters a term larger than its <code>currentTerm</code>, then it updates its <code>currentTerm</code> to the larger value. If a candidate or leader discovers that its term is out of date, it converts to a follower. If a server receives a request with a stale term, it rejects the request.
 </p>
+
+
+<h3 id="remote-procedure-calls">Remote Procedure Calls</h3>
 
 <p>
-  Terms act as a logical clock and allow servers to detect obsolete information. Current terms are exchanged in every RPC. If one server's current term is smaller than the other's, then it updates its current term to the larger value. If a candidate or leader discovers that its term is out of date, it immediately converts to a follower. If a server receives a request with a stale term, it rejects the request.
+  Raft servers communicate using remote procedure calls (RPCs). Servers retry RPCs if they do not receive a response in a timely manner and issue RPCs in parallel for performance. The basic consensus algorithm only requires two types of RPCs:
 </p>
 
 
-
-<h3 id="introduction">Remote Procedure Calls</h3>
-
-<p>
-  Raft servers communicate using remote procedure calls (RPCs).  Servers retry RPCs if they do not receive a response in a timely manner and they issue RPCs in parallel for performance. The basic consensus algorithm only requires two types of RPCs:
-</p>
-
-
-<h4 id="">AppendEntries</h4>
+<h4>AppendEntries</h4>
 
 <p>
   The <code>AppendEntries</code> RPC is invoked by a leader to replicate log entries; its also used as a heartbeat.
@@ -225,7 +235,7 @@ draft: false
 </table>
 
 
-<h4 id="">RequestVote</h4>
+<h4>RequestVote</h4>
 
 <p>
   The <code>RequestVote</code> RPC is invoked by candidates to gather votes.
@@ -286,23 +296,19 @@ draft: false
 </table>
 
 
-<h3 id="introduction">Leader Elections</h3>
+<h3 id="leader-elections">Leader Elections</h3>
 
 <p>
-  Raft achieves consensus via a leader which is responsible for log replication. As such, when the algorithm initializes or when a leader fails, a new leader must be chosen. The process by which this leader is chosen needs to guarantee that at most one leader is elected in a given term. To achieve this, Raft uses a heartbeat mechanism to trigger leader elections.
+  Raft uses a heartbeat mechanism to trigger leader elections. The leader periodically sends heartbeats consisting of <code>AppendEntries</code> RPCs that carry no log entries to all followers in order to maintain its authority. If a period of time called the <i>election timeout</i> elapses without a follower receiving an <code>AppendEntries</code> RPC from current leader (or granting a vote to a candidate), then the follower assumes there is no viable leader and starts an election.
 </p>
 
 <p>
-   The leader periodically sends heartbeats consisting of <code>AppendEntries</code> RPCs that carry no log entries to all followers in order to maintain its authority. If an certain period of time called the <i>election timeout</i> elapses without a follower without receiving an <code>AppendEntries</code> RPC from current leader (or granting a vote to a candidate), then the follower will assume there is no leader and start an election.
-</p>
-
-<p>
-  To initiate an election, a follower converts to a candidate, increments its <code>currentTerm</code>, votes for itself, resets its election timeout and sends <code>RequestVote</code> RPCs to all other servers in the cluster. A server that receives a <code>RequestVote</code> RPC grants its vote for at most one candidate in a given term on a first-come-first-serve basis. A candidate waits to receive votes until one of the following events occur:
+  To initiate an election, a follower increments its <code>currentTerm</code>, resets its election timeout and converts to a candidate. It then votes for itself and sends <code>RequestVote</code> RPCs to all other servers in the cluster. A server that receives a <code>RequestVote</code> RPC grants its vote for at most one candidate in a given term on a first-come-first-serve basis. A candidate waits to receive votes until one of the following events occur:
 </p>
 
 <ol>
   <li>
-    The candidate wins the election by receiving votes from a majority of the servers. The candidate will then become the leader and send heartbeat RPCs to all other servers to prevent new elections.
+    The candidate wins the election by receiving votes from a majority of the servers. The candidate will then become the new leader and send heartbeat RPCs to all other servers to prevent new elections.
   </li>
   <li>
     The candidate receives an <code>AppendEntries</code> RPC from another server claiming to be the leader. If the <code>term</code> in the RPC is at least as large as the candidate's <code>currentTerm</code> then the candidate converts to a follower; otherwise, it rejects the RPC.
@@ -312,38 +318,19 @@ draft: false
   </li>
 </ol>
 
-
-<h3 id="introduction">Split Votes</h3>
-
 <p>
-  The requirement that the candidate receive a majority of votes ensures that at most one candidate can win the election for a particular term. To prevent split votes, election timeouts are chosen randomly from a fixed interval so that, in most cases, a single server will win an election before any other servers time out. The same mechanism is used to handle split votes. Each candidate restarts its randomized election timeout at the start of an election and waits for that timeout to elapse before starting the next election. This reduces the chance of another split vote in the new election.
+  To prevent split votes, election timeouts are chosen randomly from a fixed interval (e.g. 150–300ms) so that, in most cases, a single server will win an election before any other servers time out. The same mechanism is used to handle split votes. Each candidate restarts its randomized election timeout at the start of an election and waits for that timeout to elapse before starting the next election. This reduces the chance of another split vote in the next election.
 </p>
-
-
-<h3 id="resources">Log Structure</h3>
-
-<p>
-  Logs are composed of entries which are numbered sequentially. Each log entry stores a state machine command along with the term number when the entry was received by the leader. Each log entry also has an integer index identifying its position in the log. An entry is considered committed if it is safe for that entry to be applied to state machines.
-</p>
-
-<figure>
-  <img src="/img/raft/log-structure.svg" style="max-height: 350px;" alt="">
-  <figcaption>
-    Figure 1
-  </figcaption>
-</figure>
-
 
 
 <h3 id="resources">Log Replication</h3>
 
 <p>
-  Once a leader has been elected, it begins servicing client requests. Each client request contains a command to be executed by the replicated state machines. Upon receiving a request the leader appends the command to its log as a new entry and then issues <code>AppendEntries</code> RPCs to each of the other servers to replicate the entry. If followers crash or run slowly,
-  or if network packets are lost, the leader retries <code>AppendEntries</code> RPCs indefinitely until all followers eventually store all log entries.
+  Once a leader has been elected, it begins servicing client requests. Each client request contains a command to be executed by the replicated state machines. Upon receiving a request the leader appends the command to its log as a new entry and then issues <code>AppendEntries</code> RPCs to each of the other servers to replicate that entry. The leader retries <code>AppendEntries</code> RPCs indefinitely until all followers eventually store all log entries.
 </p>
 
 <p>
-  The leader decides when it is safe to apply a log entry to the state machines; such an entry is called committed. Raft guarantees that committed entries are durable and will eventually be executed by all of the available state machines. A log entry is committed once the leader that created the entry has replicated it on a majority of the servers. This also commits all preceding entries in the leader's log, including entries created by previous leaders. The leader keeps track of the highest index it knows to be committed, and it includes that index in future <code>AppendEntries</code> RPCs (including heartbeats) so that the other servers eventually find out. Once a follower learns that a log entry is committed, it applies the entry to its local state machine in log order.
+  The leader commits the log entry once it has successfully replicated that entry on a majority of the servers. The leader will then apply the entry to its state machine and return the result of that execution to the client. Note that committing an index also commits all preceding entries in the leader's log, including entries created by previous leaders. The leader keeps track of the highest index it knows to be committed, and it includes that index in future <code>AppendEntries</code> RPCs so that the other servers eventually find out. Once a follower learns that a log entry is committed, it applies the entry to its local state machine in log order.
 </p>
 
 <p>
@@ -358,9 +345,9 @@ draft: false
 </p>
 
 <figure>
-  <img src="/img/raft/inconsistencies.svg" style="max-height: 250px;" alt="">
+  <img src="/img/raft/inconsistencies.svg" style="max-width: 500px;">
   <figcaption>
-    Figure X
+    <i>figure 1</i>
   </figcaption>
 </figure>
 
@@ -376,7 +363,6 @@ draft: false
 <p>
   All of these actions happen in response to the consistency check performed by <code>AppendEntries</code> RPCs. The leader maintains a <code>nextIndex</code> for each follower, which is the index of the next log entry the leader will send to that follower. When a leader first comes to power, it initializes all <code>nextIndex</code> values to the index just after the last one in its log. If a follower's log is inconsistent with the leader's, the <code>AppendEntries</code> consistency check will fail in the next <code>AppendEntries</code> RPC. After a rejection, the leader decrements <code>nextIndex</code> and retries the <code>AppendEntries</code> RPC. Eventually <code>nextIndex</code> will reach a point where the leader and follower logs match. When this happens, <code>AppendEntries</code> RPC will succeed, which removes any conflicting entries in the follower's log and appends entries from the leader’s log (if any). Once <code>AppendEntries</code> succeeds, the follower's log is consistent with the leader's, and it will remain that way for the rest of the term.
 </p>
-
 
 
 <h3 id="resources">Election Restriction</h3>
@@ -405,12 +391,11 @@ draft: false
 </p>
 
 <figure>
-  <img src="/img/raft/previous-terms.svg" style="max-height: 230px;" alt="">
+  <img src="/img/raft/previous-terms.svg" style="max-width: 500px;">
   <figcaption>
-    Figure X
+    <i>figure 1</i>
   </figcaption>
 </figure>
-
 
 <p>
   A leader knows that an entry from its current term is committed once that entry is stored on a majority of the servers. If a leader crashes before committing an entry, future leaders will attempt to finish replicating the entry. However, a leader cannot immediately conclude that an entry from a previous term is committed once it is stored on a majority of servers. To eliminate problems like the one in Figure 8, Raft
@@ -429,14 +414,8 @@ draft: false
   Until this point we have focused on leader failures. Follower and candidate crashes are much simpler to handle than leader crashes, and they are both handled in the same way. If a follower or candidate crashes, then future RequestVote and AppendEntries RPCs sent to it will fail. Raft handles these failures by retrying indefinitely; if the crashed server restarts, then the RPC will complete successfully. If a server crashes after completing an RPC but before responding, then it will receive the same RPC again after it restarts. Raft RPCs are idempotent, so this causes no harm. For example, if a follower receives an AppendEntries request that includes log entries already present in its log, it ignores those entries in the new request.
 </p>
 
+
 <h3 id="resources">Cluster Membership Changes</h3>
-
-<p>
-  TODO
-</p>
-
-
-<h3 id="resources">Log Compaction</h3>
 
 <p>
   TODO
@@ -518,7 +497,7 @@ draft: false
     <td>
       <ul>
         <li>
-          Upon election send initial empty AppendEntries RPCs to each server; also send during idle periods to prevent election timeouts.
+          Upon election send initial empty <code>AppendEntries</code> RPCs to each server; also send during idle periods to prevent election timeouts.
         </li>
         <li>
           If a command is received from client,  append entry to local log and respond after entry applied to state machine.
@@ -541,7 +520,6 @@ draft: false
     </td>
   </tr>
 </table>
-
 
 
 <h3 id="resources">Resources</h3>

@@ -1,0 +1,70 @@
+---
+title: "Gnutella (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Gnutella is a decentralized peer-to-peer file-sharing model developed in 2000 by Nullsoft.
+</p>
+
+<figure>
+  <img src="/img/gnutella/.svg" style="max-width: 230px;">
+  <figcaption>
+    <i>figure X</i>
+  </figcaption>
+</figure>
+
+
+<h3 id="">Overview</h3>
+
+<p>
+  To share files on the Gnutella network, a user starts by running a Gnutella client on a networked computer.
+  
+  A Gnutella node acts as both a server and a client and is generally referred to as a "servent".
+
+  Node A will then connect to another Gnutella-enabled networked computer (node B for example) and then A will announce existence to B. Node B will in turn announce to all its neighboring nodes (nodes C, D, E and F for example) that A is alive. This pattern will continue recursively with each new level of nodes announcing to its neighbors that node A is alive.
+
+  This announcement broadcasting will end when the Time-To-Live (TTL) packet information expires; that is, at each level the TTL counter will be decreased by one from some initial value until it reaches zero at which point its broadcasting will stop. To prevent users from setting this initial TTL value too high, the majority of the Gnutella servents will refuse packets with excessively high TTP value.
+
+  However, from the users perspective, maximizing the chances of finding the required file means using as high as possible TTL value therefore creating a trade-off point for this network. Where low TTL means minimizing the usage of the network resources, high TTL value means maximizing the QoS provided to the users of the network. The optimal TTL value would then (among others) depend on the network topology and traffic characteristics for a particular location and a particular time of the day, respectively, when the query is done.
+
+  Once the node A has announced its existence to the rest of the network, the user at this node can now query the contents of the data shared across the network.
+</p>
+
+
+<h3 id="">Joining the Network</h3>
+
+<p>
+  
+</p>
+
+
+
+<h3 id="">Protocol</h3>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+</ul>

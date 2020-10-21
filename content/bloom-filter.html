@@ -7,8 +7,21 @@ draft: false
 <ul class="contents">
 	<li>
 		<ul>
-				<li><a href="#introduction">Introduction</a></li>
-				<li><a href="#resources">Resources</a></li>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#description">Description</a>
+        </li>
+				<li>
+          <a href="#operation">Operation</a>
+        </li>
+				<li>
+          <a href="#false-positive-rate">False Positive Rate</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
 		</ul>
 	</li>
 </ul>
@@ -35,7 +48,7 @@ draft: false
 
 
 
-<h3 id="introduction">Structure</h3>
+<h3 id="description">Description</h3>
 
 <p>
   A Bloom filter is composed of two parts:
@@ -55,7 +68,10 @@ draft: false
 </p>
 
 
-<h3 id="introduction">Insert</h3>
+
+<h3 id="operation">Operation</h3>
+
+<h4 id="insert">Insert</h4>
 
 <p>
   To insert an element \(x\) into a Bloom Filter, hash it using each of the \(k\) hash functions to get \(k\) array positions. Then set these \(k\) array positions to \(1\) in the bit array.
@@ -69,7 +85,7 @@ draft: false
 </figure>
 
 
-<h3 id="introduction">Query</h3>
+<h4 id="query">Query</h4>
 
 <p>
   To query whether an element \(y\) is in the set, hash it using each of the \(k\) hash functions to get \(k\) array positions. Then:
@@ -92,7 +108,8 @@ draft: false
 </figure>
 
 
-<h3 id="introduction">Properties</h3>
+
+<h3 id="false-positive-rate">False Positive Rate</h3>
 
 <p>
   Given a Bloom filter containing \(n\) elements with a bit array of length \(m\) a set of \(k\) has functions, the rate of false positives is given by:

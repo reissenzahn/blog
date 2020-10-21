@@ -75,17 +75,3 @@ draft: false
 </ul>
 ```
 
-
-# Raft
-
-
-<h3 id="introduction">Replicated State machines</h3>
-
-<p>
-  Consensus algorithms arise in the context of replicated state machines. In this approach, state machines on a cluster of servers compute commands in lockstep for the purpose of fault tolerance. This is typically achieved through a consensus algorithm that maintains a replicated log of commands. The consensus algorithm manages adding commands to the logs and keeping them consistent. Once commands are properly replicated, each state machine processes them in log order. Since the state machines are deterministic, each computes the same state and the same sequence of outputs.
-</p>
-
-
-
-# BitTorrent
-
