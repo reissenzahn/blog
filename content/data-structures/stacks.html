@@ -1,0 +1,112 @@
+---
+title: "Stacks (PREVIEW)"
+date: 2020-10-22
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  A stack is a collection of elements that allows values to be inserted and removed on a last in, first out (LIFO) basis. The push operation adds an element at the top of the stack the pop operation removes an element from the top of the stack. Both these operations have \(O(1)\) time complexity as they do not depend on how many elements are in the stack.
+</p>
+
+<figure>
+  <img src="/img/data-structures/stack.svg" style="max-width: 350px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+<h3 id="complexity">Complexity</h3>
+
+<table>
+  <tr>
+    <th>Operation</th>
+    <th>Complexity</th>
+  </tr>
+  <tr>
+    <td>Push</td>
+    <td>\(O(1)\)</td>
+  </tr>
+  <tr>
+    <td>Pop</td>
+    <td>\(O(1)\)</td>
+  </tr>
+</table>
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java">public class Stack<T> {
+  
+  private LinkedList<T> list = new LinkedList<T>();
+
+  public Stack() {
+  }
+
+  public void push(T value) {
+    list.addLast(value);
+  }
+
+  public T pop() {
+    if (isEmpty())
+      throw new IllegalStateException();
+
+    return list.removeLast();
+  }
+
+  public T peek() {
+    if (isEmpty())
+      throw new IllegalStateException();
+
+    return list.peekLast();
+  }
+
+  public int size() {
+    return list.size();
+  }
+  
+  public boolean isEmpty() {
+    return size() == 0;
+  }
+
+  public static void main(String[] args) {
+    Stack<Integer> stack = new Stack<>();
+
+    stack.push(1);
+    stack.push(2);
+    stack.push(3);
+
+    System.out.println(stack.pop());  // 3
+    System.out.println(stack.pop());  // 2
+    System.out.println(stack.pop());  // 1
+  }
+}</code></pre>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Stack_(abstract_data_type)">Stack (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://github.com/williamfiset/Algorithms/blob/master/src/main/java/com/williamfiset/algorithms/datastructures/stack">Various Stack Implementations</a>
+  </li>
+</ul>

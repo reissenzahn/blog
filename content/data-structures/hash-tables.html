@@ -1,0 +1,81 @@
+---
+title: "Stacks and Queues (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li><a href="#introduction">Introduction</a></li>
+				<li><a href="#resources">Resources</a></li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+
+<h3 id="hash-table">Hash Table</h3>
+
+<h4 id="hash-table-linear-probing">Linear Probing</h4>
+
+<p>
+  In linear probing we search sequentially for vacant cells. If the appropriate entry is occupied when we try to insert a data item there, we go to the next entry and then next until we find an empty cell. Following a collision, the find algorithm simply steps along the array looking at each cell in sequence. If it encounters an empty cell before finding the key it's looking for, it knows the search has failed.
+</p>
+
+<figure>
+  <img src="/img/data-structures/hash-table-linear-probing.svg" style="max-width: 370px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h4 id="hash-table-separate-chaining">Separate Chaining</h4>
+
+<p>
+  In separate chaining, each bucket is independent, and has some sort of list of entries with the same index. A data item's key is hashed to the index in the usual way, and the item is inserted into the list at that index. Other items that hash to the same index are simply added to the list; there's no need to search for empty cells in the primary array.
+</p>
+
+<figure>
+  <img src="/img/data-structures/hash-table-separate-chaining.svg" style="max-width: 430px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="binary-heap">Binary Heap</h3>
+
+<p>
+  A binary heap is a complete binary tree that satisfies the heap condition: every node's key is smaller than (or equal to) the keys of its children. This weak ordering is sufficient to allow fast removal of the maximum node and fast insertion of new nodes.
+</p>
+
+<!-- TODO: difference between min/max heap -->
+
+
+<h4>Insertion</h4>
+
+<p>
+  To insert an element to the heap, we start by adding it at the bottom level of the heap at the leftmost available position. Then, we compare the added element to its parent. If the node is smaller than its parent, then we swap the element with its parent. This bubbling up process is repeated until the parent node is smaller than the inserted node. 
+</p>
+
+
+<h4>Extract</h4>
+
+<p>
+  To extract the root element, we remove it and replace it with the last element on the last level. Then, we compare the new root with its children. If the root node is larger than one of its children we swap it with the smaller child node. This bubbling down process is repeated until the children are smaller than the replacement node.
+</p>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+</ul>

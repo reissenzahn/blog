@@ -1,0 +1,139 @@
+---
+title: "AVL Tree (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#complexity">Complexity</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  An AVL tree is a self-balancing binary search tree. In an AVL tree, the heights of the two child subtrees of any node differ by at most one; if at any time they differ by more than one, rebalancing is done to restore this property using one or more tree rotations.
+</p>
+
+
+<h3 id="introduction">Balance Factor</h3>
+
+<p>
+  In a binary tree, the balance factor of a node is defined to be the difference between the height of the right subtree and the hight of the left subtree. A binary tree is defined to be an AVL tree if the balance factor for each node is an element of \(\{-1, 0, 1\}\).
+</p>
+
+
+<h3 id="tree-rotations">Tree Rotations</h3>
+
+If during a modifying operation (e.g. insert, delete) a (temporary) height difference of more than one arises between two child subtrees, the parent subtree has to be "rebalanced". The given repair tools are the so-called tree rotations
+
+
+<h3 id="search">Search</h3>
+
+<p>
+  Searching for a target key in an AVL tree can be done the same way as that of an ordinary binary search tree.
+</p>
+
+
+<h3 id="search">Insertion</h3>
+
+When inserting a node into an AVL tree, you initially follow the same process as inserting into a Binary Search Tree. If the tree is empty, then the node is inserted as the root of the tree. In case the tree has not been empty then we go down the root, and recursively go down the tree searching for the location to insert the new node. This traversal is guided by the comparison function. In this case, the node always replaces a NULL reference (left or right) of an external node in the tree i.e., the node is either made a left-child or a right-child of the external node.
+
+After this insertion if a tree becomes unbalanced, only ancestors of the newly inserted node are unbalanced. This is because only those nodes have their sub-trees altered[12] So it is necessary to check each of the node's ancestors for consistency with the invariants of AVL trees: this is called "retracing". This is achieved by considering the balance factor of each node.[13][14]
+
+Since with a single insertion the height of an AVL subtree cannot increase by more than one, the temporary balance factor of a node after an insertion will be in the range [–2,+2]. For each node checked, if the temporary balance factor remains in the range from –1 to +1 then only an update of the balance factor and no rotation is necessary. However, if the temporary balance factor becomes less than –1 or greater than +1, the subtree rooted at this node is AVL unbalanced, and a rotation is needed.[10]:52 With insertion as the code below shows, the adequate rotation immediately perfectly rebalances the tree.
+
+In figure 1, by inserting the new node Z as a child of node X the height of that subtree Z increases from 0 to 1.
+
+Invariant of the retracing loop for an insertion
+The height of the subtree rooted by Z has increased by 1. It is already in AVL shape.
+
+In order to update the balance factors of all nodes, first observe that all nodes requiring correction lie from child to parent along the path of the inserted leaf. If the above procedure is applied to nodes along this path, starting from the leaf, then every node in the tree will again have a balance factor of −1, 0, or 1.
+
+The retracing can stop if the balance factor becomes 0 implying that the height of that subtree remains unchanged.
+
+If the balance factor becomes ±1 then the height of the subtree increases by one and the retracing needs to continue.
+
+If the balance factor temporarily becomes ±2, this has to be repaired by an appropriate rotation after which the subtree has the same height as before (and its root the balance factor 0).
+
+The time required is O(log n) for lookup, plus a maximum of O(log n) retracing levels (O(1) on average) on the way back to the root, so the operation can be completed in O(log n) time.[10]:53
+
+
+
+<h3 id="deletion">Deletion</h3>
+
+The preliminary steps for deleting a node are described in section Binary search tree#Deletion. There, the effective deletion of the subject node or the replacement node decreases the height of the corresponding child tree either from 1 to 0 or from 2 to 1, if that node had a child.
+
+Starting at this subtree, it is necessary to check each of the ancestors for consistency with the invariants of AVL trees. This is called "retracing".
+
+Since with a single deletion the height of an AVL subtree cannot decrease by more than one, the temporary balance factor of a node will be in the range from −2 to +2. If the balance factor remains in the range from −1 to +1 it can be adjusted in accord with the AVL rules. If it becomes ±2 then the subtree is unbalanced and needs to be rotated. (Unlike insertion where a rotation always balances the tree, after delete, there may be BF(Z) ≠ 0 (see fig.s 4 and 5), so that after the appropriate single or double rotation the height of the rebalanced subtree decreases by one meaning that the tree has to be rebalanced again on the next higher level.) The various cases of rotations are described in section Rebalancing.
+
+Invariant of the retracing loop for a deletion
+The height of the subtree rooted by N has decreased by 1. It is already in AVL shape.
+
+The retracing can stop if the balance factor becomes ±1 (it must have been 0) meaning that the height of that subtree remains unchanged.
+
+If the balance factor becomes 0 (it must have been ±1) then the height of the subtree decreases by one and the retracing needs to continue.
+
+If the balance factor temporarily becomes ±2, this has to be repaired by an appropriate rotation. It depends on the balance factor of the sibling Z (the higher child tree in fig. 4) whether the height of the subtree decreases by one –and the retracing needs to continue– or does not change (if Z has the balance factor 0) and the whole tree is in AVL-shape.
+
+The time required is O(log n) for lookup, plus a maximum of O(log n) retracing levels (O(1) on average) on the way back to the root, so the operation can be completed in O(log n) time.
+
+
+
+<h3 id="complexity">Complexity</h3>
+
+<table>
+  <tr>
+    <th>Algorithm</th>
+    <th>Average</th>
+    <th>Worst</th>
+  </tr>
+  <tr>
+    <td>Search</td>
+    <td>\(O(\log n)\)</td>
+    <td>\(O(\log n)\)</td>
+  </tr>
+  <tr>
+    <td>Insert</td>
+    <td>\(O(\log n)\)</td>
+    <td>\(O(\log n)\)</td>
+  </tr>
+  <tr>
+    <td>Delete</td>
+    <td>\(O(\log n)\)</td>
+    <td>\(O(\log n)\)</td>
+  </tr>
+  <tr>
+    <td>Space</td>
+    <td>\(O(n)\)</td>
+    <td>\(O(n)\)</td>
+  </tr>
+</table>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/AVL_tree">AVL Tree (Wikipedia)</a>
+  </li>
+</ul>

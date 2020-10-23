@@ -16,6 +16,19 @@ design patterns
     circuit breaker
 
 
+Tim sort is a pretty alpha sort for a rainy day
+
+https://en.wikipedia.org/wiki/Timsort
+
+
+Gotta do the graph algorithms...
+
+https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+
+
+https://en.wikipedia.org/wiki/Depth-first_search
+
+https://github.com/williamfiset/Algorithms/tree/master/src/main/java/com/williamfiset/algorithms/graphtheory
 
 
 # Horizon
@@ -59,7 +72,7 @@ draft: false
 
 
 <figure>
-  <img src="/img/raft/previous-terms.svg" style="max-height: 230px;" alt="">
+  <img src="/img/raft/previous-terms.svg" style="max-width: 230px;" alt="">
   <figcaption>
     Figure X
   </figcaption>

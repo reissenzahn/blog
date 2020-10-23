@@ -4,6 +4,12 @@ date: 2020-09-29
 draft: false
 ---
 
+<!-- 
+  VVV VERY NICE!!
+  
+  https://cdn.rawgit.com/cliftonm/MerkleTree/master/Article/indexWithToc.htm
+ -->
+
 <ul class="contents">
 	<li>
 		<ul>
@@ -11,9 +17,15 @@ draft: false
           <a href="#introduction">Introduction</a>
         </li>
 				<li>
-          <a href="#description">Description</a>
+          <a href="#construction">Construction</a>
         </li>
 				<li>
+          <a href="#merkle-proofs">Merkle Proofs</a>
+        </li>
+				<li>
+          <a href="#file-integrity">File Integrity</a>
+        </li>
+        <li>
           <a href="#resources">Resources</a>
         </li>
 		</ul>
@@ -56,7 +68,7 @@ draft: false
 <h3 id="merkle-proofs">Merkle Proofs</h3>
 
 <p>
-  A merkle proof is used to assess the validity of a certain data block given a merkle root \(H_\text{trusted}\) obtained from a trusted authority. For example, to verify the inclusion of the block\(B_4\) in the case of <i>figure 2</i>, we only require the hashes \(H_3\), \(H_{12}\) and \(H_{5678}\). We proceed as follows: 
+  A merkle proof is used to assess the validity of a certain data block given a merkle root \(H_\text{trusted}\) obtained from a trusted authority. For example, to verify the inclusion of the block \(B_4\) in the case of <i>figure 2</i>, we only require the hashes \(H_3\), \(H_{12}\) and \(H_{5678}\). We proceed as follows: 
 </p>
 
 <ul>
@@ -76,6 +88,17 @@ draft: false
     Compare \(H_\text{root}\) to \(H_\text{trusted}\).
   </li>
 </ul>
+
+<p>
+  Given a large number of blocks, this approach requires distributing significantly fewer hashes than a hash list which would require sharing all the other hashes. Verifying any single content entry in the tree will require only \(n \log2(n)\) steps in the worst case.
+</p>
+
+<figure>
+  <img src="/img/merkle-tree/hash-list.svg" style="max-width: 550px;">
+  <figcaption>
+    <i>figure 3</i>
+  </figcaption>
+</figure>
 
 
 <h3 id="file-integrity">File Integrity</h3>
@@ -105,7 +128,7 @@ draft: false
 <figure>
   <img src="/img/merkle-tree/corrupted.svg" style="max-width: 450px;">
   <figcaption>
-    <i>figure 3</i>
+    <i>figure 4</i>
   </figcaption>
 </figure>
 

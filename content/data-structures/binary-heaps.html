@@ -1,0 +1,137 @@
+---
+title: "Binary Heaps (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#complexity">Complexity</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  A binary heap is a complete binary tree that satisfies the heap ordering property. The ordering can be one of two variants:
+</p>
+
+<ul>
+  <li>
+    Min-heap property: the value of each node is greater than or equal to the value of its parent.
+  </li>
+  <li>
+    Max-heap property: the value of each node is less than or equal to the value of its parent.
+  </li>
+</ul>
+
+<p>
+  We will consider the case of the min-heap where the minimum value is at the root.
+</p>
+
+<figure>
+  <img src="/img/data-structures/binary-heaps/min-heap.svg" style="max-width: 400px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="insertion">Insertion</h3>
+
+<p>
+  To insert an element into the heap we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Insert the element as a new node at the bottom level of the heap at the leftmost available position.
+  </li>
+  <li>
+    Compare the added node to its parent. If the node is smaller than its parent then swap it with its parent.
+  </li>
+  <li>
+    Repeat step 2 until the parent node is smaller than the inserted node.
+  </li>
+</ol>
+
+<figure>
+  <img src="/img/data-structures/binary-heaps/insertion.svg" style="max-width: 450px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="extract">Extract</h3>
+
+<p>
+  To extract the root element, we remove it and replace it with the last element on the last level. Then, we compare the new root with its children. If the root node is larger than one of its children we swap it with the smaller child node. This bubbling down process is repeated until the children are smaller than the replacement node.
+</p>
+
+<figure>
+  <img src="/img/data-structures/binary-heaps/insertion.svg" style="max-width: 450px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+<h3 id="complexity">Array Representation</h4>
+
+<!-- 
+binary heaps can be implemented as an implicit data structure, storing keys in an array and using their relative positions within that array to represent child-parent relationships.
+
+This weak ordering is sufficient to allow fast removal of the maximum node and fast insertion of new nodes.
+-->
+
+
+
+<h3 id="complexity">Complexity</h3>
+
+<table>
+  <tr>
+    <th>Algorithm</th>
+    <th>Average</th>
+    <th>Worst</th>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Binary_heap">Binary Heap (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.cs.usfca.edu/~galles/visualization/Heap.html">Min-Heap Visualization</a>
+  </li>
+  <li>
+    <a href="http://www.btv.melezinek.cz/binary-heap.html">Max-Heap Visualization</a>
+  </li>
+</ul>

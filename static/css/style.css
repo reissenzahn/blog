@@ -19,17 +19,50 @@
 }
 
 /* bad */
+
+pre {
+  padding: 10px 0;
+
+  /* border: 1px solid #808080; */
+
+  /* display: block;
+  background: #dfdfdf !important;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+  padding: 12px 8px; */
+  /* margin: 0; */
+}
+
+/* tomorrow-night-blue arduino-light */
+
+.hljs {
+  background: var(--background) !important;
+  /* background: #dfdfdf !important; */
+}
+
 pre code {
   padding: 0 !important;
 }
 
+table td {
+  border: 1px solid #222;
+  padding: 3px;
+  border-collapse: collapse;
+}
+
+table th {
+  border: 1px solid #222;
+  padding: 3px;
+  border-collapse: collapse;
+}
+
 table {
   /* width: 100%; */
+  border-collapse: collapse;
   margin-top: 14px;
   margin-bottom: 14px;
 }
 
-table tr {
+table th {
   vertical-align: top;
   margin-bottom: 14px;
 }
@@ -59,9 +92,7 @@ ul ul {
   list-style-type: disc;
 }
 
-.hljs {
-  background: var(--background) !important;
-}
+
 /* 
 article h4 {
   font-weight: normal;
@@ -170,8 +201,8 @@ article h3 {
 article h4 {
   margin-top: 20px;
   margin-bottom: 0px;
-  font-style: italic;
-  font-weight: normal;
+  /* font-style: italic; */
+  /* font-weight: normal; */
 }
 
 article time {

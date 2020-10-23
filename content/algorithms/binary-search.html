@@ -1,0 +1,84 @@
+---
+title: "Searching (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li><a href="#introduction">Introduction</a></li>
+				<li><a href="#resources">Resources</a></li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+
+
+<h3 id="binary-search">Binary Search</h3>
+
+<p>
+  Binary search is a search algorithm that finds the position of a target value within a sorted array. Binary search begins by comparing an element in the middle of the array with the target value. If the target value matches the element, its position in the array is returned. If the target value is less than the element, the search continues in the lower half of the array. If the target value is greater than the element, the search continues in the upper half of the array. By doing this, the algorithm eliminates the half in which the target value cannot lie in each iteration.
+</p>
+
+
+<h4>Procedure</h4>
+
+<p>
+  Let \(A\) be an array of length \(n\) with values \(A_0, A_1, \dots, A_{n-1}\) sorted such that \(A_0 \le A_1 \le \dots \le A_{n-1}\). To search for a target value \(T\), we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Set \(L\) to \(0\) and \(R\) to \(n-1\).
+  </li>
+  <li>
+    If \(L > R\) terminate unsuccessfully.
+  </li>
+  <li>
+    Set \(m\) to \(\left \lfloor{\frac{L+R}{2}}\right \rfloor\).
+  </li>
+  <li>
+    If \(A_m &lt; T\) set \(L\) to \(m+1\) and go to step 2.
+  </li>
+  <li>
+    If \(A_m > T\) set \(R\) to \(m-1\) and go to step 2.
+  </li>
+  <li>
+    Now \(A_m = T\) so return \(m\).
+  </li>
+</ol>
+
+
+<h4>Time Complexity</h4>
+
+<ul>
+  <li>
+    Best-case: \(O(1)\)
+  </li>
+  <li>
+    Average-case: \(O(\log n)\)
+  </li>
+  <li>
+    Worst-case: \(O(\log n)\)
+  </li>
+  <li>
+    Worst-case space: \(O(1)\)
+  </li>
+</ul>
+
+<!-- 
+  https://en.wikipedia.org/wiki/Binary_search_algorithm
+-->
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+</ul>
