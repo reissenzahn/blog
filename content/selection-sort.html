@@ -1,0 +1,74 @@
+---
+title: "Sorting (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="selection-sort">Selection Sort</h3>
+
+<p>
+  Selection sort is an in-place comparison sorting algorithm. It has an O(n2) time complexity, which makes it inefficient on large lists, and generally performs worse than the similar insertion sort.
+</p>
+
+
+<h4>Procedure</h4>
+
+<p>
+  The algorithm divides the input list into two parts: a sorted sublist of items which is built up from left to right at the front (left) of the list and a sublist of the remaining unsorted items that occupy the rest of the list. Initially, the sorted sublist is empty and the unsorted sublist is the entire input list. The algorithm proceeds by finding the smallest (or largest, depending on sorting order) element in the unsorted sublist, exchanging (swapping) it with the leftmost unsorted element (putting it in sorted order), and moving the sublist boundaries one element to the right.
+</p>
+
+<p>
+  1. Set the first element as minimum.
+2. Compare minimum with the second element. If the second element is smaller than minimum, assign the second element as minimum. Compare minimum with the third element. Again, if the third element is smaller, then assign minimum to the third element otherwise do nothing. The process goes on until the last element.
+3. After each iteration, minimum is placed in the front of the unsorted list.
+4. For each iteration, indexing starts from the first unsorted element. Step 1 to 3 are repeated until all the elements are placed at their correct positions.
+</p>
+
+
+<h4>Complexity</h4>
+
+<table>
+  <tr>
+    <td>Worst case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Best case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Average case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Space</td>
+    <td>\(O(1)\)</td>
+  </tr>
+</table>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+</ul>
+
+
+<!-- 
+  https://www.programiz.com/dsa/selection-sort
+  https://en.wikipedia.org/wiki/Selection_sort
+  https://www.youtube.com/watch?v=g-PGLbMth_g
+-->

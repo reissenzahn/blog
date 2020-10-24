@@ -34,20 +34,135 @@ draft: false
   In a binary tree, the balance factor of a node is defined to be the difference between the height of the right subtree and the hight of the left subtree. A binary tree is defined to be an AVL tree if the balance factor for each node is an element of \(\{-1, 0, 1\}\).
 </p>
 
+<figure>
+  <img src="/img/data-structures/avl-trees/balance-factor.svg" style="max-width:400px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+<!-- Balance factor of a node in an AVL tree is the difference between the height of the left subtree and that of the right subtree of that node.
+
+Balance Factor = (Height of Left Subtree - Height of Right Subtree) or (Height of Right Subtree - Height of Left Subtree)
+
+The self balancing property of an avl tree is maintained by the balance factor. The value of balance factor should always be -1, 0 or +1. -->
+
+
 
 <h3 id="tree-rotations">Tree Rotations</h3>
 
-If during a modifying operation (e.g. insert, delete) a (temporary) height difference of more than one arises between two child subtrees, the parent subtree has to be "rebalanced". The given repair tools are the so-called tree rotations
+<!-- If during a modifying operation (e.g. insert, delete) a (temporary) height difference of more than one arises between two child subtrees, the parent subtree has to be "rebalanced". The given repair tools are the so-called tree rotations -->
+
+
+<h4>Right Rotation</h4>
+
+<figure>
+  <img src="/img/data-structures/avl-trees/right-rotation.svg" style="max-width:400px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+<h4>Left Rotation</h4>
+
+<figure>
+  <img src="/img/data-structures/avl-trees/left-rotation.svg" style="max-width:400px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+<h4>Right-left Rotation</h4>
+
+<figure>
+  <img src="/img/data-structures/avl-trees/right-left-rotation.svg" style="max-width:400px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+<h4>Left-right Rotation</h4>
+
+<figure>
+  <img src="/img/data-structures/avl-trees/left-right-rotation.svg" style="max-width:400px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
 
 
 <h3 id="search">Search</h3>
 
 <p>
-  Searching for a target key in an AVL tree can be done the same way as that of an ordinary binary search tree.
+  To search for a certain target key we proceed just as in the case of an ordinary binary search tree:
 </p>
+
+<ol>
+  <li>
+    Starting at the root node, inspect the key of the current node.
+  </li>
+  <li>
+    If the target key is equal to the key then return successfully.
+  </li>
+  <li>
+    If the target key is less than the key then search the left subtree.
+  </li>
+  <li>
+    If the target key is greater than the key then move into the right subtree.
+  </li>
+  <li>
+    Repeat this process until either the target key is found or a leaf node is reached.
+  </li>
+</ol>
+
 
 
 <h3 id="search">Insertion</h3>
+
+<p>
+  To insert a key we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Starting at the root node, inspect the key of the current node.
+  </li>
+  <li>
+    If the target key is less than the key then search the left subtree.
+  </li>
+  <li>
+    If the target key is greater than the key then move into the right subtree.
+  </li>
+  <li>
+    This process continues until a leaf node is reached at which point the key is inserted as the its right or left child as appropriate.
+  </li>
+</ol>
+
+<!-- 1. Go to the appropriate leaf node to insert a newNode using the following recursive steps. Compare newKey with rootKey of the current tree.
+  
+  1. If newKey < rootKey, call insertion algorithm on the left subtree of the current node until the leaf node is reached.
+  2. Else if newKey > rootKey, call insertion algorithm on the right subtree of current node until the leaf node is reached.
+  3. Else, return leafNode.
+
+2. Update balanceFactor of the nodes.
+
+3. If the nodes are unbalanced, then rebalance the node.
+
+  a. If balanceFactor > 1, it means the height of the left subtree is greater than that of the right subtree. So, do a right rotation or left-right rotation
+    
+    i. If newNodeKey < leftChildKey do right rotation.
+    ii. Else, do left-right rotation.
+
+  b. If balanceFactor < -1, it means the height of the right subtree is greater than that of the left subtree. So, do right rotation or right-left rotation
+    i. If newNodeKey > rightChildKey do left rotation.
+    ii. Else, do right-left rotation
+
 
 When inserting a node into an AVL tree, you initially follow the same process as inserting into a Binary Search Tree. If the tree is empty, then the node is inserted as the root of the tree. In case the tree has not been empty then we go down the root, and recursively go down the tree searching for the location to insert the new node. This traversal is guided by the comparison function. In this case, the node always replaces a NULL reference (left or right) of an external node in the tree i.e., the node is either made a left-child or a right-child of the external node.
 
@@ -68,11 +183,42 @@ If the balance factor becomes ±1 then the height of the subtree increases by on
 
 If the balance factor temporarily becomes ±2, this has to be repaired by an appropriate rotation after which the subtree has the same height as before (and its root the balance factor 0).
 
-The time required is O(log n) for lookup, plus a maximum of O(log n) retracing levels (O(1) on average) on the way back to the root, so the operation can be completed in O(log n) time.[10]:53
+The time required is O(log n) for lookup, plus a maximum of O(log n) retracing levels (O(1) on average) on the way back to the root, so the operation can be completed in O(log n) time.[10]:53 -->
 
+<figure>
+  <img src="/img/data-structures/avl-trees/insertion.svg" style="max-width:400px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
 
 
 <h3 id="deletion">Deletion</h3>
+
+<!-- 1. Locate nodeToBeDeleted (recursion is used to find nodeToBeDeleted in the code used below).
+
+2. There are three cases for deleting a node:
+
+  a. If nodeToBeDeleted is the leaf node (ie. does not have any child), then remove nodeToBeDeleted.
+  b. If nodeToBeDeleted has one child, then substitute the contents of nodeToBeDeleted with that of the child. Remove the child.
+  c. If nodeToBeDeleted has two children, find the inorder successor w of nodeToBeDeleted (ie. node with a minimum value of key in the right subtree).
+
+    i. Substitute the contents of nodeToBeDeleted with that of w.
+    ii. Remove the leaf node w.
+
+3. Update balanceFactor of the nodes.
+
+4. Rebalance the tree if the balance factor of any of the nodes is not equal to -1, 0 or 1.
+
+  a. If balanceFactor of currentNode > 1,
+
+    i. If balanceFactor of leftChild >= 0, do right rotation.
+    ii. Else do left-right rotation.
+  
+  b. If balanceFactor of currentNode < -1,
+
+    i. If balanceFactor of rightChild <= 0, do left rotation.
+    ii. Else do right-left rotation.
 
 The preliminary steps for deleting a node are described in section Binary search tree#Deletion. There, the effective deletion of the subject node or the replacement node decreases the height of the corresponding child tree either from 1 to 0 or from 2 to 1, if that node had a child.
 
@@ -89,7 +235,12 @@ If the balance factor becomes 0 (it must have been ±1) then the height of the s
 
 If the balance factor temporarily becomes ±2, this has to be repaired by an appropriate rotation. It depends on the balance factor of the sibling Z (the higher child tree in fig. 4) whether the height of the subtree decreases by one –and the retracing needs to continue– or does not change (if Z has the balance factor 0) and the whole tree is in AVL-shape.
 
-The time required is O(log n) for lookup, plus a maximum of O(log n) retracing levels (O(1) on average) on the way back to the root, so the operation can be completed in O(log n) time.
+The time required is O(log n) for lookup, plus a maximum of O(log n) retracing levels (O(1) on average) on the way back to the root, so the operation can be completed in O(log n) time. -->
+
+
+<h3 id="search">Rebalancing</h3>
+
+<!-- If during a modifying operation (e.g. insert, delete) a (temporary) height difference of more than one arises between two child subtrees, the parent subtree has to be "rebalanced". The given repair tools are the so-called tree rotations, because they move the keys only "vertically", so that the ("horizontal") in-order sequence of the keys is fully preserved (which is essential for a binary-search tree). -->
 
 
 
@@ -135,5 +286,8 @@ The time required is O(log n) for lookup, plus a maximum of O(log n) retracing l
 <ul>
   <li>
     <a href="https://en.wikipedia.org/wiki/AVL_tree">AVL Tree (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.programiz.com/dsa/avl-tree">AVL Tree</a>
   </li>
 </ul>

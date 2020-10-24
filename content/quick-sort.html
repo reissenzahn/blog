@@ -1,0 +1,108 @@
+---
+title: "Sorting (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Quicksort is a sorting algorithm that works by selecting a pivot element from the array and partitioning the other elements into two sub-arrays, according to whether they are less than or greater than the pivot. The sub-arrays are then sorted recursively. This can be done in-place, requiring small additional amounts of memory to perform the sorting.
+</p>
+
+
+<h4>Procedure</h4>
+
+<ol>
+  <li>
+    Choose the leftmost element as the pivot.
+  </li>
+  <li>
+    Partition the array so that elements less than the pivot come before it and elements larger than the pivot come after it.
+  </li>
+  <li>
+    Recursively apply the above steps to the sub-array of smaller elements and separately to the sub-array of larger elements.
+  </li>
+  <li>
+    Continue until a sub-array of length one or zero is encountered.
+  </li>
+</ol>
+
+<p>
+  To partition the array elements using the Hoare partition scheme we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Place a left pointer at the leftmost index of the array after the pivot and a right pointer at the rightmost index of the array.
+  </li>
+  <li>
+    Move the left pointer to the right until it reaches an element larger than (or equal to) the pivot.
+  </li>
+  <li>
+    Move the right pointer to the left until it reaches an element smaller than (or equal to) the pivot.
+  </li>
+  <li>
+    Swap the element at the left pointer with the element at the right pointer.
+  </li>
+  <li>
+    Repeat steps 2-4 until the pointers cross each other.
+  </li>
+  <li>
+    Move the pivot to its correct position by swapping it with the element at the right pointer.
+  </li>
+</ol>
+
+
+<h4>Complexity</h4>
+
+<table>
+  <tr>
+    <td>Worst case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Best case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Average case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Space</td>
+    <td>\(O(\log n)\)</td>
+  </tr>
+</table>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+</ul>
+
+
+<!-- 
+  https://www.youtube.com/watch?v=SLauY6PpjW4
+  https://www.youtube.com/watch?v=Hoixgm4-P4M
+  https://en.wikipedia.org/wiki/Quicksort
+  https://www.hackerearth.com/practice/algorithms/sorting/quick-sort/visualize/
+-->

@@ -1,0 +1,96 @@
+---
+title: "Insertion Sort (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  A sorting algorithm is an algorithm that puts elements of a list in a certain order.
+</p>
+
+<p>
+  Insertion sort is a simple sorting algorithm that builds the final sorted array (or list) one item at a time. It is much less efficient on large lists than more advanced algorithms but is efficient for quite small data sets.
+</p>
+
+
+<h4>Procedure</h4>
+
+<p>
+  Sorting is typically done in-place, by iterating up the array, growing the sorted list behind it. At each array-position, it checks the value there against the largest value in the sorted list (which happens to be next to it, in the previous array-position checked). If larger, it leaves the element in place and moves to the next. If smaller, it finds the correct position within the sorted list, shifts all the larger values up to make a space, and inserts into that correct position.
+</p>
+
+<ol>
+  <li>
+    Start at the second element in the array.
+  </li>
+  <li>
+    Compare the second element to the first element. 
+  </li>
+  <li>
+    
+  </li>
+  <li>
+
+  </li>
+  <li>
+
+  </li>
+</ol>
+
+<p>
+  1. The first element in the array is assumed to be sorted. Take the second element and store it separately in key.
+  2. Compare key with the first element. If the first element is greater than key, then key is placed in front of the first element.
+  3. Now, the first two elements are sorted. Take the third element and compare it with the elements on the left of it. Placed it just behind the element smaller than it. If there is no element smaller than it, then place it at the beginning of the array.
+  4. Similarly, place every unsorted element at its correct position.
+</p>
+
+
+<h4>Complexity</h4>
+
+<table>
+  <tr>
+    <td>Worst case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Best case time</td>
+    <td>\(O(n)\)</td>
+  </tr>
+  <tr>
+    <td>Average case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Space</td>
+    <td>\(O(1)\)</td>
+  </tr>
+</table>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+</ul>
+
+
+<!-- 
+  https://en.wikipedia.org/wiki/Insertion_sort
+  https://www.programiz.com/dsa/insertion-sort
+-->
