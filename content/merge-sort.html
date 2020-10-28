@@ -1,5 +1,5 @@
 ---
-title: "Sorting (DRAFT)"
+title: "Merge Sort (DRAFT)"
 date: 2020-09-29
 draft: false
 ---
@@ -9,6 +9,15 @@ draft: false
 		<ul>
       <li>
         <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#procedure">Procedure</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
       </li>
       <li>
         <a href="#resources">Resources</a>
@@ -21,45 +30,29 @@ draft: false
 
 <h3 id="introduction">Introduction</h3>
 
-
-
-
 <p>
-  Merge sort is an efficient comparison-based sorting algorithm. Most implementations produce a stable sort, which means that the order of equal elements is the same in the input and output. Conceptually, a merge sort works as follows:
+  Merge sort is an efficient, general-purpose, comparison-based sorting algorithm. Most implementations produce a stable sort, which means that the order of equal elements is the same in the input and output.
 </p>
 
-In computer science, merge sort (also commonly spelled mergesort) is an efficient, general-purpose, comparison-based sorting algorithm. Most implementations produce a stable sort, which means that the order of equal elements is the same in the input and output. Merge sort is a divide and conquer algorithm that was invented by John von Neumann in 1945.[2] A detailed description and analysis of bottom-up mergesort appeared in a report by Goldstine and von Neumann as early as 1948.[3]
 
 
 <h3 id="procedure">Procedure</h3>
 
+<p>
+  Merge sort proceeds as follows:
+</p>
+
 <ol>
   <li>
-    Divide the unsorted list into n sub-lists, each containing one element (a list of one element is considered sorted).
+    Recursively split the array in half to get two sub-arrays. Then, split each of the sub-arrays into two sub-arrays.
   </li>
   <li>
-    Repeatedly merge sub-lists to produce new sorted sub-lists until there is only one sub-list remaining. This will be the sorted list.
+    Continue this process until the sub-arrays contain only one element.
+  </li>
+  <li>
+    Repeatedly merge sub-arrays to produce sorted sub-arrays until there is only one sorted array remaining.
   </li>
 </ol>
-
-
-Example C-like code using indices for top-down merge sort algorithm that recursively splits the list (called runs in this example) into sublists until sublist size is 1, then merges those sublists to produce a sorted list.
-
-
-The MergeSort function repeatedly divides the array into two halves until we reach a stage where we try to perform MergeSort on a subarray of size 1 i.e. p == r.
-
-After that, the merge function comes into play and combines the sorted arrays into larger arrays until the whole array is merged.
-
-MergeSort(A, p, r):
-    if p > r 
-        return
-    q = (p+r)/2
-    mergeSort(A, p, q)
-    mergeSort(A, q+1, r)
-    merge(A, p, q, r)
-
-the merge sort algorithm recursively divides the array into halves until we reach the base case of array with 1 element. After that, the merge function picks up the sorted sub-arrays and merges them to gradually sort the entire array.
-
 
 <figure>
   <img src="/img/sorting/merge-sort/divide-and-conquer.svg" style="max-width: 400px">
@@ -68,50 +61,88 @@ the merge sort algorithm recursively divides the array into halves until we reac
   </figcaption>
 </figure>
 
+<p>
+  The merge algorithm maintains three pointers, one for each of the two arrays and one for maintaining the current index of the final sorted array. The algorithm proceeds as follows:
+</p>
 
-<h3 id="merge">Merge</h3>
-
-The merge Step of Merge Sort
-
-Every recursive algorithm is dependent on a base case and the ability to combine the results from base cases. Merge sort is no different. The most important part of the merge sort algorithm is, you guessed it, merge step.
-
-The merge step is the solution to the simple problem of merging two sorted lists(arrays) to build one large sorted list(array).
-
-The algorithm maintains three pointers, one for each of the two arrays and one for maintaining the current index of the final sorted array.
-
-Have we reached the end of any of the arrays?
-    No:
-        Compare current elements of both arrays 
-        Copy smaller element into sorted array
-        Move pointer of element containing smaller element
-    Yes:
-        Copy all remaining elements of non-empty array
-
-A noticeable difference between the merging step we described above and the one we use for merge sort is that we only perform the merge function on consecutive sub-arrays.
-
-This is why we only need the array, the first position, the last index of the first subarray(we can calculate the first index of the second subarray) and the last index of the second subarray.
-
-Our task is to merge two subarrays A[p..q] and A[q+1..r] to create a sorted array A[p..r]. So the inputs to the function are A, p, q and r
-
-The merge function works as follows:
-
-1. 
-
+<ol>
+  <li>
+    Compare current elements of both arrays.
+  </li>
+  <li>
+    Copy the smaller element into the sorted array.
+  </li>
+  <li>
+    Move the pointer of element containing smaller element to the next element.
+  </li>
+  <li>
+    Repeat this until the end of one of the arrays is reached and copy all remaining elements of non-empty array.
+  </li>
+</ol>
 
 <figure>
-  <img src="/img/sorting/merge-sort/merge-step.svg" style="max-width: 450px">
+  <img src="/img/sorting/merge-sort/merge-step.svg" style="max-width: 500px">
   <figcaption>
-    <i>figure 1</i>
+    <i>figure 2</i>
   </figcaption>
 </figure>
 
 
 
-<h3 id="comparison">Comparison</h3>
+<h3 id="implementation">Implementation</h3>
 
-Although heapsort has the same time bounds as merge sort, it requires only Θ(1) auxiliary space instead of merge sort's Θ(n). On typical modern architectures, efficient quicksort implementations generally outperform mergesort for sorting RAM-based arrays.[citation needed] On the other hand, merge sort is a stable sort and is more efficient at handling slow-to-access sequential media. Merge sort is often the best choice for sorting a linked list: in this situation it is relatively easy to implement a merge sort in such a way that it requires only Θ(1) extra space, and the slow random-access performance of a linked list makes some other algorithms (such as quicksort) perform poorly, and others (such as heapsort) completely impossible.
+<pre><code class="java">public class Merge {
 
+  private Merge() {
+  }
 
+  public static void sort(int[] array) {
+    sort(array, new int[array.length], 0, array.length - 1);
+  }
+
+  private static void sort(int array[], int[] aux, int lo, int hi) {
+    if (hi &lt;= lo) {
+      return;
+    }
+
+    int mid = lo + (hi - lo) / 2;
+
+    sort(array, aux, lo, mid);
+    sort(array, aux, mid + 1, hi);
+
+    merge(array, aux, lo, mid, hi);
+  }
+
+  private static void merge(int[] array, int[] aux, int lo, int mid, int hi) {
+    for (int k = lo; k &lt;= hi; k++) {
+      aux[k] = array[k];
+    }
+
+    int i = lo;
+    int j = mid + 1;
+
+    for (int k = lo; k &lt;= hi; k++) {
+      if (i &gt; mid) {
+        array[k] = aux[j];
+        j++;
+      } else if (j &gt; hi) {
+        array[k] = aux[i];
+        i++;
+      } else if (aux[j] &lt; aux[i]) {
+        array[k] = aux[j];
+        j++;
+      } else {
+        array[k] = aux[i];
+        i++;
+      }
+    }
+  }
+
+  public static void main(String[] args) {
+    int[] array = { 6, 4, 2, 8, 9, 1, 5, 3, 7 };
+    Merge.sort(array);
+  }
+}</code></pre>
 
 
 
@@ -119,18 +150,22 @@ Although heapsort has the same time bounds as merge sort, it requires only Θ(1)
 
 <table>
   <tr>
-    <th></th>
+    <td>Worst-case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Best-case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Average-case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Worst-case space</td>
+    <td>\(O(n)\)</td>
   </tr>
 </table>
-
-Worst-case performance	O(n log n)
-Best-case performance	O(n log n)
-Average performance	O(n log n)
-Worst-case space complexity	О(n)
-
-
-<h3 id="implementation">Implementation</h3>
-
 
 
 
@@ -138,12 +173,20 @@ Worst-case space complexity	О(n)
 
 <ul>
   <li>
-    <a href=""></a>
+    <a href="https://en.wikipedia.org/wiki/Merge_sort">Merge sort (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.interviewcake.com/concept/java/merge-sort">Merge Sort Algorithm (Interview Cake)</a>
   </li>
 </ul>
 
+<!--
+  1 5 Merge Sort Motivation and Example
+  https://www.youtube.com/watch?v=kiyRJ7GVWro&list=PLXFMmlk03Dt7Q0xr1PIAriY5623cKiH7V&index=5
 
+  1 6 Merge Sort Pseudocode
+  https://www.youtube.com/watch?v=rBd5w0rQaFo&list=PLXFMmlk03Dt7Q0xr1PIAriY5623cKiH7V&index=6
 
-<!-- 
-  https://en.wikipedia.org/wiki/Merge_sort
+  1 7 Merge Sort Analysis 9 min
+  https://www.youtube.com/watch?v=8ArtRiTkYEw&list=PLXFMmlk03Dt7Q0xr1PIAriY5623cKiH7V&index=7
 -->

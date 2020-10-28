@@ -1,5 +1,5 @@
 ---
-title: "Sorting (DRAFT)"
+title: "Bubble Sort (PREVIEW)"
 date: 2020-09-29
 draft: false
 ---
@@ -9,6 +9,15 @@ draft: false
 		<ul>
       <li>
         <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#procedure">Procedure</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
       </li>
       <li>
         <a href="#resources">Resources</a>
@@ -22,18 +31,16 @@ draft: false
 <h3 id="introduction">Introduction</h3>
 
 <p>
-  A sorting algorithm is an algorithm that puts elements of a list in a certain order.
+  Bubble sort is a simple comparison sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. The pass through the list is repeated until the list is sorted. The algorithm, which is a  sort, is named for the way smaller or larger elements "bubble" to the top of the list.
 </p>
 
 
-<h3 id="bubble-sort">Bubble Sort</h3>
+
+<h3 id="procedure">Procedure</h3>
 
 <p>
-  Bubble sort, sometimes referred to as sinking sort, is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. The pass through the list is repeated until the list is sorted. The algorithm, which is a comparison sort, is named for the way smaller or larger elements "bubble" to the top of the list.
+  Bubble sort proceeds as follows:
 </p>
-
-
-<h4>Procedure</h4>
 
 <ol>
   <li>
@@ -56,22 +63,50 @@ draft: false
   </li>
 </ol>
 
-
-<h4>Example</h4>
-
-<p>
-  In the following example we sort the array with values \(5, 3, 1, 2, 6, 4\):
-</p>
-
 <figure>
-  <img src="/img/sorting/bubble-sort.svg" style="max-width: 550px">
+  <img src="/img/sorting/bubble-sort/bubble-sort.svg" style="max-width: 550px">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
 </figure>
 
 
-<h4>Complexity</h4>
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java">public class Bubble {
+
+  public static void sort(int[] array) {
+    boolean isSorted = false;
+    int lastUnsorted = array.length - 1;
+
+    while (!isSorted) {
+      isSorted = true;
+      for (int i = 0; i &lt; lastUnsorted; i++) {
+        if (array[i] &gt; array[i + 1]) {
+          swap(array, i, i + 1);
+          isSorted = false;
+        }
+      }
+      lastUnsorted--;
+    }
+  }
+
+  public static void swap(int[] array, int i, int j) {
+    int tmp = array[i];
+    array[i] = array[j];
+    array[j] = tmp;
+  }
+
+  public static void main(String[] args) {
+    int[] array = { 6, 4, 2, 8, 9, 1, 5, 3, 7 };
+    Bubble.sort(array);
+  }
+}</code></pre>
+
+
+
+<h3 id="complexity">Complexity</h3>
 
 <table>
   <tr>
@@ -94,19 +129,13 @@ draft: false
 
 
 
-
 <h3 id="resources">Resources</h3>
 
 <ul>
   <li>
-    <a href=""></a>
+    <a href="https://en.wikipedia.org/wiki/Bubble_sort">Bubble sort (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=6Gv8vg0kcHc">Algorithms: Bubble Sort (YouTube)</a>
   </li>
 </ul>
-
-
-<!-- 
-  https://www.youtube.com/watch?v=6Gv8vg0kcHc
-  https://www.programiz.com/dsa/bubble-sort
-  https://en.wikipedia.org/wiki/Bubble_sort
-  https://brilliant.org/wiki/bubble-sort/
--->

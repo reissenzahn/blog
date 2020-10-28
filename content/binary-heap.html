@@ -21,6 +21,34 @@ draft: false
 </ul>
 
 
+<!-- 
+  A container for objects that have keys.
+
+  Insert: add a new object to the heap.  --- O(log n)
+
+  Extract-min: remove the object in heap with a minimum key value (ties broken arbitrarily). Equally well, Extract-max.  ---  O(log n)
+
+  Heapify: n batched inserts in O(n) time
+
+  Delete: O(log n)
+
+  Canonical use of heap: fast way to do repeated minimum computations.
+
+  Example: Selection sort = O(n) linear scans, O(n^2) runtime on array of length n, repeatedly compute minimum
+
+  Heap Sort:
+
+  1. insert all n array elements into a heap
+  2. extract-min to pluck out elements in sorted order
+
+  Running time = 2n heap operations = O(n log n)
+
+  => optimal for a comparison-based sorting algorithm
+
+  Priority queues
+-->
+
+
 <h3 id="introduction">Introduction</h3>
 
 <p>
@@ -109,9 +137,29 @@ This weak ordering is sufficient to allow fast removal of the maximum node and f
     <th>Worst</th>
   </tr>
   <tr>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>Search</td>
+    <td>\(O(n)\)</td>
+    <td>\(O(n)\)</td>
+  </tr>
+  <tr>
+    <td>Insert</td>
+    <td>\(O(1)\)</td>
+    <td>\(O(\log n)\)</td>
+  </tr>
+  <tr>
+    <td>Find-min</td>
+    <td>\(O(1)\)</td>
+    <td>\(O(1)\)</td>
+  </tr>
+  <tr>
+    <td>Delete-min</td>
+    <td>\(O(\log n)\)</td>
+    <td>\(O(\log n)\)</td>
+  </tr>
+  <tr>
+    <td>Space</td>
+    <td>\(O(n)\)</td>
+    <td>\(O(n)\)</td>
   </tr>
 </table>
 
@@ -135,3 +183,9 @@ This weak ordering is sufficient to allow fast removal of the maximum node and f
     <a href="http://www.btv.melezinek.cz/binary-heap.html">Max-Heap Visualization</a>
   </li>
 </ul>
+
+<!-- 
+  12 2 Heaps Operations and Applications 18 min
+  https://www.youtube.com/watch?v=mNYHDv7SbDI&list=PLXFMmlk03Dt7Q0xr1PIAriY5623cKiH7V&index=59
+
+-->

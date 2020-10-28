@@ -15,21 +15,71 @@ draft: false
 
 <h3 id="introduction">Introduction</h3>
 
+<p>
+  Memoization is an optimization technique used to speed up computer programs by storing the results of expensive function calls and returning the cached result when the same inputs occur again. Although related to caching, memoization refers to a specific case of this optimization.
+</p>
+
+
+
+A memoized function "remembers" the results corresponding to some set of specific inputs. Subsequent calls with remembered inputs return the remembered result rather than recalculating it, thus eliminating the primary cost of a call with given parameters from all but the first call made to the function with those parameters. The set of remembered associations may be a fixed-size set controlled by a replacement algorithm or a fixed set, depending on the nature of the function and its use. A function can only be memoized if it is referentially transparent; that is, only if calling the function has exactly the same effect as replacing that function call with its return value. (Special case exceptions to this restriction exist, however.) While related to lookup tables, since memoization often uses such tables in its implementation, memoization populates its cache of results transparently on the fly, as needed, rather than in advance.
+
+Memoization is a way to lower a function's time cost in exchange for space cost; that is, memoized functions become optimized for speed in exchange for a higher use of computer memory space. The time/space "cost" of algorithms has a specific name in computing: computational complexity. All functions have a computational complexity in time (i.e. they take time to execute) and in space.
+
+Although a space-time tradeoff occurs, this differs from some other optimizations that involve time-space trade-off, such as strength reduction, in that memoization is a run-time rather than compile-time optimization.
+
+
+
+
+
+<h3 id="fibonacci">Fibonacci</h3>
 
 
 <figure>
-  <img src="/img/memoization/.svg" style="max-width: 230px">
+  <img src="/img/memoization/fibonacci.svg" style="max-width: 500px">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
 </figure>
 
 
+
+<h3 id="factorial">Factorial</h3>
+
+For every integer n such that n≥0, the final result of the function factorial is invariant; if invoked as x = factorial(3), the result is such that x will always be assigned the value 6. The non-memoized implementation above, given the nature of the recursive algorithm involved, would require n + 1 invocations of factorial to arrive at a result, and each of these invocations, in turn, has an associated cost in the time it takes the function to return the value computed. Depending on the machine, this cost might be the sum of:
+
+1. The cost to set up the functional call stack frame.
+2. The cost to compare n to 0.
+3. The cost to subtract 1 from n.
+4. The cost to set up the recursive call stack frame. (As above.)
+5. The cost to multiply the result of the recursive call to factorial by n.
+6. The cost to store the return result so that it may be used by the calling context.
+
+In a non-memoized implementation, every top-level call to factorial includes the cumulative cost of steps 2 through 6 proportional to the initial value of n.
+
+A memoized version of the factorial function follows:
+
+function factorial (n is a non-negative integer)
+    if n is 0 then
+        return 1 [by the convention that 0! = 1]
+    else if n is in lookup-table then
+        return lookup-table-value-for-n
+    else
+        let x = factorial(n – 1) times n [recursively invoke factorial
+                                         with the parameter 1 less than n]
+        store x in lookup-table in the nth slot [remember the result of n! for later]
+        return x
+    end if
+end function
+
+In this particular example, if factorial is first invoked with 5, and then invoked later with any value less than or equal to five, those return values will also have been memoized, since factorial will have been called recursively with the values 5, 4, 3, 2, 1, and 0, and the return values for each of those will have been stored. If it is then called with a number greater than 5, such as 7, only 2 recursive calls will be made (7 and 6), and the value for 5! will have been stored from the previous call. In this way, memoization allows a function to become more time-efficient the more often it is called, thus resulting in eventual overall speed-up.
+
+
+
 <h3 id="resources">Resources</h3>
 
 <ul>
   <li>
-    <a href=""></a>
+    <a href="https://en.wikipedia.org/wiki/Memoization">Memoization (Wikipedia)</a>
   </li>
 </ul>
 

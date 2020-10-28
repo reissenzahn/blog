@@ -10,6 +10,18 @@ draft: false
       <li>
         <a href="#introduction">Introduction</a>
       </li>
+      <li>
+        <a href="#procedure">Procedure</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
 		</ul>
 	</li>
 </ul>
@@ -19,47 +31,74 @@ draft: false
 <h3 id="introduction">Introduction</h3>
 
 <p>
-  A sorting algorithm is an algorithm that puts elements of a list in a certain order.
-</p>
-
-<p>
-  Insertion sort is a simple sorting algorithm that builds the final sorted array (or list) one item at a time. It is much less efficient on large lists than more advanced algorithms but is efficient for quite small data sets.
+  Insertion sort is a in-place sorting algorithm that builds the final sorted array behind it. Unlike selection sort, the running time of insertion sort depends on the initial ordering of the array. As such, insertion sort is an excellent method for partially sorted arrays and is also a fine method for tiny arrays.
 </p>
 
 
-<h4>Procedure</h4>
+<h3 id="procedure">Procedure</h3>
 
 <p>
-  Sorting is typically done in-place, by iterating up the array, growing the sorted list behind it. At each array-position, it checks the value there against the largest value in the sorted list (which happens to be next to it, in the previous array-position checked). If larger, it leaves the element in place and moves to the next. If smaller, it finds the correct position within the sorted list, shifts all the larger values up to make a space, and inserts into that correct position.
+  Insertion sort proceeds as follows:
 </p>
 
 <ol>
   <li>
-    Start at the second element in the array.
+    Start at the second element of the array.
   </li>
   <li>
-    Compare the second element to the first element. 
+    Compare the current element to the element to its left. If the current element is smaller then swap the elements.
   </li>
   <li>
-    
+    Continuing swapping until the current element is larger than the element to its left or the end of the array is reached.
   </li>
   <li>
-
-  </li>
-  <li>
-
+    Repeat this process for each subsequent element of the array.
   </li>
 </ol>
 
-<p>
-  1. The first element in the array is assumed to be sorted. Take the second element and store it separately in key.
-  2. Compare key with the first element. If the first element is greater than key, then key is placed in front of the first element.
-  3. Now, the first two elements are sorted. Take the third element and compare it with the elements on the left of it. Placed it just behind the element smaller than it. If there is no element smaller than it, then place it at the beginning of the array.
-  4. Similarly, place every unsorted element at its correct position.
-</p>
+<figure>
+  <img src="/img/sorting/insertion-sort/insertion-sort.svg" style="max-width: 250px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
 
 
-<h4>Complexity</h4>
+
+<h3 class="implementation">Implementation</h3>
+
+<pre><code class="java">public class Insertion {
+
+  public static void sort(int[] array) {
+    if (array == null) {
+      return;
+    }
+
+    for (int i = 1; i &lt; array.length; i++) {
+      for (int j = i; j > 0 && array[j] &lt; array[j - 1]; j--) {
+        swap(array, j - 1, j);
+      }
+    }
+  }
+
+  private static void swap(int[] array, int i, int j) {
+    int tmp = array[i];
+    array[i] = array[j];
+    array[j] = tmp;
+  }
+
+  public static void main(String[] args) {
+    int[] array = { 6, 4, 2, 8, 9, 1, 5, 3, 7 };
+
+    Insertion.sort(array);
+
+    System.out.println(Arrays.toString(array));  // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  }
+}</code></pre>
+
+
+
+<h3 class="complexity">Complexity</h3>
 
 <table>
   <tr>
@@ -81,16 +120,15 @@ draft: false
 </table>
 
 
+
 <h3 id="resources">Resources</h3>
 
 <ul>
   <li>
-    <a href=""></a>
+    <a href="https://en.wikipedia.org/wiki/Insertion_sort">Insertion Sort (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=JU767SDMDvA">Insertion sort in 2 minutes
+ (YouTube)</a>
   </li>
 </ul>
-
-
-<!-- 
-  https://en.wikipedia.org/wiki/Insertion_sort
-  https://www.programiz.com/dsa/insertion-sort
--->
