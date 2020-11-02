@@ -1,0 +1,128 @@
+---
+title: "Kruskal's Algorithm"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Kruskal's algorithm is greedy algorithm that finds a minimum spanning forest of an undirected edge-weighted graph. If the graph is connected, it finds a minimum spanning tree. A minimum spanning tree of a connected graph is a subset of the edges that forms a tree that includes every vertex, where the sum of the weights of all the edges in the tree is minimized. For a disconnected graph, a minimum spanning forest is composed of a minimum spanning tree for each connected component.
+</p>
+
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+  Given a graph represented using an edge list, Kruskal's algorithm proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Initialize a union find containing each of the vertices in the graph.
+  </li>
+  <li>
+    Sort the edges into ascending order according the edge weights.
+  </li>
+  <li>
+    Iterate over each of the edges in the sorted edge list.
+  </li>
+  <li>
+    If the endpoints of the edge are already unified then skip the edge; otherwise, add the edge to the MST and unify the endpoints.
+  </li>
+  <li>
+    Repeat steps 3-4 until every edge has been processed or all the vertices have been unified.
+  </li>
+</ol>
+
+
+<h3 id="example">Example</h3>
+
+<div>
+  <div class="example">
+    <figure>
+      <img src="/img/kruskals-algorithm/example-1.svg" style="max-width: 450px;">
+      <figcaption>
+        <i>step 1</i>
+      </figcaption>
+    </figure>
+    <!-- TODO: other steps -->
+  </div>
+  <script>
+    const c = new Carousel({ selector: '.example' });
+  </script>
+</div>
+
+
+
+<h3 id="complexity">Complexity</h3>
+
+<p>
+  For a graph with \(E\) edges and \(V\) vertices, Kruskal's algorithm can be shown to run in \(O(E \log E\)\) time, or equivalently, \(O(E \log V\)\) time.
+</p>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java">public class KruskalsAlgorithm {
+
+  public static long kruskals(Edge[] edges, int n) {    
+    if (edges == null)
+      return null;
+    
+    int sum = 0;
+    UnionFind uf = new UnionFind(n);
+
+    java.util.Arrays.sort(edges);
+
+    for (Edge edge : edges) {
+
+      // avoid creating a cycle
+      if (uf.connected(edge.from, edge.to))
+        continue;
+      
+      // include this edge
+      uf.union(edge.from, edge.to);
+      sum += edge.weight;
+
+      // stop early if we have an MST that includes all the nodes
+      if (uf.size(0) == n)
+        break;
+    }
+
+    if (uf.size(0) != n)
+      return null;
+    
+    return sum;
+  }
+}</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Kruskal%27s_algorithm">Kruskal's Algorithm (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=JZBQLXgSGfs">Union Find Kruskal's Algorithm (William Fiset)</a>
+  </li>
+</ul>

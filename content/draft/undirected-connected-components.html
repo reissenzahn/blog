@@ -1,0 +1,106 @@
+---
+title: "Undirected Connected Components (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+
+</p>
+
+<!--
+  In this section, G = (V, E) will always denote an undirected graph.
+
+  An undirected graph G = (V, E) naturally falls into "pieces" which are called connected components. More formally, a connected component is a maximal subset S \subseteq V of vertices such that there is a path from any vertex in S to any other vertex in S.
+
+  The goal of this section is to compute the connected components of a graph in linear time.
+
+  Given an undirected graph G = (V, E), identify the connected components of G.
+-->
+
+
+
+<h3 id="depth-first-search">Depth-First Search</h3>
+
+<!--
+  Computing the connected components of an undirected graph easily reduces to depth-first-search. The idea is to use an outer loop to make a single pass over the vertices, invoking DFS as a subroutine whenever the algorithm encounters a vertex that it has never seen before. This outer loop ensures that the algorithm looks at every vertex at least once.
+-->
+
+<ol>
+  <li>
+
+  </li>
+</ol>
+
+
+<!-- 
+  For every undirected graph G = (V, E) in adjacency-list representation:
+
+  a) At the conclusion of UCC, for every pair u, v of vertices cc(u) = cc(v) if and only if u and v belong to the same connected component of G.
+
+  b) The running time of UCC is O(|V| + |E|).
+-->
+
+
+<h3 class="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 class="complexity">Complexity</h3>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=vHqaiQlOzOw">BFS and Undirected Connectivity (Stanford Algorithms)</a>
+  </li>
+</ul>
+
+
+<!-- A graph is said to be disconnected if it is not connected, i.e. if two nodes exist in the graph such that there is no edge in between those nodes. In an undirected graph, a connected component is a set of vertices in a graph that are linked to each other by paths.
+
+Consider the example given in the diagram. Graph G is a disconnected graph and has the following 3 connected components.
+
+First connected component is 1 -> 2 -> 3 as they are linked to each other
+Second connected component 4 -> 5
+Third connected component is vertex 6
+
+In DFS, if we start from a start node it will mark all the nodes connected to the start node as visited. Therefore, if we choose any node in a connected component and run DFS on that node it will mark the whole connected component as visited. -->
+
+<!-- 
+  10 5 Depth First Search DFS The Basics
+  https://www.youtube.com/watch?v=_9_VUNrWGUs&list=PLXFMmlk03Dt7Q0xr1PIAriY5623cKiH7V&index=49
+
+
+  10 4 BFS and Undirected Connectivity 13 min
+  https://www.youtube.com/watch?v=vHqaiQlOzOw
+-->
+
+<!-- 
+  https://www.interviewcake.com/concept/java/dfs
+
+  https://www.youtube.com/watch?v=7fujbpJ0LB4&list=PLDV1Zeh2NRsDGO4--qE8yH72HFL1Km93P&index=4
+
+  https://www.hackerearth.com/practice/algorithms/graphs/depth-first-search/tutorial/
+-->
+

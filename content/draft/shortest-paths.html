@@ -1,0 +1,124 @@
+---
+title: "Shortest Paths (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<!-- 
+
+
+-->
+
+
+<h3 id="">Breadth-First Search</h3>
+
+<p>
+  Breadth-first search can be used to find the shortest path between two vertices provided all the weights in the graph are one.
+</p>
+
+
+
+<h3 id="">Dijkstra's Shortest-Path Algorithm</h3>
+
+<!-- Dijkstra's algorithm is an algorithm for finding the shortest paths between nodes in a graph.
+
+For a given source node in the graph, the algorithm finds the shortest path between that node and every other. It can also be used for finding the shortest paths from a single node to a single destination node by stopping the algorithm once the shortest path to the destination node has been determined.
+
+The Dijkstra algorithm uses labels that are positive integers.
+
+Using a Fibonacci heap min-priority queue the running time complexity can be reduced to \Theta (|E|+|V|\log |V|)}. This is asymptotically the fastest known single-source shortest-path algorithm for arbitrary directed graphs with unbounded non-negative weights.
+
+Let the node at which we are starting be called the initial node. Let the distance of node Y be the distance from the initial node to Y. Dijkstra's algorithm will assign some initial distance values and will try to improve them step by step.
+
+1. Mark all nodes unvisited. Create a set of all the unvisited nodes called the unvisited set.
+2. Assign to every node a tentative distance value: set it to zero for our initial node and to infinity for all other nodes. Set the initial node as current.[16]
+3. For the current node, consider all of its unvisited neighbours and calculate their tentative distances through the current node. Compare the newly calculated tentative distance to the current assigned value and assign the smaller one. For example, if the current node A is marked with a distance of 6, and the edge connecting it with a neighbour B has length 2, then the distance to B through A will be 6 + 2 = 8. If B was previously marked with a distance greater than 8 then change it to 8. Otherwise, the current value will be kept.
+4. When we are done considering all of the unvisited neighbours of the current node, mark the current node as visited and remove it from the unvisited set. A visited node will never be checked again.
+5. If the destination node has been marked visited (when planning a route between two specific nodes) or if the smallest tentative distance among the nodes in the unvisited set is infinity (when planning a complete traversal; occurs when there is no connection between the initial node and remaining unvisited nodes), then stop. The algorithm has finished.
+6. Otherwise, select the unvisited node that is marked with the smallest tentative distance, set it as the new "current node", and go back to step 3.
+
+When planning a route, it is actually not necessary to wait until the destination node is "visited" as above: the algorithm can stop once the destination node has the smallest tentative distance among all "unvisited" nodes (and thus could be selected as the next "current"). -->
+
+
+<!--
+  Dijkstra's algorithm is a single source shortest path algorithm for graphs with non-negative edge weights.
+-->
+
+<!-- 
+1. Maintain a `dist` array where the distance to every node is positive infinity. Mark the distance to the start node `s` to be 0.
+
+2. Maintain a priority queue of key-value pairs of (node index, distance) pairs which tell you which node to visit next based on sorted min value.
+
+3. Insert (s, 0) into the priority queue and loop while the priority queue is not empty pulling out the next most promising (node index, distance) pair.
+
+4. Iterate over all edges outwards from the current node and relax each edge appending a new (node index, distance) pair to the priority queue for every relaxation.
+
+A neat optimization we can do which ignores stale (index, dist) pairs in our PQ is to skip nodes where we already found a better path routing through other nodes before we got to processing this node.
+
+If you want to not only find the optimal distance to a particular node but also what sequence of nodes were taken to get there you need to track some additional information: the index of the previous node we took to get to the current node.
+
+If we're only interesting in the shortest distance to a specific node then we can stop early once we have visited the destination node. The algorithm processes each next most promising node in order. So if the destination node has been visited, its shortest distance will not change as more future nodes are visited.
+-->
+
+<!--
+Let distance of start vertex from start vertex = 0
+Let distance of all other vertices from start = inf
+
+1. Visit the unvisited vertex with the smallest known distance from the start vertex.
+2. For the current vertex, examine its unvisited neighbors.
+3. For the current vertex, calculate the distance of each neighbor from the start vertex.
+4. If the calculated distance of a vertex is less than the known distance, update the shortest distance.
+5. Update the previous vertex for each of the updated distances.
+6. Add the current vertex to the list of visited vertices.
+7. Repeat until all vertices have been visited.
+-->
+
+
+
+<h3 class="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 class="complexity">Complexity</h3>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=pVfj6mxhdMw">Dijkstra's Shortest Path Algorithm Example</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=pSqmAO-m7Lk">Dijkstra's Shortest Path Algorithm (WilliamFiset)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=jRlNVmRjdRk">Dijkstra's Shortest Path Algorithm (Stanford Algorithms)</a>
+  </li>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">Dijkstra's algorithm (Wikipedia)</a>
+  </li>
+</ul>
+
+<!-- 
+  10 3 BFS and Shortest Paths 8 min
+  https://www.youtube.com/watch?v=AhEZ4yjkVxA&list=PLXFMmlk03Dt7Q0xr1PIAriY5623cKiH7V&index=47
+ -->

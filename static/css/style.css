@@ -169,7 +169,7 @@ header hr {
   margin: 0;
   border: none;
   width: 250px;
-  height: 1px;
+  height: 2px;
   opacity: 0.5;
   background: linear-gradient(
     to right,

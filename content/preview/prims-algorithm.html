@@ -1,0 +1,160 @@
+---
+title: "Prim's Algorithm"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#procedure">Procedure</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Prim's algorithm is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph. That is, it finds an acyclic subset of the edges that connects all the vertices and whose total weight is minimized. The algorithm operates by building the tree one vertex at a time. At each step, we choose the edge with minimum weight among those edges that connect the tree to vertices not yet in the tree and transfer it to the tree.
+</p>
+
+
+
+<h3 id="introduction">Procedure</h3>
+
+<p>
+  Given a graph represented using an adjacency and a starting vertex \(s\), Prim's algorithms proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Initialize a priority queue that sorts edges based on the minimum weight.
+  </li>
+  <li>
+    Mark \(s\) as visited and add all the edges whose origin is \(s\) to the priority queue.
+  </li>
+  <li>
+    Dequeue the edge with the minimum weight from the priority queue.
+  </li>
+  <li>
+    If the destination of the dequeued edge has already been visited then skip it and go to step 3.
+  </li>
+  <li>
+    Otherwise, add the dequeued edge to the MST and mark the destination of the dequeued edge as visited.
+  </li>
+  <li>
+    Add the edges of the dequeued whose destination has not already been visited to the priority queue.
+  </li>
+  <li>
+    Repeat steps 3-5 until the priority queue is empty or the MST contains one less edge than the number of vertices in the graph.
+  </li>
+  <li>
+    Collapse the resulting directed representation of the MST into a directed representation.
+  </li>
+</ol>
+
+
+<h3 id="example">Example</h3>
+
+<div>
+  <div class="example">
+    <figure>
+      <img src="/img/prims-algorithm/example-1.svg" style="max-width: 450px;">
+      <figcaption>
+        <i>step 1</i>
+      </figcaption>
+    </figure>
+    <!-- TODO: other steps -->
+  </div>
+  <script>
+    const c = new Carousel({ selector: '.example' });
+  </script>
+</div>
+
+<h3 id="complexity">Complexity</h3>
+
+<p>
+  When using an adjacency list representation of a graph, the time complexity of Prim's algorithm is \(O((|V|+|E|) \log |V|)\) when using a binary heap representation. This can be reduced to \(O(|E|+|V|\log |V|)\) if a fibonacci heap is used.
+</p>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java">public class PrimsAlgorithm {
+
+  public static void prims(List<List<Edge>> g, int s) {
+    
+    int n = g.size();
+    int m = n - 1;
+    int count = 0;
+    
+    boolean[] visited = new boolean[n];
+    Edge[] edges = new Edge[m];
+
+    PriorityQueue<Edge> pq = new PriorityQueue<>();
+
+    visited[s] = true;
+
+    for (Edge v : g.get(s)) {
+      if (visited[v.to])
+        continue;
+
+      pq.offer(v);
+    }
+
+    while (!pq.isEmpty() && count != m) {
+      Edge u = pq.poll();
+
+      if (visited[u.to])
+        continue;
+      
+      edges[count++] = u;
+      visited[u.to] = true;
+
+      for (Edge v : g.get(u.to)) {
+        if (visited[v.to])
+          continue;
+        
+        pq.offer(v);
+      }
+    }
+
+    if (count != m) {
+      System.out.println("MST not found!");
+      return;
+    }
+
+    for (Edge v : edges) {
+      System.out.println(String.format("from: %d, to: %d, weight: %d", v.from, v.to, v.weight));
+    }
+  }
+}
+</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Prim%27s_algorithm">Prim's Algorithm (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=jsmMtJpPnhU">Prim's Minimum Spanning Tree Algorithm (William Fiset)</a>
+  </li>
+</ul>

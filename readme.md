@@ -1,40 +1,51 @@
 
-1 7 Merge Sort Analysis
+# Introduction to Algorithms
 
-3 1 On log n Algorithm for Counting Inversions I
-3 2 On log n Algorithm for Counting Inversions II
-3 3 Strassen 's Subcubic Matrix Multiplication Algorithm
-3 4 On log n Algorithm for Closest Pair I Advanced Optional
-3 5 On log n Algorithm for Closest Pair II Advanced Optional
+https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/
+
+Lecture 1: Algorithmic Thinking, Peak Finding
+Lecture 2: Models of Computation, Document Distance
+Lecture 3: Insertion Sort, Merge Sort
+Lecture 4: Heaps and Heap Sort
+Lecture 5: Binary Search Trees, BST Sort
+Lecture 6: AVL Trees, AVL Sort
+Lecture 7: Counting Sort, Radix Sort, Lower Bounds for Sorting
+Lecture 8: Hashing with Chaining
+Lecture 9: Table Doubling, Karp-Rabin
+Lecture 10: Open Addressing, Cryptographic Hashing
+Lecture 11: Integer Arithmetic, Karatsuba Multiplication
+Lecture 12: Square Roots, Newton's Method
+Lecture 14: Depth-First Search (DFS), Topological Sort
+Lecture 15: Single-Source Shortest Paths Problem
+Lecture 16: Dijkstra
+Lecture 17: Bellman-Ford
+Lecture 18: Speeding up Dijkstra
+Lecture 19: Dynamic Programming I: Fibonacci, Shortest Paths
+Lecture 20: Dynamic Programming II: Text Justification, Blackjack
+Lecture 21: Dynamic Programming III: Parenthesization, Edit Distance, Knapsack
+Lecture 22: Dynamic Programming IV: Guitar Fingering, Tetris, Super Mario Bros.
+Lecture 23: Computational Complexity
+Lecture 24: Topics in Algorithms Research
+
+
+
+# Algorithms I
 
 8 1 Randomized Selection Algorithm
 8 3 Deterministic Selection Algorithm Advanced Optional
 8 4 Deterministic Selection Analysis I Advanced Optional
 8 5 Deterministic Selection Analysis II Advanced Optional
-8 6 Omegan log n Lower Bound for Comparison Based Sorting Advanced
+8 6 Omega n log n Lower Bound for Comparison Based Sorting Advanced
 
 9 4 Analysis of Contraction Algorithm
 9 5 Counting Minimum Cuts
-
-10 1 Graph Search Overview
-10 2 Breadth First Search BFS The Basics
-10 3 BFS and Shortest Paths
-10 4 BFS and Undirected Connectivity
-10 6 Topological Sort
-10 7 Computing Strong Components The Algorithm
-10 8 Computing Strong Components The Analysis
  
 11 3 Correctness of Dijkstra 's Algorithm Advanced Optional
-11 4 Dijkstra 's Algorithm Implementation and Running Time
+11 4 Dijkstra's Algorithm Implementation and Running Time
 
-13 1 Balanced Search Trees Operations and Applications
-13 2 Binary Search Tree Basics, Part I
 13 3 Binary Search Tree Basics, Part II
 13 4 Red Black Trees
 13 6 Insertion in a Red Black Tree Advanced
-
-14 2 Hash Tables Implementation Details, Part I
-14 3 Hash Tables Implementation Details, Part II
 
 15 1 Pathological Data Sets and Universal Hashing Motivation
 15 2 Universal Hashing Definition and Example Advanced Optional
@@ -48,43 +59,21 @@
 
 # Plate
 
-VVVV VERY NICE!!!
-
 http://timroughgarden.org/notes.html
-
-
-
 
 https://gohugo.io/content-management/organization/
 
-
 https://ssbc.github.io/scuttlebutt-protocol-guide/
-
 
 https://en.wikipedia.org/wiki/Timsort
 
 https://github.com/williamfiset/Algorithms/tree/master/src/main/java/com/williamfiset/algorithms/graphtheory
 
-
-# Horizon
-
-- [Tapestry](https://sites.cs.ucsb.edu/~ravenben/publications/CSD-01-1141.pdf)
-- [Pastry](https://www.microsoft.com/en-us/research/wp-content/uploads/2001/11/pastry.pdf)
-- [Cubit](http://www.cs.cornell.edu/~bwong/Cubit/)
+http://www.cs.cornell.edu/~bwong/Cubit/
 
 
 
-
-## Chord
-
-- [Chord Wikipedia](https://en.wikipedia.org/wiki/Chord_(peer-to-peer))
-- [Chord: Building a Distributed Hash Table in Golang](https://medium.com/techlog/chord-building-a-dht-distributed-hash-table-in-golang-67c3ce17417b)
-- [Chord Implementation](https://github.com/arriqaaq/chord)
-- [Chord: A Scalable Peer-to-peer Lookup Protocol for Internet Applications](https://pdos.csail.mit.edu/papers/ton:chord/paper-ton.pdf)
-- [Distributed Hash Table using Node.js, gRPC, and the Chord Algorithm](https://www.youtube.com/watch?v=rhch2dZFcdM)
-- [Distributed Hash Tables and Chord](http://web.mit.edu/6.829/www/currentsemester/materials/chord.pdf)
-
-
+# Template
 
 ```html
 ---
@@ -113,7 +102,7 @@ draft: false
 <figure>
   <img src="/img/raft/previous-terms.svg" style="max-width: 230px;" alt="">
   <figcaption>
-    Figure X
+    <i>figure 1</i>
   </figcaption>
 </figure>
 
