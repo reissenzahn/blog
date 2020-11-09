@@ -1,0 +1,294 @@
+---
+title: "Chord"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Chord is a protocol for a peer-to-peer distributed hash table. The protocol supports just one operation: given a key, it maps the key onto a node. As such, a given key-value pair is stored on the node to which its key maps. Chord adapts efficiently as nodes join and leave the system and can answer queries even if the system is continuously changing. Communication costs and the state maintained by each node scale logarithmically with the number of Chord nodes.
+</p>
+
+
+
+<h3 id="identifiers">Identifiers</h3>
+
+<p>
+  Each node and key is assigned an \(m\)-bit identifier using the SHA-1 hash function. The identifier for a node is obtained by hashing its IP address while the identifier for a key is obtained by hashing the key. The identifier length \(m\) must be large enough to make the probability of two nodes or keys hashing to the same identifier negligible. Identifiers are ordered on an identifier circle modulo \(2^m\) and so can be represented as a circle of numbers from \(0\) to \(2^m - 1\) as in <i>figure 1</i> where \(m = 6\).
+</p>
+
+<figure>
+  <img src="/img/chord/identifiers.svg" style="max-width: 450px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="consistent-hashing">Consistent Hashing</h3>
+
+<p>
+  Chord assigns keys to nodes with consistent hashing. Key \(k\) is assigned to the first node whose identifier is equal to or follows the identifier of \(k\) in the identifier space. This node is called the successor node of key \(k\). For example, in <i>figure 2</i>, the successor of identifier \(10\) is node \(14\) so key \(10\) would be located at node \(14\). Similarly, keys \(24\) and \(30\) would be located at node \(32\), key \(38\) at node \(38\) and key \(54\) at node \(56\).
+</p>
+
+<figure>
+  <img src="/img/chord/consistent-hashing.svg" style="max-width: 450px;">
+  <figcaption>
+    <i>figure 2</i>
+  </figcaption>
+</figure>
+
+<p>
+  To maintain the consistent hashing mapping when a node \(n\) joins the network, certain keys previously assigned to the successor of \(n\) now become assigned to \(n\). When node \(n\) leaves the network, all of its assigned keys are reassigned to the successor of \(n\). For example, in <i>figure 2</i>, if a node where to join with identifier \(26\), it would capture the key with identifier \(24\) from the node with identifier \(32\).
+</p>
+
+
+
+<h3 id="finger-tables">Finger Tables</h3>
+
+<p>
+  Each node maintains a routing table with up to \(m\) entries called the finger table. The \(i\)-th entry in the table at node \(n\) contains the identity of the first node \(s\) that succeeds \(n\) by at least \(2^{i-1}\) on the identifier circle. We call the node \(s\) the \(i\)-th finger of \(n\). This way the first finger of \(n\) is the immediate successor of \(n\) on the circle. A finger table entry includes both the identifier as well as the IP address and port number of the relevant node.
+</p>
+
+<figure>
+  <img src="/img/chord/finger-table.svg" style="max-width: 450px;">
+  <figcaption>
+    <i>figure 2</i>
+  </figcaption>
+</figure>
+
+<p>
+  For example, in <i>figure 2</i>, the first finger of node \(8\) points to node \(14\) as node \(14\) is the first node that succeeds \((8 + 2^0) \bmod 2^6 = 9\). Similarly, the last finger of node \(8\) points to node \(42\) as node \(42\) is the first node that succeeds \((8 + 2^5) \bmod 2^6 = 40\). Applying the same reasoning for each of the other \(1 \le i \le m\) we get the following finger table:
+</p>
+
+<table style="margin-left: auto; margin-right: auto;">
+  <tr>
+    <th colspan="2">Finger Table (N8)</th>
+  </tr>
+  <tr>
+    <td>N8 + 1</td>
+    <td>N14</td>
+  </tr>
+  <tr>
+    <td>N8 + 2</td>
+    <td>N14</td>
+  </tr>
+  <tr>
+    <td>N8 + 4</td>
+    <td>N14</td>
+  </tr>
+  <tr>
+    <td>N8 + 8</td>
+    <td>N21</td>
+  </tr>
+  <tr>
+    <td>N8 + 16</td>
+    <td>N32</td>
+  </tr>
+  <tr>
+    <td>N8 + 32</td>
+    <td>N42</td>
+  </tr>
+</table>
+
+<!-- 
+  In the steady state, in an \(N\)-node system, each node maintains information about only \(O(\log N\) other nodes. Note that the first finger of \(n\) is the immediate successor of \(n\) on the identifer circle; the first finger is often referred to a the successor.
+-->
+
+
+
+<h3 id="lookup">Lookup</h3>
+
+<p>
+  To lookup a key, node \(n\) will hash the key and invoke <code>find_successor()</code> to check if the identifier falls between \(n\) and its successor. If so, then the key is assigned to the successor; otherwise, \(n\) searches its finger table for the node \(n'\) whose identifier most immediately precedes the key identifer. The <code>find_successor()</code> procedure will then be invoked on \(n'\).
+</p>
+
+<pre>// ask node n to find the successor of id
+n.find_successor(id)
+  if (id ∈ (n, successor])
+    return successor
+  else
+    n' = closest_preceding_node(id)
+    return n'.find_successor(id)
+
+// search the local table for the highest predecessor of id
+n.closest_preceding_node(id)
+  for i = m down to 1
+    if (finger[i] ∈ (n, id))
+      return finger[i]
+  return n</pre>
+
+<p>
+  The choice of \(n'\) is based on the structure of the finger table. Each node knows more about nodes closely following it on the identifier circle than about nodes father away. As such, the closer \(n'\) is to the identifer, the more it will know about the identifer circle in the region of the identifier.
+</p>
+
+<p>
+  Since each node has finger entries at power of two intervals around the identifier circle, each node forwards a query at least halfway along the remaining distance between the node and the target identifier. Indeed, with high probability, the number of nodes that must be contacted to find a successor in an \(N\)-node network is \(O(\log N)\).
+</p>
+
+<!-- 
+  Because the routing table is distributed, a Chord node communicates with other nodes in order to perform a lookup.
+-->
+
+<figure>
+  <img src="/img/chord/lookup.svg" style="max-width: 450px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="">Stabilization</h3>
+
+<p>
+  Chord needs to deal with nodes joining the network and with nodes that fail or leave voluntarily. Indeed, in order to ensure that lookups execute correctly as the set of participating nodes changes, Chord must ensure that each node's successor pointer is up to date using a stabilization protocol. This is achieved by each node periodically invoking <code>stabilize()</code> in the background tto learn about newly joined nodes.
+</p>
+
+<pre>// verify n's immediate successor and tell the successor about n
+n.stabilize()
+  x = successor.predecessor
+  if (x ∈ (n, successor))
+    successor = x
+  successor.notify(n)
+
+// n' thinks it might be our predecessor
+n.notify(n')
+  if (predecessor is nil or n' ∈ (predecessor, n))
+    predecessor = n'</pre>
+
+<p>
+   Each time node \(n\) runs <code>stabilize()</code>, it asks its successor for the successor's predecessor \(p\) and decides whether \(p\) should be its successor instead. This would be the case if \(p\) recently joined the network. Finally, the node notifies its successor of its existence which gives the successor the chance to change its predecessor to \(n\). The successor does this only if it knows of no closer predecessor than \(n\).
+</p>
+
+<p>
+ Each node also periodically invokes <code>fix_fingers()</code> to make sure its finger table entries are correct. This is how new nodes initialize their finger tables and it is how existing nodes incorporate new nodes into their finger tables. This steps through the finger table entries and updates them with the appropriate node through a call to <code>find_successor()</code>.
+</p>
+
+<pre>// refreshes finger table entries
+n.fix_fingers()
+  next = next + 1
+  if (next > n)
+    next = 1
+  finger[next] = find_successor(n + 2^(next - 1))</pre>
+
+<p>
+  Finally, each node also periodically invokes <code>check_predecessor()</code> to clear the node's predecessor pointer if it has failed. A new predecessor can then be accepted when <code>notify()</code> is invoked.
+</p>
+
+<pre>// checks whether predecessor has failed
+n.check_predecessor()
+  if (predecessor has failed)
+    predecessor = nil</pre>
+
+
+
+<h3 id="">Joining</h3>
+
+<p>
+  To create a new Chord network, a node invokes <code>create()</code> which and sets its successor to itself. To join an existing network, it invokes <code>join()</code> with any known node \(n'\). The <code>join()</code> function asks n' to find the immediate successor of n. By itself, <code>join()</code> does not make the rest of the network aware of \(n\).
+</p>
+
+<pre>// create a new ring
+n.create()
+  predecessor = nil
+  successor = n
+
+// join a Chord ring containing node n'
+n.join(n')
+  predecessor = nil
+  successor = n'.find_successor(n)</pre>
+
+<p>
+  As a simple example suppose node \(n\) joins the system and it identifier lies between nodes \(n_p\) and \(n_s\):
+</p>
+
+<ul>
+  <li>
+    Node \(n\) invokes <code>join()</code> and acquires \(n_s\) as its successor.
+  </li>
+  <li>
+    When node \(n\) invokes <code>stabilize()</code> it notifies \(n_s\) and causes \(n_s\) to acquire \(n\) as its predecessor.
+  </li>
+  <li>
+    When \(n_p\) next runs <code>stabilize()</code> it asks \(n_s\) for its predecessor which is \(n\) and then acquires \(n\) as its successor.
+  </li>
+  <li>
+    Finally, \(n_p\) notifies \(n\) which causes \(n\) to acquire \(n_p\) as its predecessor.
+  </li>
+</ul>
+
+<p>
+  Following this sequence of events, all predecessor and successor pointers are correct. As soon as the success pointers are correct, calls to <code>find_successor()</code> will reflect the new node. Note that at each step in the process, \(n_s\) is reachable from \(n_p\) using successor pointers which means that lookups concurrent with the join are not disrupted.
+</p>
+
+<p>
+
+</p>
+
+
+
+<h3 id="">Failure and Replication</h3>
+
+<p>
+  The correctness of Chord relies on the fact that each node knows its successor. However, this invariant can be compromised if nodes fail. As such, to increase robustness, each Chord node maintains a successor list of size \(r\), containing the node's first \(r\) successors. If a node's immediate successor does not respond, the node can substitute the second entry in its successor list.
+</p>
+
+<p>
+  All \(r\) successors would have to simultaneously fail in order to disrupt the Chord ring, an event that can be made very improbable with modest values of \(r\). Assuming each node fails independently with probability \(p\), the probability that all \(r\) successors fail simultaneously is only \(p^r\). Increasing \(r\) makes the system more robust.
+</p>
+
+<p>
+  Managing the successor list requires minor changes to 
+</p>
+
+
+
+<h3 id="">Voluntary Departures</h3>
+
+<p>
+  A node voluntarily leaving the network could be simply treated as a node failure. However, two enhancements can be used improve performance. Firstly, a node \(n\) that is about to leave may transfer its keys to its successor before it departs. Second, \(n\) may notify its predecessor \(p\) and successor \(s\) before leaving. In turn \(p\) will remove \(n\) from its successor list and add the last node \(n\)'s successor list to its own list.
+</p>
+
+<!-- 
+  Similarly, node s will replace its predecessor with n's predecessor.
+
+  Here we assume that n sends its predecessor to s and the last node in its successor list to p.
+-->
+
+
+<h3 id="system-model">System Model</h3>
+
+<p>
+  A Chord implementation takes the form of a library to linked with the applications that use it. The Chord library provides a <code>lookup(key)</code> function that yields the IP address of the node responsible for the key. Additionally, the Chord library notifies the application of changes in the set of keys that the node is responsible for. This allows the application to, for example, move corresponding values to their new homes when a new node joins.
+</p>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://pdos.csail.mit.edu/papers/ton:chord/paper-ton.pdf">Original Paper</a>
+  </li>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Chord_(peer-to-peer)">Chord (Wikipedia)</a>
+  </li>
+</ul>

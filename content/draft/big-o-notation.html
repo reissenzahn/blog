@@ -22,62 +22,68 @@ draft: false
 <h3 id="introduction">Introduction</h3>
 
 <p>
-  Big-O notation is a symbolism used to describe the asymptotic behavior of functions. In other words, it tells you how fast a function grows or declines.
+  Big-O notation is a symbolism that describes the asymptotic behavior of functions. Big-O notation is used to classify algorithms according to how their run time or space requirements grow as the input size grows.
 </p>
 
+
+<!--
+Big-O notation is a symbolism used to describe  In other words, it tells you how fast a function grows or declines.
 
 Big-O notation is a notation that describes the limiting behavior of a function when the argument tends towards a particular value or infinity.
 
-In computer science, big-O notation is used to classify algorithms according to how their run time or space requirements grow as the input size grows.
-
 Big-O notation characterizes functions according to their growth rates: different functions with the same growth rate may be represented using the same O notation.
 
+For example, one might find the time (or number of steps) it takes to complete a problem of size \(n\) is given by \(T(n) = 4n^2 - 2n + 2\). If we ignore constants (which makes sense because those depend on the particular hardware the program is run on) and slower growing terms, we could say "\(T(n)\) grows at the order of \(n^2\)" and write: \(T(n) = O(n^2)\).
+-->
 
-
-<p>
-  For example, one might find the time (or number of steps) it takes to complete a problem of size \(n\) is given by \(T(n) = 4n^2 - 2n + 2\). If we ignore constants (which makes sense because those depend on the particular hardware the program is run on) and slower growing terms, we could say "\(T(n)\) grows at the order of \(n^2\)" and write: \(T(n) = O(n^2)\).
-</p>
 
 
 <h3 class="definition">Definition</h3>
 
 <p>
-  Suppose \(f(x)\) and \(g(x)\) are two functions defined on some subset of the real numbers. We write \(f(x) = O(g(x))\) if and only if there exist constants \(N\) and \(C\) such that \(|f(x)| \le C|g(x)|\) for all \(x > N\). Intuitively, this means that \(f\) does not grow faster than \(g\).
+  Let \(f\) and \(g\) be functions defined on som e unbounded subset of the positive real numbers. We write \(f(n) = O(g(n))\) as \(n \rightarrow \infty\) if there exist constants \(N\) and \(M\) such that \(|f(n)| \le M|g(n)|\) for all \(n > N\). Intuitively, this means that \(f\) does not grow faster than \(g\).
 </p>
 
-Let f and g be real valued functions. Let both functions be defined on some unbounded subset of the positive real numbers, and g(x) be strictly positive for all large enough values of x. One writes
-
-f(x) = O(g(x)) as x \rightarrow \infty
-
-if the absolute value of f(x) is at most a positive constant multiple of g(x) for all sufficiently large values of x. That is, f(x) = O(g(x)) if there exists a positive real number M and and a real number x_0 such that
-
-|f(x)| \le Mg(x) for all x \ge x_0.
-
-In many contexts, the assumption that we are interested in the growth rate as the variable x goes to infinity is left unstated, and one writes more simply that
-
-f(x) = O(g(x))
+<figure>
+  <img src="/img/big-o-notation/definition.svg" style="max-width: 340px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
 
 
-<h3 class="">Usage</h3>
 
-Big O notation is useful when analyzing algorithms for efficiency. For example, the time (or the number of steps) it takes to complete a problem of size n might be found to be T(n) = 4n2 − 2n + 2. As n grows large, the n2 term will come to dominate, so that all other terms can be neglected—for instance when n = 500, the term 4n2 is 1000 times as large as the 2n term. Ignoring the latter would have negligible effect on the expression's value for most purposes. Further, the coefficients become irrelevant if we compare to any other order of expression, such as an expression containing a term n3 or n4. Additionally, the number of steps depends on the details of the machine model on which the algorithm runs, but different types of machines typically vary by only a constant factor in the number of steps needed to execute an algorithm. So the big O notation captures what remains: we write
+<h3 class="usage">Usage</h3>
+
+<p>
+  Big-O notation is typically used to describe the limiting behavior of a function \(f(n)\) for large values of \(n\). As such, dominant terms that grow most quickly will eventually make the other terms irrelevant. As a result the following simplification rules can be applied:
+</p>
+
+<ul>
+  <li>
+    If \(f(n)\) is a sum of several terms, if there is one with largest growth rate, then other terms can be omitted.
+  </li>
+  <li>
+    If \(f(n)\) is a product of several factors, any constants can be omitted.
+  </li>
+</ul>
+
+
+<!-- Big O notation is useful when analyzing algorithms for efficiency. For example, the time (or the number of steps) it takes to complete a problem of size n might be found to be T(n) = 4n2 − 2n + 2. As n grows large, the n2 term will come to dominate, so that all other terms can be neglected—for instance when n = 500, the term 4n2 is 1000 times as large as the 2n term. Ignoring the latter would have negligible effect on the expression's value for most purposes. Further, the coefficients become irrelevant if we compare to any other order of expression, such as an expression containing a term n3 or n4. Additionally, the number of steps depends on the details of the machine model on which the algorithm runs, but different types of machines typically vary by only a constant factor in the number of steps needed to execute an algorithm. So the big O notation captures what remains: we write
 
 T(n)=O(n^2)
 
-and say that the algorithm has order of n^2 time complexity.
+and say that the algorithm has order of n^2 time complexity. -->
 
 
 
 <h3 class="example">Example</h3>
 
-In typical usage the O notation is asymptotical, that is, it refers to very large x. In this setting, the contribution of the terms that grow "most quickly" will eventually make the other ones irrelevant. As a result, the following simplification rules can be applied:
+<p>
+  For example, consider the function \(f(n) = 6n^4 - 2n^3 + 5\). Taking the highest order term \(6n^4\) and omitting constants we get that \(f(n) = O(n^4)\). We can confirm this using the formal definition. Let \(g(n) = n^4\)
+</p>
 
-- If f(x) is a sum of several terms, if there is one with largest growth rate, it can be kept and all other omitted.
-
-- If f(x) is a product of several factors, any constants (terms in the product that do not depend on x) can be omitted.
-
-For example, let f(x) = 6x^4 - 2x^3 + 5, and suppose we wish to simplify this function using big-O notation, to describe its growth rate as x approaches infinity. This function is the sum of three terms: 6x^4, −2x^3, and 5. Of these three terms, the one with the highest growth rate is the one with the largest exponent as a function of x, namely 6x^4. Now one may apply the second rule: 6x^4 is a product of 6 and x^4 in which the first factor does not depend on x. Omitting this factor results in the simplified form x^4. Thus, we say that f(x) is a "big O" of x^4. Mathematically, we can write f(x) = O(x^4).
-
+<!-- 
 One may confirm this calculation using the formal definition: let f(x) = 6x^4 − 2x^3 + 5 and g(x) = x^4. Applying the formal definition from above, the statement that f(x) = O(x^4) is equivalent to its expansion,
 
 |f(x)| \le Mx^4
@@ -89,13 +95,9 @@ for some suitable choice of x_0 and M and for all x > x_0. To prove this, let x_
 so
 
 |6x^4 - 2x^3 + 5| \le 13x^4
+-->
 
-
-
-<!-- come up with a nice alternative f(x) -- this one is nicked from the wiki page -->
-
-
-Product
+<!-- Product
 {\displaystyle f_{1}=O(g_{1}){\text{ and }}f_{2}=O(g_{2})\Rightarrow f_{1}f_{2}=O(g_{1}g_{2})}{\displaystyle f_{1}=O(g_{1}){\text{ and }}f_{2}=O(g_{2})\Rightarrow f_{1}f_{2}=O(g_{1}g_{2})}
 {\displaystyle f\cdot O(g)=O(fg)}f\cdot O(g)=O(fg)
 Sum
@@ -105,14 +107,17 @@ This implies {\displaystyle f_{1}=O(g){\text{ and }}f_{2}=O(g)\Rightarrow f_{1}+
 Multiplication by a constant
 Let k be constant. Then:
 {\displaystyle O(|k|g)=O(g)}{\displaystyle O(|k|g)=O(g)} if k is nonzero.
-{\displaystyle f=O(g)\Rightarrow kf=O(g).}{\displaystyle f=O(g)\Rightarrow kf=O(g).}
+{\displaystyle f=O(g)\Rightarrow kf=O(g).}{\displaystyle f=O(g)\Rightarrow kf=O(g).} -->
 
 
 
 
-<h3 class="">Orders of Common Functions</h3>
+<h3 class="orders-of-common-functions">Orders of Common Functions</h3>
 
-Here is a list of classes of functions that are commonly encountered when analyzing the running time of an algorithm. In each case, c is a positive constant and n increases without bound. The slower-growing functions are generally listed first.
+<p>
+  The following table lists the classes of functions that are most commonly encountered when analyzing the running time of an algorithm.
+</p>
+
 
 <table>
   <tr>
@@ -197,17 +202,22 @@ Here is a list of classes of functions that are commonly encountered when analyz
   </tr>
 </table>
 
+<!-- TODO: diagram -->
+
+<ul>
+  <li>
+    \(O(1)\) describes an algorithm that will always execute in the same time regardless of the size of the input data set.
+  </li>
+</ul>
 
 
-
-
-O(1)
-O(1) describes an algorithm that will always execute in the same time (or space) regardless of the size of the input data set.
-
+<!--
+// O(1)
 bool IsFirstElementNull(IList<string> elements)
 {
     return elements[0] == null;
 }
+
 O(N)
 O(N) describes an algorithm whose performance will grow linearly and in direct proportion to the size of the input data set. The example below also demonstrates how Big O favours the worst-case performance scenario; a matching string could be found during any iteration of the for loop and the function would return early, but Big O notation will always assume the upper limit where the algorithm will perform the maximum number of iterations.
 
@@ -247,7 +257,7 @@ int Fibonacci(int number)
 
     return Fibonacci(number - 2) + Fibonacci(number - 1);
 }
-Log
+Log -->
 
 
 
@@ -255,30 +265,89 @@ Log
 
 <h4>Example 1</h4>
 
-<pre><code class="java">public void foo(int[] array) {
+<pre><code class="java">public void example(int[] array) {
   int sum = 0;
   int product = 1;
-  
-  for (int i = 0; i &lt; array.length; i++) {
-    sum += array[i];
-  }
-  
-  for (int i = 0; i &lt; array.length; i++) {
-    product *= array[i];
+
+  for (inti= 0; i &lt; array.length; i++) {
+    sum += array[i);
   }
 
-  System.out.println(sum + ", " + product); 
+  for (int i= 0; i &lt; array.length; i++) {
+    product *= array[i];
+  }
+  
+  System.out.println(sum + ", " + product);
 }</code></pre>
 
 <p>
-  
+  This will take \(O(n)\) time. The fact that we iterate through the array twice doesn't matter.
 </p>
 
 
-<!-- Get examples from Cracking -->
+<h4>Example 2</h4>
+
+<pre><code class="java">public void example(int[] array) {
+  for (int i= 0; i &lt; array.length; i++) {
+    for (int j = 0; j &lt; array.length; j++) {
+      System.out.println(array[i] + "," + array[j]);
+    }
+  }
+}</code></pre>
+
+<p>
+  The inner loop has \(O(n)\) iterations and it is called \(n\) times. Therefore, the runtime is \(O(n^2)\).
+</p>
 
 
-<h3 id="resources">Resources</h3>
+<h4>Example 3</h4>
+
+<pre><code class="java">public void example(int[] array) {
+  for (int i = 0; i &lt; array.length; i++) {
+    for (int j = i + 1; j &lt; array.length; j++) {
+      System.out.println(array[i] + "," + array[j]);
+    }
+  }
+}</code></pre>
+
+<p>
+  The first time through \(j\) runs for \(n-1\) steps. The second time, it runs for \(n-2\) steps. Then \(n-3\) step. And so on. Therefore, the total number of steps is \((n-1) + (n-2) + \dots + 2 + 1\) which is \((n(n-1))/2\). So the runtime will be \(O(n^2)\).
+</p>
+
+
+<h4>Example 4</h4>
+
+<pre><code class="java"></code></pre>
+
+<p>
+
+</p>
+
+
+<h4>Example 5</h4>
+
+<pre><code class="java"></code></pre>
+
+<p>
+
+</p>
+
+
+<h4>Example 6</h4>
+
+<pre><code class="java"></code></pre>
+
+<p>
+
+</p>
+
+
+<!-- TODO: Get examples from Cracking -->
+
+
+
+
+
 
 
 
@@ -289,13 +358,13 @@ Log
   <li>
     <a href="https://en.wikipedia.org/wiki/Big_O_notation">Big-O Notation (Wikipedia)</a>
   </li>
+  <li>
+    <a href="https://rob-bell.net/2009/06/a-beginners-guide-to-big-o-notation/"></a>
+  </li>
 </ul>
 
 
 <!-- 
-  https://rob-bell.net/2009/06/a-beginners-guide-to-big-o-notation/
-
-
   2 1 The Gist 
   https://www.youtube.com/watch?v=l-cNaKGc-yY&list=PLXFMmlk03Dt7Q0xr1PIAriY5623cKiH7V&index=9
 

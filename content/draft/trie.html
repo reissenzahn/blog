@@ -1,5 +1,5 @@
 ---
-title: "Trie (DRAFT)"
+title: "Trie"
 date: 2020-09-29
 draft: false
 ---
@@ -14,6 +14,9 @@ draft: false
           <a href="#complexity">Complexity</a>
         </li>
 				<li>
+          <a href="#implementation">Implementation</a>
+        </li>
+				<li>
           <a href="#resources">Resources</a>
         </li>
 		</ul>
@@ -21,38 +24,66 @@ draft: false
 </ul>
 
 
+
 <h3 id="introduction">Introduction</h3>
 
-A trie is a data structure that consists of a search tree built from the characters of the string keys that allows the characters of the search key to guide the search.
 
-Tries are dat structures composed of nodes that contain links that are either null or references to other nodes. Each node is pointed to by just one other node, which is called its parent (except for one node, the root, which has no nodes pointint to it), and each node has R links, where R is the alphabet size. Often tries have a substantial number of null links, so when we draw a trie, we typically omit null links. Although links point to nodes, we can view each link as pointint to a trie, the trie whose root is the referenced node.
+<p>
+  A trie is a data structure that consists of a search tree that is built from the characters of the string keys that allows the characters of the search key to guide the search. The position of a node in the tree defines the key with which it is associated. All the descendants of a node have a common prefix of the string associated with that node and the root is associated with the empty string.
+</p>
 
-Each link corresponds to a character value--since each link points to exactly one node, we label each node with the character corresponding to the link that points to it. Each node also has a corresponding value, which may be null or the value associated with one of the string keys in the symbol table. Specifically, we store the value associated with each key in the node corresponding to its last character. Nodes will null values exist to facilitate search in the trie and do not correspond to keys.
+<figure>
+  <img src="/img/trie/trie.svg" style="max-width: 340px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
 
 
 <h3 id="search">Node Representation</h3>
 
-Every node has R links, one for each possible character. Characters and keys are implicitly stored in the data structure.
+<p>
+  Each node in a trie has \(R\) links which each correspond to one of the \(R\) characters in the given alphabet. A node may also have a corresponding value associated with a given key. Specifically, we store the value associated with each key in the node corresponding to its last character. Nodes with null values exist to facilitate search in the trie and do not correspond to keys.
+</p>
 
-Keys in the trie are implicitly represented by paths from the root that end at nodes with non-null values.
 
-Since the parameter R plays such a critical role, we refer to a trie for an R-character alphabet as an R-way trie.
 
 
 <h3 id="search">Search</h3>
 
-Finding the value associated with a given string key in a trie is a simple process guided by the characters in the search key. Each node in the trie has a link corresponding to each possible string character. We start at the root, then follow the link associated with the first character in the key; from that node we follow the link associated with the second character in the key; from that node we follow the link associated with the third character in the key and so forth, until reaching the last character of the key or a null link. At this point, one of the following conditions hold:
+<p>
+  To search for the value associated with a given key we proceed as follows:
+</p>
 
-- The value at the node corresponding to the last character in the key is not null. This result is a search hit--the value associated with the key is the value in the node corresponding to its last character.
-- The value in the node corresponding to the last character in the key is null. This result is a search miss: the key is not in the table.
-- The search terminated with a null link. This result is also a search miss.
+<ol>
+  <li>
+    Start at the root node.
+  </li>
+  <li>
+    Follow the link associated with the first character in the key.
+  </li>
+  <li>
+    Follow the link associated with the second character in the key.
+  </li>
+  <li>
+    Continue to follow links in this manner until reaching the last character of the key or a null link.
+  </li>
+  <li>
+    If the value at the node corresponding to the key is not null then return the associated value.
+  </li>
+  <li>
+    Otherwise, if the value is null or the search terminated with a null link then return unsuccessfully.
+  </li>
+</ol>
 
-In all cases, the search is accomplished just by examining nodes along a path from the root to another node in the trie.
 
 
 <h3 id="insertion">Insertion</h3>
 
-As with binary search trees, we insert by first doing a search: in a trie that means using the characters of the key to guide us down the trie until reaching the last character of the key or a null link. At this point, one of the following two conditions holds:
+
+
+<!-- As with binary search trees, we insert by first doing a search: in a trie that means using the characters of the key to guide us down the trie until reaching the last character of the key or a null link. At this point, one of the following two conditions holds:
 
 - We encountered a null link before reaching the last character of the key. In this case, there is no trie node corresponding to the last character in the key, so we need to create nodes for each of the characters in the key not yet encountered and set the value in the last one to the value to be associated with the key.
 
@@ -60,30 +91,72 @@ As with binary search trees, we insert by first doing a search: in a trie that m
 
 In all cases, we examine or create a node in the trie for each key character.
 
-The linked structure (shape) of a trie is independent of the key insertion/ deletion order: there is a unique trie for any given set of keys.
+The linked structure (shape) of a trie is independent of the key insertion/ deletion order: there is a unique trie for any given set of keys. -->
 
 
 <h3 id="deletion">Deletion</h3>
 
-The first step needed to delete a key-value pair from a trie is to use a normal search to find the node corresponding to the key and set the corresponding value to null. If that node has a non-null link to a child, then no more work is required; if all the links are null, we need to remove the node from the data structure. If doing so leaves all the links null in its parent, we need to remove that node, and so forth.
+<p>
+  To remove the value associated with a given key we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Search for the appropriate node by key and set its associated value to null.
+  </li>
+  <li>
+    If the node has a non-null link to a child then return successfully.
+  </li>
+  <li>
+    Otherwise, if all the links are null, then remove the node from the tree.
+  </li>
+  <li>
+    If removing the node leaves all the links null in its parent, then remove that node.
+  </li>
+  <li>
+    Repeat this process until a parent with a non-null link is found.
+  </li>
+</ol>
+
 
 
 
 
 <h3 id="complexity">Complexity</h3>
 
+<!-- TODO: k??? -->
+
 <table>
   <tr>
     <th>Algorithm</th>
-    <th>Average</th>
-    <th>Worst</th>
+    <th>Worst case</th>
+  </tr>
+  <tr>
+    <td>
+      Insert
+    </td>
+    <td>
+      \(O(k)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Search
+    </td>
+    <td>
+      \(O(k)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Space
+    </td>
+    <td>
+      \(O(n \times k)\)
+    </td>
   </tr>
 </table>
 
-
-space	O(n∗k)
-insert	O(k)
-lookup	O(k)
 
 
 <h3 id="implementation">Implementation</h3>
@@ -91,10 +164,17 @@ lookup	O(k)
 <pre><code class="java"></code></pre>
 
 
+
 <h3 id="resources">Resources</h3>
 
 <ul>
   <li>
-    <a href="https://www.youtube.com/watch?v=zIjfhVPRZCg">Data Structures: Tries (YouTube)</a>
+    <a href="https://en.wikipedia.org/wiki/Trie">Trie (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.interviewcake.com/concept/java/trie">Trie (Interview Cake)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=zIjfhVPRZCg">Trie (Gayle McDowell)</a>
   </li>
 </ul>

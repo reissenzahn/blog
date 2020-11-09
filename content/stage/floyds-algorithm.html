@@ -1,0 +1,104 @@
+---
+title: "Floyd's Algorithm"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Floyd's algorithm is a cycle detection algorithm. Let \(S\) be any finite set and \(f\) be a function from \(S\) to itself. For any \(i > 0\) let \(x_i = f(x_{i-1})\). Let \(\mu\) be the smallest index such that the value \(x_\mu\) reappears infinitely often within the sequence of values \(x_i\) and let \(\lambda\) be the smallest positive integer such that \(x_\mu = x_{\mu + \lambda}\). Floyd's algorithm is concerned with finding \(\lambda\) and \(\mu\).
+</p>
+
+<figure>
+  <img src="/img/floyds-algorithm/cycle-detection.svg" style="max-width: 230px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+<p>
+  For example, in <i>figure 1</i>, we have a function \(f\) which maps the set \(S = \{0,1,2,3,4\}\) to itself. If one starts from \(x_0 = 0\) and repeatedly applies \(f\) one sees the sequence of values \(0, 1, 2, 3, 4, 1, 2, 3, 4, \dots\). As such, the cycle in this value sequence is \(1, 2, 3, 4\). The value of \(\mu\) is \(1\) and the value \(\lambda\) is \(4\).
+</p>
+
+
+<!-- 
+  Robert W. Floyd's tortoise and hare algorithm moves two pointers at different speeds through the sequence of values until they both point to equal values.
+
+  Floyd's algorithm uses only a constant number of memory cells, and take a number of function evaluations that is proportional to the distance from the start of the sequence to the first repetition.
+
+  The algorithm thus maintains two pointers into the given sequence, one (the tortoise) at xi, and the other (the hare) at x2i. At each step of the algorithm, it increases i by one, moving the tortoise one step forward and the hare two steps forward in the sequence, and then compares the sequence values at these two pointers. The smallest value of i > 0 for which the tortoise and hare point to equal values is the desired value ν.
+-->
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+
+</p>
+
+Floyd's algorithm uses two pointers, which move through the sequence at different speeds.
+
+
+<ol>
+  <li>
+    Initialize \(slow = f(x_0)\) and \(fast = f(f(x_0))\).
+  </li>
+  <li>
+    While 
+  </li>
+</ol>
+
+
+
+<h3 id="complexity">Complexity</h3>
+
+<p>
+
+</p>
+
+This code only accesses the sequence by storing and copying pointers, function evaluations, and equality tests; therefore, it qualifies as a pointer algorithm. The algorithm uses O(λ + μ) operations of these types, and O(1) storage space.
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 id="problems">Problems</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/happy-number/">202. Happy Number</a>
+  </li>
+</ul>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Cycle_detection">Cycle Detection (Wikipedia)</a>
+  </li>
+</ul>

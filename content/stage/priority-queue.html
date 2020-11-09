@@ -1,0 +1,137 @@
+---
+title: "Priority Queue"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#enqueue">Enqueue</a>
+      </li>
+      <li>
+        <a href="#dequeue">Dequeue</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  A priority queue is a queue-like data structure in which elements are enqueued with an associated priority. The dequeue operation removes and returns the element from the queue that has the highest priority. A min-priority queue considers lower values to have higher priority, while a max-priority queue considers higher values to have higher priority. For performance reasons, priority queues are frequently implemented using a heap.
+</p>
+
+<figure>
+  <img src="/img/priority-queue/front-and-back.svg" style="max-width: 230px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="enqueue">Enqueue</h3>
+
+<p>
+  For a min-priority queue implemented with a min-heap, the enqueue operation can be achieved by inserting the element into the heap using its priority.
+</p>
+
+<figure>
+  <img src="/img/priority-queue/enqueue.svg" style="max-width: 230px;">
+  <figcaption>
+    <i>figure 2</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="dequeue">Dequeue</h3>
+
+<p>
+  For a min-priority queue implemented with a min-heap, the dequeue operation can be achieved by removing the minimum element in the heap.
+</p>
+
+<figure>
+  <img src="/img/priority-queue/dequeue.svg" style="max-width: 230px;">
+  <figcaption>
+    <i>figure 3</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="complexity">Complexity</h3>
+
+<p>
+  A priority queue implemented with a binary heap has the following time complexities:
+</p>
+
+<table>
+  <tr>
+    <th>
+      Operation
+    </th>
+    <th>
+      Worst-case Complexity
+    </th>
+  </tr>
+  <tr>
+    <td>
+      Peek
+    </td>
+    <td>
+      \(O(1)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Enqueue
+    </td>
+    <td>
+      \(O(\log n)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Dequeue
+    </td>
+    <td>
+      \(O(\log n)\)
+    </td>
+  </tr>
+</table>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Priority_queue">Priority Queue (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.programiz.com/dsa/priority-queue">Priority Queue (Programiz)</a>
+  </li>
+</ul>

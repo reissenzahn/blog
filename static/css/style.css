@@ -11,12 +11,62 @@
   --dialog-gray: #808080;
   --dialog-gray-light: #b5b5b5;
   --link-blue: #0000ff;
-/* 
-  --border-raised-outer: inset -1px -1px var(--window-frame),
+
+  /* --border-raised-outer: inset -1px -1px var(--window-frame),
     inset 1px 1px var(--button-highlight);
   --border-raised-inner: inset -2px -2px var(--button-shadow),
     inset 2px 2px var(--button-face); */
 }
+
+
+
+/* button */
+
+/* button {
+  box-sizing: border-box;
+  border: none;
+  background: var(--surface);
+  box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+  border-radius: 0;
+
+  min-width: 75px;
+  min-height: 23px;
+  padding: 0 12px;
+}
+
+.vertical-bar {
+  width: 4px;
+  height: 20px;
+  background: #c0c0c0;
+  box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+}
+
+button:not(:disabled):active {
+  box-shadow: var(--border-sunken-outer), var(--border-sunken-inner);
+  padding: 2px 11px 0 13px;
+}
+
+@media (not(hover)) {
+  button:not(:disabled):hover {
+    box-shadow: var(--border-sunken-outer), var(--border-sunken-inner);
+  }
+}
+
+button:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
+
+button::-moz-focus-inner {
+  border: 0;
+} */
+
+
+
+
+
+
+
 
 /* bad */
 
@@ -138,6 +188,7 @@ body {
   color: var(--text-primary);
   background: var(--background);
   font-size: 16px;
+  
   font-family: Arial, Helvetica, sans-serif;
 
   box-sizing: border-box;

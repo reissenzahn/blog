@@ -1,0 +1,185 @@
+---
+title: "Breadth-First Search"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#procedure">Procedure</a>
+      </li>
+      <li>
+        <a href="#example">Example</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Breadth-first search is a graph traversal algorithm. Given a graph and a source vertex, it explores the graph to discover every vertex reachable from the source vertex. The algorithm cautiously explores the graph in layers starting from the first layer which consists of the source vertex. Subsequent layers consist of those vertices that are the neighbors of the previous layer's vertices that do not appear in any earlier layer.
+</p>
+
+<figure>
+  <img src="/img/breadth-first-search/layers.svg" style="max-width: 350px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+  To traverse a graph, breadth-first search proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Initialize an empty queue.
+  </li>
+  <li>
+    Mark the source vertex as visited and enqueue it.
+  </li>
+  <li>
+    Dequeue a vertex and consider each of its adjacent vertices.
+  </li>
+  <li>
+    For each adjacent vertex, if the vertex has not been visited then mark it as visited and enqueue it.
+  </li>
+  <li>
+    Repeat steps 3-4 until the queue is empty.
+  </li>
+</ol>
+
+
+
+<h3 id="example">Example</h3>
+
+<div id="carousel">
+  <figure>
+    <img src="/img/breadth-first-search/example-0.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 1/7</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/breadth-first-search/example-1.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 2/7</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/breadth-first-search/example-2.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 3/7</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/breadth-first-search/example-3.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 4/7</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/breadth-first-search/example-4.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 5/7</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/breadth-first-search/example-5.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 6/7</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/breadth-first-search/example-6.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 7/7</i>
+    </figcaption>
+  </figure>
+</div>
+<script>
+  new Carousel({
+    selector: '#carousel',
+    duration: 150,
+  });
+</script>
+
+
+
+<h3 class="complexity">Complexity</h3>
+
+<p>
+  Breath-first search has worst-case performance of \(O(|V| + |E|)\) and worst-case space complexity of \(O(|V|)\).
+</p>
+
+<!-- 
+Graph traversal may require that some vertices be visited more than once, since it is not necessarily known before transitioning to a vertex that it has already been explored.
+
+Thus, it is usually necessary to remember which vertices have already been explored by the algorithm, so that vertices are revisited as infrequently as possible (or in the worst case, to prevent the traversal from continuing indefinitely).
+-->
+
+
+
+<h3 class="implementation">Implementation</h3>
+
+<pre><code class="java">public class BFS {
+
+  public static void traverse(List<List<Integer>> g, int start) {
+    boolean[] visited = new boolean[g.size()];
+    Queue<Integer> queue = new LinkedList&lt;>();
+
+    visited[start] = true;
+    queue.offer(start);
+
+    int count = 0;
+
+    System.out.print("traversal order: ");
+
+    while (!queue.isEmpty()) {
+      int v = queue.poll();
+      count++;
+      System.out.print(v + " ");
+      for (Integer w : g.get(v)) {
+        if (!visited[w]) {
+          visited[w] = true;
+          queue.offer(w);
+        }
+      }
+    }
+
+    System.out.println("\ntotal vertices: " + count);
+  }
+}</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Breadth-first_search">Breadth First Search (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=73qCvXsYkfk">Breadth First Search (Stanford Algorithms)</a>
+  </li>
+</ul>

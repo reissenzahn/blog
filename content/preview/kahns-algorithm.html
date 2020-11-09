@@ -1,0 +1,211 @@
+---
+title: "Kahn's Algorithm"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#procedure">Procedure</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#problems">Problems</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Kahn's algorithm is a topological sorting algorithm. It finds a topological ordering by repeatedly removing vertices in the graph which have no incoming edges. When a vertex is removed it is added to the topological ordering and all its edges are removed which decreases the incoming degrees of other vertices. This process is repeated until all vertices are processed or until a cycle is discovered.
+</p>
+
+<!-- 
+  A topological ordering of a directed graph is a linear ordering of its vertices such that for every directed edge \((u, v)\) from vertex \(u\) to vertex \(v\), \(u\) comes before \(v\) in the ordering. A topological ordering is possible if and only if the graph is a directed acyclic graph (DAG) in which case it will have at least one topological ordering.
+-->
+
+<figure>
+  <img src="/img/kahns-algorithm/topological-ordering.svg" style="max-width: 450px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+  Kahn's algorithm proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Count the incoming degree of each vertex.
+  </li>
+  <li>
+    Add all vertices with an incoming degree of zero to a queue.
+  </li>
+  <li>
+    Remove the vertex at the front of the queue and add it to the topological ordering.
+  </li>
+  <li>
+    Decrement the incoming degree of all the vertices adjacent to the removed vertex.
+  </li>
+  <li>
+    If the incoming degree of any of the adjacent vertices is decremented to zero then add it to the back of the queue.
+  </li>
+  <li>
+    Repeat steps 3-5 until the queue is empty.
+  </li>
+</ol>
+
+
+
+<h3 id="example">Example</h3>
+
+<div id="carousel">
+  <figure>
+    <img src="/img/kahns-algorithm/example-0.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 1/8</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/kahns-algorithm/example-1.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 2/8</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/kahns-algorithm/example-2.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 3/8</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/kahns-algorithm/example-3.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 4/8</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/kahns-algorithm/example-4.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 5/8</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/kahns-algorithm/example-5.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 6/8</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/kahns-algorithm/example-6.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 7/8</i>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="/img/kahns-algorithm/example-7.svg" style="max-width: 350px;">
+    <figcaption>
+      <i>step 8/8</i>
+    </figcaption>
+  </figure>
+</div>
+<script>
+  new Carousel({
+    selector: '#carousel',
+    duration: 200,
+  });
+</script>
+
+
+
+<h3 id="complexity">Complexity</h3>
+
+<p>
+  Given a graph \(G = (V,E)\), the running time of Kahn's algorithm is \(O(|V| + |E|)\).
+</p>
+
+
+
+<h3 class="implementation">Implementation</h3>
+
+<pre><code class="java">public class Kahn {
+
+  public static void kahn(List&lt;List&lt;Integer>> g) {
+    int n = g.size();
+
+    int[] inDegree = new int[n];
+    for (List&lt;Integer> edges : g)
+      for (int to : edges)
+        inDegree[to]++;
+
+    Queue&lt;Integer> q = new LinkedList&lt;>();
+
+    for (int i = 0; i &lt; n; i++)
+      if (inDegree[i] == 0)
+        q.offer(i);
+
+    int index = 0;
+    int[] ordering = new int[n];
+
+    while(!q.isEmpty()) {
+      int at = q.poll();
+      ordering[index++] = at;
+      for (int to : g.get(at)) {
+        inDegree[to]--;
+        if (inDegree[to] == 0)
+          q.offer(to);
+      }
+    }
+
+    if (index != n)
+      System.out.println("graph is not acyclic!");
+
+    System.out.println("ordering: " + Arrays.toString(ordering));
+  }
+}</code></pre>
+
+
+
+<h3 class="problems">Problems</h3>
+
+<ul>
+  <li>
+
+  </li>
+</ul>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Topological_sorting">Topological Sorting (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=ozso3xxkVGU">Topological Sort (Tim Roughgarden)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=cIBFEhD77b4">Kahn's Algorithm (YouTube)</a>
+  </li>
+</ul>

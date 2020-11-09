@@ -1,5 +1,5 @@
 ---
-title: "Sorting (DRAFT)"
+title: "Radix Sort (DRAFT)"
 date: 2020-09-29
 draft: false
 ---
@@ -21,34 +21,63 @@ draft: false
 
 <h3 id="introduction">Introduction</h3>
 
-<p>
-  In computer science, radix sort is a non-comparative sorting algorithm. It avoids comparison by creating and distributing elements into buckets according to their radix. For elements with more than one significant digit, this bucketing process is repeated for each digit, while preserving the ordering of the prior step, until all digits have been considered.
-
-  Radix sort only works when sorting numbers with a fixed number of digits. It won't work for arbitrarily-large numbers.
-</p>
+<!--
+  Radix sort is a non-comparative sorting algorithm. It avoids comparison by creating and distributing elements into buckets. This is
 
 
-<h4>Procedure</h4>
+  Radix sort is a non-comparative sorting algorithm. It avoids comparison by creating and distributing elements into buckets according to their radix. For elements with more than one significant digit, this bucketing process is repeated for each digit, while preserving the ordering of the prior step, until all digits have been considered. Radix sort only works when sorting numbers with a fixed number of digits. It won't work for arbitrarily-large numbers.
+-->
 
-<ol>
-  <li>
-    Find the largest element in the array and determine the number of digits in this largest element.
-  </li>
-  <li>
-    Use any stable sorting technique to sort the elements based on the unit place digits.
-  </li>
-  <li>
-    Then sort the elements based on digits at tens place.
-  </li>
-  <li>
-    Continue this process for each of number of digits in the largest element.
-  </li>
-</ol>
+<!-- 
+  Digit Order
 
-<p>
+  Radix sorts can be implemented to start at either the most significant digit (MSD) or least significant digit (LSD).
+-->
+
+
+
+<h3 id="procedure">Procedure</h3>
+
+<!-- 
+  1. Find the largest element in the array and determine the number of digits in this largest element.
+
+  2. Use any stable sorting technique to sort the elements based on the unit place digits.
+
+  3. Then sort the elements based on digits at tens place.
+
+  4. Continue this process for each of number of digits in the largest element.
+
+
+  Starting from the rightmost (last) digit, sort the numbers based on that digit.
+
+  Sorting by the next left digit.
+
+  And finally by the leftmost digit.
+
+  Each step requires just a single pass over the data, since each item can be placed in its bucket without comparison with any other element.
+
+  Some radix sort implementations allocate space for buckets by first counting the number of keys that belong in each bucket before moving keys into those buckets. The number of times that each digit occurs is stored in an array.
+
+  Although it's always possible to pre-determine the bucket boundaries using counts, some implementations opt to use dynamic memory allocation instead.
+-->
+
+<!-- 
   Any stable sorting algorithm ↴ can be used here. In practice, counting sort works well, since the digits can only take on a small number of values (i.e.: 0 - 9 for base-10 numbers; 0 - 1 for base-2 numbers).
 
   Notice how whenever there was a tie in the tens place the number with a lower ones digit came first. This is why using a stable sorting algorithm is important. It means that if there's a tie on the current digit we'll fall back to how the numbers were ordered based on the digits we already sorted.
+-->
+
+
+
+<h3 id="">Counting Sort</h3>
+
+<!-- 
+  Counting sort works by iterating through the input, counting the number of times each item occurs and 
+-->
+
+
+<p>
+
 </p>
 
 
@@ -60,7 +89,11 @@ draft: false
 6. After placing each element at its correct position, decrease its count by one.
 
 
-<h4>Complexity</h4>
+<h3 id="complexity">Complexity</h3>
+
+<!-- 
+  Radix sort operates in O(nw) time, where n is the number of keys, and w is the key length. LSD variants can achieve a lower bound for w of 'average key length' when splitting variable length keys into groups as discussed above.
+-->
 
 <table>
   <tr>
@@ -80,6 +113,8 @@ draft: false
     <td>\(O(n)\)</td>
   </tr>
 </table>
+
+
 
 
 <h3 id="resources">Resources</h3>

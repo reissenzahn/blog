@@ -18,63 +18,75 @@ draft: false
 
 <h3 id="introduction">Introduction</h3>
 
-<p>
+<!-- 
   A hash table is a data structure that maps keys to values. During insertion, a hash function is used to compute an index into an array of buckets from a given key and the associated value is stored in the appropriate bucket. Similarly, to lookup the value associated with a certain key, the hash function is used to compute the index of the appropriate bucket from which the corresponding value can be obtained.
-</p>
+-->
 
 
-<h3 id="hash-table">Hash Functions</h3>
+
+<h3 id="hash-functions">Hash Functions</h3>
 
 <p>
+  
+</p>
+
+<!-- 
+  A hash function transforms keys into array indices.
+
+  If we have an array that can hold M key-value pairs, then we need a hash function that can transform any given key into an index into that array: an integer in the range [0, M - 1].
+
+  Ideally, we seek a hash function that is both easy to compute and uniformly distributes the keys: for each key, every integer between 0 and M - 1 should be equally likely (independently for each key).
+
+  The hash function depends on the key type. Strictly speaking, we need a different hash function for each key type that we use.
+
+
+  We have three primary requirements in implementing a good hash function for a given data type:
+
+  - It should be consistent--equal keys must produce the same hash value.
+  - It should be efficient to compute.
+  - It should uniformly distribute the keys.
+
+
+
+
   An appropriate hash function distributes entries across an array of buckets. Given a key, a hash function computes an index into the bucket array. Usually this consists of hashing the key and then reducing the hash to an index in the interval [0, array_size - 1] by taking the hash modulo the array size.
-</p>
+-->
 
-<p>
-  Good hash functions have the following properties:
-</p>
-
-<ul>
-  <li>
-    Provides a uniform distribution of hash values to avoid clustering.
-  </li>
-  <li>
-
-  </li>
-</ul>
 
 
 <h3 id="hash-table">Collision Resolution</h3>
 
-Ideally, the hash function will assign each key to a unique bucket, but most hash table designs employ an imperfect hash function, which might cause hash collisions where the hash function generates the same index for more than one key.
+<!-- 
+  Collision resolution is a strategy for handling the case when two or more keys to be inserted hash to the same index.
 
-Hash collisions are practically unavoidable when hashing a random subset of a large set of possible keys. For example, if 2,450 keys are hashed into a million buckets, even with a perfectly uniform random distribution, according to the birthday problem there is approximately a 95% chance of at least two of the keys being hashed to the same slot.
+  Ideally, the hash function will assign each key to a unique bucket, but most hash table designs employ an imperfect hash function, which might cause hash collisions where the hash function generates the same index for more than one key.
 
-Therefore, almost all hash table implementations have some collision resolution strategy to handle such events. Some common strategies are described below. All these methods require that the keys (or pointers to them) be stored in the table, together with the associated values.
+  Hash collisions are practically unavoidable when hashing a random subset of a large set of possible keys. For example, if 2,450 keys are hashed into a million buckets, even with a perfectly uniform random distribution, according to the birthday problem there is approximately a 95% chance of at least two of the keys being hashed to the same slot.
+
+  Therefore, almost all hash table implementations have some collision resolution strategy to handle such events. Some common strategies are described below. All these methods require that the keys (or pointers to them) be stored in the table, together with the associated values.
+ -->
 
 
 
-<h4 id="collision-resolution-separate-chaining">Separate Chaining</h4>
+<h3 id="separate-chaining">Separate Chaining</h3>
 
-<p>
+<!-- 
+  In separate chaining, each bucket has some sort of list of entries with the same index. The time for hash table operations is the time to find the bucket (which is constant) plus the time for the list operation.
 
-</p>
+  In most implementations buckets will have few entries, if the hash function is working properly. Therefore, structures that are efficient in time and space for these cases are preferred.
 
-In separate chaining, each bucket has some sort of list of entries with the same index. The time for hash table operations is the time to find the bucket (which is constant) plus the time for the list operation.
+  Chained hash tables with linked lists are popular because they require only basic data structures with simple algorithms, and can use simple hash functions that are unsuitable for other methods
 
-In most implementations buckets will have few entries, if the hash function is working properly. Therefore, structures that are efficient in time and space for these cases are preferred.
+  The cost of a table operation is that of scanning the entries of the selected bucket for the desired key. If the distribution of keys is sufficiently uniform, the average cost of a lookup depends only on the average number of keys per bucket—that is, it is roughly proportional to the load factor.
 
-Chained hash tables with linked lists are popular because they require only basic data structures with simple algorithms, and can use simple hash functions that are unsuitable for other methods
+  For this reason, chained hash tables remain effective even when the number of table entries n is much higher than the number of slots. For example, a chained hash table with 1000 slots and 10,000 stored keys (load factor 10) is five to ten times slower than a 10,000-slot table (load factor 1); but still 1000 times faster than a plain sequential list.
 
-The cost of a table operation is that of scanning the entries of the selected bucket for the desired key. If the distribution of keys is sufficiently uniform, the average cost of a lookup depends only on the average number of keys per bucket—that is, it is roughly proportional to the load factor.
+  For separate-chaining, the worst-case scenario is when all entries are inserted into the same bucket, in which case the hash table is ineffective and the cost is that of searching the bucket data structure. If the latter is a linear list, the lookup procedure may have to scan all its entries, so the worst-case cost is proportional to the number n of entries in the table.
 
-For this reason, chained hash tables remain effective even when the number of table entries n is much higher than the number of slots. For example, a chained hash table with 1000 slots and 10,000 stored keys (load factor 10) is five to ten times slower than a 10,000-slot table (load factor 1); but still 1000 times faster than a plain sequential list.
+  The bucket chains are often searched sequentially using the order the entries were added to the bucket. If the load factor is large and some keys are more likely to come up than others, then rearranging the chain with a move-to-front heuristic may be effective. More sophisticated data structures, such as balanced search trees, are worth considering only if the load factor is large (about 10 or more), or if the hash distribution is likely to be very non-uniform, or if one must guarantee good performance even in a worst-case scenario. However, using a larger table and/or a better hash function may be even more effective in those cases.[citation needed]
 
-For separate-chaining, the worst-case scenario is when all entries are inserted into the same bucket, in which case the hash table is ineffective and the cost is that of searching the bucket data structure. If the latter is a linear list, the lookup procedure may have to scan all its entries, so the worst-case cost is proportional to the number n of entries in the table.
-
-The bucket chains are often searched sequentially using the order the entries were added to the bucket. If the load factor is large and some keys are more likely to come up than others, then rearranging the chain with a move-to-front heuristic may be effective. More sophisticated data structures, such as balanced search trees, are worth considering only if the load factor is large (about 10 or more), or if the hash distribution is likely to be very non-uniform, or if one must guarantee good performance even in a worst-case scenario. However, using a larger table and/or a better hash function may be even more effective in those cases.[citation needed]
-
-In separate chaining, each bucket is independent, and has some sort of list of entries with the same index. A data item's key is hashed to the index in the usual way, and the item is inserted into the list at that index. Other items that hash to the same index are simply added to the list; there's no need to search for empty cells in the primary array.
-
+  In separate chaining, each bucket is independent, and has some sort of list of entries with the same index. A data item's key is hashed to the index in the usual way, and the item is inserted into the list at that index. Other items that hash to the same index are simply added to the list; there's no need to search for empty cells in the primary array.
+ -->
 
 <figure>
   <img src="/img/data-structures/hash-table/separate-chaining.svg" style="max-width: 430px;">
@@ -84,7 +96,8 @@ In separate chaining, each bucket is independent, and has some sort of list of e
 </figure>
 
 
-<h4 id="collision-resolution-open-addressing">Open Addressing</h4>
+
+<h3 id="open-addressing">Open Addressing</h3>
 
 <p>
   Open addressing stores all entries in the bucket array itself. When a new entry has to be inserted, the buckets are examined starting with the index obtained from the hash function and proceeding in some probe sequence until an unoccupied slot is found. When searching for an entry, the buckets are scanned in the same sequence, until either the target record is found, or an unused array slot is found, which indicates that there is no such key in the table.
@@ -114,24 +127,30 @@ In separate chaining, each bucket is independent, and has some sort of list of e
 </figure>
 
 
+<h3 id="">Clustering</h3>
+
+<!-- 
+  The average cost of linear probing depends on the way in which the entries clump together into contiguous groups of occupied table entries called clusters when they are inserted.
+
+  
+-->
+
+
+
 
 <h3 id="dynamic-resizing">Dynamic Resizing</h3>
 
-<p>
+<!-- 
   The load factor of a hash table with \(k\) buckets that contains \(k\) entries is defined as:
 
   \[\text{load factor} = \frac{n}{k}\]
 
   The expected constant time property of a hash table assumes the load factor be kept below some bound. However, for a fixed number of buckets, the time for a lookup grows with the number of entries, and therefore the desired constant time is not achieved. In some implementations, the solution is to automatically grow the size of the table when the load factor bound is reached.
-</p>
 
-<p>
   When an insert is made such that the number of entries in a hash table exceeds the product of the load factor and the current capacity then the hash table will need to be rehashed. Rehashing includes increasing the size of the underlying data structure and mapping existing items to new bucket locations.nTo limit the proportion of memory wasted due to empty buckets, some implementations also shrink the size of the table—followed by a rehash—when items are deleted.
-</p>
 
-<p>
   A common approach is to automatically trigger a complete resizing when the load factor exceeds some threshold rmax. Then a new larger table is allocated, each entry is removed from the old table, and inserted into the new table. When all entries have been removed from the old table then the old table is returned to the free storage pool. Likewise, when the load factor falls below a second threshold rmin, all entries are moved to a new smaller table.
-</p>
+ -->
 
 
 
@@ -164,6 +183,11 @@ In separate chaining, each bucket is independent, and has some sort of list of e
     <td>\(O(n)\)</td>
   </tr>
 </table>
+
+
+
+<pre><code class="java"></code></pre>
+
 
 
 <h3 id="resources">Resources</h3>
