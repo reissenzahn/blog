@@ -1,5 +1,5 @@
 ---
-title: "AVL Tree (DRAFT)"
+title: "AVL Tree"
 date: 2020-09-29
 draft: false
 ---
@@ -7,15 +7,18 @@ draft: false
 <ul class="contents">
 	<li>
 		<ul>
-				<li>
-          <a href="#introduction">Introduction</a>
-        </li>
-				<li>
-          <a href="#complexity">Complexity</a>
-        </li>
-				<li>
-          <a href="#resources">Resources</a>
-        </li>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
 		</ul>
 	</li>
 </ul>
@@ -57,7 +60,7 @@ The self balancing property of an avl tree is maintained by the balance factor. 
 <h4>Right Rotation</h4>
 
 <figure>
-  <img src="/img/data-structures/avl-trees/right-rotation.svg" style="max-width:400px">
+  <img src="/img/avl-tree/right-rotation.svg" style="max-width:400px">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
@@ -67,7 +70,7 @@ The self balancing property of an avl tree is maintained by the balance factor. 
 <h4>Left Rotation</h4>
 
 <figure>
-  <img src="/img/data-structures/avl-trees/left-rotation.svg" style="max-width:400px">
+  <img src="/img/avl-tree/left-rotation.svg" style="max-width:400px">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
@@ -77,7 +80,7 @@ The self balancing property of an avl tree is maintained by the balance factor. 
 <h4>Right-left Rotation</h4>
 
 <figure>
-  <img src="/img/data-structures/avl-trees/right-left-rotation.svg" style="max-width:400px">
+  <img src="/img/avl-tree/right-left-rotation.svg" style="max-width:400px">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
@@ -87,7 +90,7 @@ The self balancing property of an avl tree is maintained by the balance factor. 
 <h4>Left-right Rotation</h4>
 
 <figure>
-  <img src="/img/data-structures/avl-trees/left-right-rotation.svg" style="max-width:400px">
+  <img src="/img/avl-tree/left-right-rotation.svg" style="max-width:400px">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
@@ -281,13 +284,11 @@ The time required is O(log n) for lookup, plus a maximum of O(log n) retracing l
 <pre><code class="java"></code></pre>
 
 
+
 <h3 id="resources">Resources</h3>
 
 <ul>
   <li>
     <a href="https://en.wikipedia.org/wiki/AVL_tree">AVL Tree (Wikipedia)</a>
-  </li>
-  <li>
-    <a href="https://www.programiz.com/dsa/avl-tree">AVL Tree</a>
   </li>
 </ul>

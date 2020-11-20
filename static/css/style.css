@@ -19,6 +19,9 @@
 }
 
 
+.katex {
+  font-size: inherit;
+}
 
 /* button */
 
