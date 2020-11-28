@@ -1,0 +1,530 @@
+---
+title: "Git"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+<!-- START: Introduction -->
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Git is a distributed version control system created by Linus Torvalds in 2005.
+</p>
+
+<!-- 
+Version control is a system that records changes to a set of files over time so that you can recall specific versions later. It allows you to revert selected files back to a previous state, revert the entire project back to a previous state, compare changes over time, see who last modified something that might be causing a problem, who introduced an issue and when, and more. Using a VCS also generally means that if you screw things up or lose files, you can easily recover. In addition, you get all this for very little overhead.
+
+Git thinks of its data more like a series of snapshots of a miniature filesystem. With Git, every time you commit, or save the state of your project, Git basically takes a picture of what all your files look like at that moment and stores a reference to that snapshot. To be efficient, if files have not changed, Git doesn’t store the file again, just a link to the previous identical file it has already stored. Git thinks about its data more like a stream of snapshots.
+
+Git has three main states that your files can reside in: modified, staged, and committed:
+
+- Modified means that you have changed the file but have not committed it to your database yet.
+
+- Staged means that you have marked a modified file in its current version to go into your next commit snapshot.
+
+- Committed means that the data is safely stored in your local database.
+
+This leads us to the three main sections of a Git project: the working tree, the staging area, and the Git directory.
+
+The working tree is a single checkout of one version of the project. These files are pulled out of the compressed database in the Git directory and placed on disk for you to use or modify.
+
+The staging area is a file, generally contained in your Git directory, that stores information about what will go into your next commit. Its technical name in Git parlance is the "index", but the phrase "staging area" works just as well.
+
+The Git directory is where Git stores the metadata and object database for your project. This is the most important part of Git, and it is what is copied when you clone a repository from another computer.
+
+The basic Git workflow goes something like this:
+
+1. You modify files in your working tree.
+2. You selectively stage just those changes you want to be part of your next commit, which adds only those changes to the staging area.
+3. You do a commit, which takes the files as they are in the staging area and stores that snapshot permanently to your Git directory.
+
+If a particular version of a file is in the Git directory, it’s considered committed. If it has been modified and was added to the staging area, it is staged. And if it was changed since it was checked out but has not been staged, it is modified.
+-->
+
+<pre><code class="bash"># check git version
+$ git version
+
+# get help for command
+$ git config --help
+
+# get concise help for command
+$ git config -h</code></pre>
+
+<!-- END: Introduction -->
+
+
+
+<h3 id="">Config</h3>
+
+<p>
+  The <code>config</code> command lets you get and set configuration variables. Global variables are stored in the <code>~/.gitconfig</code> file and can be modified by using the <code>--global</code> flag. Variables specific to the current repository are stored in <code>.git/config</code> and can be modified using the <code>--local</code> flag.
+</p>
+
+<pre><code class="bash"># set global user name
+$ git config --global user.name "Derek Reissenzahn"
+
+# set global email
+$ git config --global user.email "dreissenzahn@protonmail.com"
+
+# set global editor preference
+$ git config --global core.editor code
+
+# set global default branch name
+$ git config --global init.defaultBranch main
+
+# list all configuration variables and their origin
+$ git config --list --show-origin
+
+# get user.name variable
+$ git config user.name</code></pre>
+
+
+
+<!-- START: Initialize -->
+
+<h3 id="initialize">Initialize</h3>
+
+<p>
+  The <code>git init</code> command creates an empty repository in the current directory. All of the necessary repository files are stored in a <code>.git</code> directory. To add any existing files to version control we can use the <code>git add</code> command to add them to the staging area and then use the <code>git commit</code> command to make an initial commit. To remove a repository we can simply delete the <code>.git</code> directory.
+</p>
+
+<pre><code class="bash"># change directory into the project directory
+$ cd project
+
+# initialize a new git repository
+$ git init
+
+# add existing files to the staging area
+$ git add .
+
+# commit existing files
+$ git commit -m "Initial commit."
+
+# remove the repository
+$ rm -r .git</code></pre>
+
+<!-- END: Initialize -->
+
+
+
+<!-- START: Add -->
+
+<h3 id ="add">Add</h3>
+
+<p>
+  A file in your working directory can either be untracked or tracked. An untracked file is a file that was not in your last snapshot and is not in the staging area. Tracked files are files that were in the last snapshot; they can be unmodified, modified, or staged. As you edit files, Git sees them as modified, because you’ve changed them since your last commit. As you work, you selectively stage these modified files and then commit all those staged changes, and the cycle repeats.
+</p>
+
+<!--   
+  In order to begin tracking a new file, you use the command git add.
+
+  The git add command takes a path name for either a file or a directory; if it’s a directory, the command adds all the files in that directory recursively.
+
+
+  Let’s change a file that was already tracked. If you change a previously tracked file called CONTRIBUTING.md and then run your git status command again.
+
+  The CONTRIBUTING.md file appears under a section named “Changes not staged for commit” — which means that a file that is tracked has been modified in the working directory but not yet staged. To stage it, you run the git add command. git add is a multipurpose command — you use it to begin tracking new files, to stage files, and to do other things like marking merge-conflicted files as resolved. It may be helpful to think of it more as “add precisely this content to the next commit” rather than “add this file to the project”.
+
+  Git stages a file exactly as it is when you run the git add command. If you commit now, the version of CONTRIBUTING.md as it was when you last ran the git add command is how it will go into the commit, not the version of the file as it looks in your working directory when you run git commit. If you modify a file after you run git add, you have to run git add again to stage the latest version of the file.
+-->
+
+<pre><code class="bash"># check status of working directory
+$ git status
+
+# check compact status of working directory
+$ git status -s
+
+# add untracked file
+$ echo "Hello, World!" > README
+
+# begin tracking an untracked file
+$ git add README
+
+# stage already tracked file
+$ git add README
+</code></pre>
+
+<!-- END: Add -->
+
+
+
+<!-- START: Remove -->
+
+<h3 id ="remove">Remove</h3>
+
+<p>
+  The <code>git rm</code> command removes a file from the repository and deletes it from the local file system. The <code>--cached</code> flag can be used to remove a file from the repository without deleting it from the local file system. These changes can then be committed.
+</p>
+
+<pre><code class="bash"># remove file from repository and filesystem
+$ git rm README
+$ git commit -m "Remove README."
+
+# remove file from repository only
+$ git rm --cached README
+$ git commit -m "Remove README."</code></pre>
+
+<!-- END: Remove -->
+
+
+
+<!-- START: Move -->
+
+<h3 id="">Move</h3>
+
+<p>
+  The <code>git mv</code> command is used to move or rename a file or directory.
+</p>
+
+<pre><code class="bash"># rename file
+$ git mv apple.txt orange.txt</code></pre>
+
+<!-- END: Move -->
+
+
+
+<h3 id="">Difference</h3>
+
+<!-- 
+  The `diff` command compares what is in your working directory with what is in your staging area. The result tells you the changes you’ve made that you haven’t yet staged.
+
+  If you want to see what you’ve staged that will go into your next commit, you can use git diff --staged. This command compares your staged changes to your last commit.
+
+  It’s important to note that git diff by itself doesn’t show all changes made since your last commit — only changes that are still unstaged. If you’ve staged all of your changes, git diff will give you no output.
+
+  You can use git diff --cached to see what you’ve staged so far (--staged and --cached are synonyms):
+
+  We will continue to use the git diff command in various ways throughout the rest of the book. There is another way to look at these diffs if you prefer a graphical or external diff viewing program instead. If you run git difftool instead of git diff, you can view any of these diffs in software like emerge, vimdiff and many more (including commercial products). Run git difftool --tool-help to see what is available on your system.
+-->
+
+<pre><code class="bash"># check changes that have not yet been staged
+$ git diff
+
+# check changes that have been staged
+$ git diff --staged</code></pre>
+
+
+
+<h3 id="">Commit</h3>
+
+<!-- 
+  Now that your staging area is set up the way you want it, you can commit your changes. Remember that anything that is still unstaged — any files you have created or modified that you haven’t run git add on since you edited them — won’t go into this commit. They will stay as modified files on your disk. In this case, let’s say that the last time you ran git status, you saw that everything was staged, so you’re ready to commit your changes.
+
+  Remember that the commit records the snapshot you set up in your staging area. Anything you didn’t stage is still sitting there modified; you can do another commit to add it to your history. Every time you perform a commit, you’re recording a snapshot of your project that you can revert to or compare to later.
+-->
+
+<pre><code class="bash"># commit staged changes
+$ git commit
+
+# commit staged changes and show diff
+$ git commit -v
+  
+# commit changes with inline message
+$ git commit -m "initial commit"
+
+
+# make incomplete commit
+$ git commit -m "incomplete"
+
+# add missing changes
+$ git add README
+
+# amend previous commit
+$ git commit --amend</code></pre>
+
+
+<!-- 
+One of the common undos takes place when you commit too early and possibly forget to add some files, or you mess up your commit message. If you want to redo that commit, make the additional changes you forgot, stage them, and commit again using the --amend option. This command takes your staging area and uses it for the commit. If you’ve made no changes since your last commit (for instance, you run this command immediately after your previous commit), then your snapshot will look exactly the same, and all you’ll change is your commit message.
+-->
+
+
+<pre><code class="bash"># initialize git repository
+$ cd project
+$ git init
+
+# make changes
+$ echo "Hello, World!" >> README.txt
+
+# add changes staging area
+$ git add README.txt
+
+# check staged changes
+$ git diff --cached
+
+# get a summary of the situation
+$ git status
+
+# commit changes
+$ git commit -m "initial commit"
+
+# view history of changes
+$ git log</code></pre>
+
+
+
+<h3 id="">Log</h3>
+
+<!-- 
+  The `log` command 
+-->
+
+<pre><code class="bash"># list commits made in the repository in reverse chronological order
+$ git log
+
+# include difference introduced in each commit
+$ git log -p
+
+# 
+</code></pre>
+
+
+
+<h3 id="">Branch</h3>
+
+<p>
+  The <code>git branch</code> command is used to create a new branch which allows you to diverge from the main line of development. Branches are incredibly lightweight which makes branching operations fast. Indeed, Git encourages workflows that branch and merge often.
+</p>
+
+<!-- 
+  Git stores data as a series of snapshots. When you make a commit, Git stores a commit object that contains a pointer to the snapshot of the content you staged. This object also contains the author’s name and email address, the message that you typed, and pointers to the commit or commits that directly came before this commit (its parent or parents): zero parents for the initial commit, one parent for a normal commit, and multiple parents for a commit that results from a merge of two or more branches.
+
+  A branch in Git is simply a lightweight movable pointer to one of these commits. The default branch name in Git is master. As you start making commits, you’re given a master branch that points to the last commit you made. Every time you commit, the master branch pointer moves forward automatically.
+-->
+
+<pre><code class="bash"># list existing branches
+$ git branch
+
+# create a new branch
+$ git branch feature
+
+# switch to new branch
+$ git switch feature
+
+# create a new branch and switch to that branch
+$ git switch -c feature
+
+# delete feature branch
+$ git branch -d feature</code></pre>
+
+
+
+<!-- START: Merge -->
+
+<h3 id="merge">Merge</h3>
+
+<p>
+
+</p>
+
+
+
+
+<p>
+  A simple branching workflow might proceed as follows:
+</p>
+
+<pre><code class="bash"># create a feature branch and switch to it
+$ git switch -c feature
+
+# make changes
+$ echo "Feature!" >> README.txt
+
+# add and commit changes
+$ git add README.md
+$ git commit -m "added new feature"
+
+# switch to master branch
+$ git switch master
+
+# merge feature into master
+$ git merge feature
+
+# delete feature branch
+$ git branch -d feature</code></pre>
+
+<!-- END: Merge -->
+
+
+
+<h3 id="">Clone</h3>
+
+<p>
+
+</p>
+
+<!-- 
+  The <code>clone</code> command creates a copy of a specific repository or branch within a repository.
+
+  Git receives a full copy of nearly all data that the server has. Every version of every file for the history of the project is pulled down by default when you run git clone.
+-->
+
+<pre><code class="bash"># clone remote repository into example directory
+$ git clone git@github.com:dreissenzahn/example.git
+
+# clone remote repository into experiment directory
+$ git clone git@github.com:dreissenzahn/example.git experiment</code></pre>
+
+
+
+<h3 id="">Remote</h3>
+
+<p>
+  Remote 
+</p>
+
+<!-- 
+  `origin` is the default name Git gives to the server you cloned from.
+
+  The `fetch` command goes out to a remote project and pulls down all the data from that remote project that you don't have yet. After you do this, you should have references to all the branches from that remote which you can merge in or inspect at any time.
+
+  It’s important to note that the git fetch command only downloads the data to your local repository — it doesn’t automatically merge it with any of your work or modify what you’re currently working on. You have to merge it manually into your work when you’re ready.
+
+
+-->
+
+<pre><code class="bash"># clone a remote repository
+$ git clone git@github.com:dreissenzahn/example.git
+
+# list shortnames of remote handles
+$ git remote
+
+# list URLs of remote handles
+$ git remote -v
+
+# show information about remote with shortname origin
+$ git remote show origin
+
+# add a remote git repository as the origin shortname
+$ git remote add origin git@github.com:dreissenzahn/example.git
+
+# fetch from remote with shortname origin
+$ git fetch origin
+
+# rename the shortname of a remote from origin to source
+$ git remote rename origin source
+
+# remove a remote with shortname origin
+$ git remote remove origin</code></pre>
+
+
+
+<h3>.gitignore</h3>
+
+<p>
+  To have Git ignore certain files a <code>.gitignore</code> file can be created which lists patterns which match those files.
+</p>
+
+<pre># ignore all .a files
+*.a
+
+# but do track lib.a, even though you're ignoring .a files above
+!lib.a
+
+# only ignore the TODO file in the current directory, not subdir/TODO
+/TODO
+
+# ignore all files in any directory named build
+build/
+
+# ignore doc/notes.txt, but not doc/server/arch.txt
+doc/*.txt
+
+# ignore all .pdf files in the doc/ directory and any of its subdirectories
+doc/**/*.pdf</pre>
+
+
+
+<h3 id="">SSH Keys</h3>
+
+<p>
+  Many Git servers authenticate using SSH public keys. By default, SSH keys are stored in the <code>~/.ssh</code> directory. The <code>ssh-keygen</code> command can be used to generate a <code>id_rsa</code> and <code>id_rsa.pub</code> files which contain private and public keys respectively. The public key can then be added to SSH key settings of a repository service.
+</p>
+
+<pre><code class="bash"># change directory into ~/.ssh
+$ cd ~/.ssh
+
+# generate public/private rsa key pair
+$ ssh-keygen -t rsa -b 4096 -C "dreissenzahn@protonmail.com"
+
+# display contents of public key file
+$ cat ~/.ssh/id_rsa.pub</code></pre>
+
+
+
+<h3 id="">GitHub</h3>
+
+<p>
+  The GitHub flow 
+</p>
+
+<ul>
+  <li>
+    Fork the project
+  </li>
+</ul>
+
+
+<h3 id="">Branching Model</h3>
+
+<!-- 
+  https://guides.github.com/introduction/flow/
+  
+  https://nvie.com/posts/a-successful-git-branching-model/
+ -->
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://git-scm.com/book/en/v2">Pro Git</a>
+  </li>
+  <li>
+    <a href="https://github.com/github/gitignore">Example .gitignore Files</a>
+  </li>
+  <li>
+    <a href="https://marklodato.github.io/visual-git-guide/index-en.html">A Visual Git Reference</a>
+  </li>
+  <li>
+    <a href="https://nvie.com/posts/a-successful-git-branching-model/">A successful Git branching model</a>
+  </li>
+</ul>
+
+
+<!-- 
+  1.3 What is Git?
+  1.6 First-Time Git Setup
+
+  2.2 Recording Changes to the Repository
+  2.3 Viewing the Commit History
+  2.4 Undoing Things
+  2.5 Working with Remotes
+  2.6 Tagging
+  2.7 Git Aliases
+
+  3.1 Branches in a Nutshell
+  3.2 Basic Branching and Merging
+  3.3 Branch Management
+  3.4 Branching Workflows
+  3.5 Remote Branches
+  3.6 Rebasing
+
+  6.1 Account Setup and Configuration
+  6.2 Contributing to a Project
+  6.3 Maintaining a Project
+-->
