@@ -1,0 +1,167 @@
+---
+title: "Template Method"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#structure">Structure</a>
+  </li>
+  <li>
+    <a href="#example">Example</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  The Template Method pattern is a behavioral design pattern that defines the structure of an algorithm as a set of steps in a superclass while deferring the implementation of some steps to subclasses. A subclass can also override steps of the algorithm without changing the algorithm structure. Optional steps called hooks allow subclasses to extend the algorithm at certain points.
+</p>
+
+<!--
+  As you can see, we’ve got two types of steps:
+
+  abstract steps must be implemented by every subclass
+  optional steps already have some default implementation, but still can be overridden if needed
+
+  There’s another type of step, called hooks. A hook is an optional step with an empty body. A template method would work even if a hook isn’t overridden. Usually, hooks are placed before and after crucial steps of algorithms, providing subclasses with additional extension points for an algorithm.
+
+  Use the Template Method pattern when you want to let clients extend only particular steps of an algorithm, but not the whole algorithm or its structure.
+-->
+
+
+
+<h3 id="structure">Structure</h3>
+
+<figure>
+  <img src="/img/design-patterns/template-method.svg" style="max-width: 460px; width: 100%; height: auto">
+</figure>
+
+<ul>
+  <li>
+    An abstract class declares methods that act as steps of an algorithm as well as the template method which calls these methods in a specific order.
+  </li>
+  <li>
+    The steps in the abstract class can either be declared as abstract or have a default implementation.
+  </li>
+  <li>
+    Various concrete classes subclass the abstract class and can override steps as necessary.
+  </li>
+  <li>
+    The template method is declared as final to prevent it being overridden in concrete classes.
+  </li>
+</ul>
+
+
+
+<h3 id="example">Example</h3>
+
+<pre><code class="java">abstract class HotBeverage {
+  
+  public final void prepare() {
+    boilWater();
+    brew();
+    pourInCup();
+
+    if (customerWantsCondiments()) {
+      addCondiments();
+    }
+  }
+
+  // abstract steps to be implemented by subclasses
+  public abstract void brew();
+
+  public abstract void addCondiments();
+
+  // default implementations that can be overridden
+  public void boilWater() {
+    System.out.println("Boiling water.");
+  }
+
+  public void pourInCup() {
+    System.out.println("Pouring into cup.");
+  }
+
+  // define a hook that subclasses can override
+  public boolean customerWantsCondiments() {
+    return true;
+  }
+}
+
+class Tea extends HotBeverage {
+
+  // provide implementation for abstract steps
+  public void brew() {
+    System.out.println("Steeping the tea.");
+  }
+
+  public void addCondiments() {
+    System.out.println("Adding lemon juice.");
+  } 
+}
+
+class Coffee extends HotBeverage {
+
+  public void brew() {
+    System.out.println("Dripping coffee through filter.");
+  }
+
+  public void addCondiments() {
+    System.out.println("Adding milk and sugar.");
+  }
+
+  // override hook to extend functionality
+  public boolean customerWantsCondiments() {
+    String answer = null;
+
+    System.out.print("Would you like milk and sugar? (y/n)\n");
+    
+    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+    
+    try {
+      answer = in.readLine();
+    } catch (IOException e) {
+      System.out.println("I didn't catch that.");
+    }
+    
+    if (answer == null) {
+      answer = "n";
+    }
+
+    return answer.toLowerCase().startsWith("y");
+  }
+}
+
+public class Example {
+
+  public static void main(String[] args) {
+
+    Tea tea = new Tea();
+    tea.prepare();
+
+    Coffee coffee = new Coffee();
+    coffee.prepare();
+  }
+}</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://refactoring.guru/design-patterns/template-method">Template Method (Refactoring Guru)</a>
+  </li>
+  <li>
+    <a href="https://java-design-patterns.com/patterns/template-method/">Template Method (Java Design Patterns)</a>
+  </li>
+</ul>

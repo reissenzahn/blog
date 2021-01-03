@@ -1,0 +1,811 @@
+---
+title: "PostgreSQL"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<!-- START: Introduction -->
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  PostgreSQL is a free and open-source relational database management system.
+</p>
+
+<!-- END: Introduction -->
+
+
+
+<!-- START: Commands -->
+
+<h3>Commands</h3>
+
+<pre><code class="bash">$ psql -U postgres
+
+# display version
+> SELECT version();
+
+# list psql commands
+> \?
+
+# list sql commands
+> \h
+
+# get help for sql command
+> \h command_name
+
+# list databases
+> \l
+
+# list users
+> \du
+
+# switch to a database
+> \c database_name
+
+# list schemas
+> \dn
+
+# list tables
+> \dt
+
+# describe a table
+> \d table_name
+
+# quit
+\q</code></pre>
+
+<!-- END: Commands -->
+
+
+
+<!-- START: Databases -->
+
+<h3>Databases</h3>
+
+<pre><code class="pgsql">-- create a new database
+CREATE DATABASE analysis;
+
+-- drop a database
+DROP DATABASE analysis;</code></pre>
+
+<!-- END: Databases -->
+
+
+
+<!-- START: Data Types -->
+
+<h3 id="">Data Types</h3>
+
+<ul>
+  <li>
+    <code>bool</code>: boolean value that can be <code>true</code>, <code>false</code> or <code>null</code>.
+  </li>
+  <li>
+    <code>char(n)</code>: Fixed-length character string of length <code>n</code>.
+  </li>
+  <li>
+    <code>varchar(n)</code>: Variable-length character string of maximum length <code>n</code>.
+  </li>
+  <li>
+    <code>text</code>: Variable-length character string of unlimited length.
+  </li>
+  <li>
+    <code>smallint</code>: 2-byte integer.
+  </li>
+  <li>
+    <code>int</code>: 4-byte integer.
+  </li>
+  <li>
+    <code>bigint</code>: 8-byte integer.
+  </li>
+  <li>
+    <code>numeric(p,s)</code>: Decimal number with <code>p</code> total digits and <code>s</code> digits in the fraction part.
+  </li>
+  <li>
+    <code>date</code>: Date of the month such as <code>yyyy-mm-dd</code>.
+  </li>
+  <li>
+    <code>time</code>: Time of day such as <code>HH:MM:SS</code>.
+  </li>
+  <li>
+    <code>timestamp</code>: Timestamp without timezone.
+  </li>
+  <li>
+    <code>timestamptz</code>: Timestamp with timezone.
+  </li>
+  <li>
+    <code>uuid</code>: Universal Unique Identifier.
+  </li>
+  <li>
+    <code>json</code>: JSON object.
+  </li>
+</ul>
+
+
+<pre><code class="pgsql">
+  CREATE TABLE stock_availability (
+    product_id INT PRIMARY KEY,
+    available BOOLEAN NOT NULL
+ );
+
+ INSERT INTO stock_availability (product_id, available)
+VALUES
+	(100, TRUE),
+	(200, FALSE),
+	(300, 't'),
+	(400, '1'),
+	(500, 'y'),
+	(600, 'yes'),
+	(700, 'no'),
+  (800, '0');
+  
+CREATE TABLE data_types (
+  varchar_column VARCHAR(10),
+  char_column    CHAR(10),
+  text_column    TEXT
+);
+  
+INSERT INTO char_data_types
+VALUE ('abc', 'abc', 'abc'),
+      ('defghi', 'defghi', 'defghi');
+  
+
+CREATE TABLE products (
+id SERIAL PRIMARY KEY,
+name VARCHAR(100) NOT NULL,
+price NUMERIC(5,2)
+);
+INSERT INTO products (name, price)
+VALUES ('Phone',500.215), 
+('Tablet',500.214);
+
+CREATE TABLE people (
+  id serial,
+  person_name varchar(100)
+);
+
+CREATE TABLE documents (
+	document_id serial PRIMARY KEY,
+	header_text VARCHAR (255) NOT NULL,
+	posting_date DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE shifts (
+    id serial PRIMARY KEY,
+    shift_name VARCHAR NOT NULL,
+    start_at TIME NOT NULL,
+    end_at TIME NOT NULL
+);  
+INSERT INTO shifts(shift_name, start_at, end_at)
+VALUES('Morning', '08:00:00', '12:00:00'),
+      ('Afternoon', '13:00:00', '17:00:00'),
+      ('Night', '18:00:00', '22:00:00');
+
+INSERT INTO documents (header_text)
+VALUES('Billing to customer XYZ');
+
+CREATE TABLE timestamp_demo (
+    ts TIMESTAMP, 
+    tstz TIMESTAMPTZ
+);
+INSERT INTO timestamp_demo (ts, tstz)
+VALUES('2016-06-22 19:10:25-07','2016-06-22 19:10:25-07');
+
+CREATE TABLE orders (
+	id serial NOT NULL PRIMARY KEY,
+	info json NOT NULL
+);
+
+INSERT INTO orders (info)
+VALUES('{ "customer": "Lily Bush", "items": {"product": "Diaper","qty": 24}}'),
+      ('{ "customer": "Josh William", "items": {"product": "Toy Car","qty": 1}}'),
+      ('{ "customer": "Mary Clark", "items": {"product": "Toy Train","qty": 2}}');
+</code></pre>
+
+<!-- END: Data Types -->
+
+
+
+<!-- START: Tables -->
+
+<h3>Tables</h3>
+
+<pre>alter table_name
+add column column_name data_type constraint,
+add column column_name data_type constraint,
+...;</pre>
+
+<pre><code class="pgsql">-- create table
+create table employees (
+  id serial primary key,
+  first_name varchar(25),
+  last_name varchar(50),
+  department varchar(50),
+  hire_date date,
+  salary numeric
+);
+
+-- add column
+alter table employees
+add column phone varchar not null;
+
+-- drop column
+alter table table_name
+drop column phone;
+
+-- add constraint
+alter table employees
+alter column salary set not null;
+
+-- rename column
+ALTER TABLE table_name 
+RENAME COLUMN column_name TO new_column_name;
+
+-- change column type
+ALTER TABLE assets 
+ALTER COLUMN name TYPE VARCHAR;
+
+-- rename table
+alter table employees
+rename to members;
+
+-- truncate table
+truncate table employees;
+
+-- drop table
+drop table employees;</code></pre>
+
+<!-- 
+  create table vendors (
+    id serial primary key,
+    name varchar not null
+  );
+
+  alter table vendors rename to suppliers;
+-->
+
+<!-- END: Tables -->
+
+
+
+<!-- START: Serial -->
+
+<h3>Serial</h3>
+
+<p>
+  The <code>serial</code> pseudo-type allows you to define auto-increment columns in tables. PostgreSQL will automatically create a sequence object and set the next value generated by the sequence as the default value for the column. The column will be <code>not null</code> as a sequence always generates an integer. When the column with the <code>serial</code> pseudo-type is deleted, the sequence will also be deleted.
+</p>
+
+<ul>
+  <li>
+    <code>smallserial</code>: 2-byte auto-increment integer.
+  </li>
+  <li>
+    <code>serial</code>: 4-byte auto-increment integer.
+  </li>
+  <li>
+    <code>bigserial</code>: 8-byte auto-increment integer.
+  </li>
+</ul>
+
+<pre><code class="pgsql">-- using serial pseudo-type
+create table auto_increment (
+  id serial
+);
+
+-- equivalent statements
+create sequence auto_increment_id_seq;
+
+create table auto_increment (
+  id int not null default nextval('auto_increment_id_seq')
+);
+
+alter sequence auto_increment_id_seq
+owned by auto_increment.id;</code></pre>
+
+<!-- END: Serial -->
+
+
+<!--  -->
+
+
+<!-- START: Constraints -->
+
+<h3 id="">Constraints</h3>
+
+<h4>Not Null</h4>
+
+<p>
+  The not null constraint ensures that the values of a column are not null.
+</p>
+
+<pre><code class="pgsql">CREATE TABLE invoices(
+  id SERIAL PRIMARY KEY,
+  product_id INT NOT NULL,
+  qty numeric NOT NULL CHECK(qty > 0),
+  net_price numeric CHECK(net_price > 0) 
+);</code></pre>
+
+
+<h4>Check</h4>
+
+<p>
+  A CHECK constraint is a kind of constraint that allows you to specify if values in a column must meet a specific requirement.
+
+The CHECK constraint uses a Boolean expression to evaluate the values before they are inserted or updated to the column.
+</p>
+
+<pre><code class="java">
+  CREATE TABLE employees (
+	id SERIAL PRIMARY KEY,
+	first_name VARCHAR (50),
+	last_name VARCHAR (50),
+	birth_date DATE CHECK (birth_date > '1900-01-01'),
+	joined_date DATE CHECK (joined_date > birth_date),
+	salary numeric CHECK(salary > 0)
+);
+</code></pre>
+
+<h4>Unique</h4>
+
+<p>
+  The unique constraint makes sure that the values stored in a column or a group of columns are unique across rows in a table..
+</p>
+
+<pre><code class="sql">CREATE TABLE person (
+	id SERIAL PRIMARY KEY,
+	first_name VARCHAR (50),
+	last_name VARCHAR (50),
+	email VARCHAR (50) UNIQUE
+);
+CREATE TABLE person (
+	id SERIAL  PRIMARY KEY,
+	first_name VARCHAR (50),
+	last_name  VARCHAR (50),
+	email      VARCHAR (50),
+        UNIQUE(email)
+);
+
+-- create a UNIQUE constraint to a group of columns
+CREATE TABLE table (
+    c1 data_type,
+    c2 data_type,
+    c3 data_type,
+    UNIQUE (c2, c3)
+);</code></pre>
+
+
+<h4>Primary Key</h4>
+
+<p>
+  A primary key is a column or a group of columns used to identify a row uniquely in a table.
+
+You define primary keys through primary key constraints. Technically, a primary key constraint is the combination of a not-null constraint and a UNIQUE constraint.
+
+A table can have one and only one primary key. It is a good practice to add a primary key to every table. When you add a primary key to a table, PostgreSQL creates a unique B-tree index on the column or a group of columns used to define the primary key.
+</p>
+
+<pre><code class="pgsql">CREATE TABLE natural_key_example (
+  license_id VARCHAR(10) PRIMARY KEY,
+  first_name VARCHAR(50),
+  last_name VARCHAR(50)
+);
+
+CREATE TABLE natural_key_example (
+  license_id VARCHAR(10),
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  CONSTRAINT licence_key PRIMARY KEY (license_id)
+);
+
+-- composite primary key
+CREATE TABLE natural_key_composite_example (
+  student_id varchar(10),
+  school_day date,
+  present boolean,
+  CONSTRAINT student_key PRIMARY KEY (student_id, school_day)
+);
+
+CREATE TABLE po_headers (
+	po_no INTEGER PRIMARY KEY,
+	vendor_no INTEGER,
+	description TEXT,
+	shipping_address TEXT
+);
+CREATE TABLE po_items (
+	po_no INTEGER,
+	item_no INTEGER,
+	product_no INTEGER,
+	qty INTEGER,
+	net_price NUMERIC,
+	PRIMARY KEY (po_no, item_no)
+);
+</code></pre>
+
+<h4>Foreign Keys</h4>
+
+<p>
+  A foreign key is a column or group of columns that references the primary key of another table. The table that contains the foreign key is called the child table and the table referenced by the foreign key is called the parent table. Foreign key constraints help to maintain referential integrity by ensuring a column has contains a valid foreign key.
+</p>
+
+<ul>
+  <li>
+    <code>no action</code>: prevents deletion of referenced row (default).
+  </li>
+  <li>
+    <code>restrict</code>: prevents deletion of referenced row.
+  </li>
+  <li>
+    <code>set null</code>: referencing columns will be set to null.
+  </li>
+  <li>
+    <code>set default</code>: referencing columns will be set to their default values.
+  </li>
+  <li>
+    <code>cascade</code>: referencing columns will be automatically deleted.
+  </li>
+</ul>
+
+<pre><code class="pgsql">
+create table products (
+  id serial primary key,
+  name varchar(50) not null,
+  category varchar(50) not null,
+  price decimal not null
+);
+
+-- inline 
+create table reviews (
+  id serial primary key,
+  product_id int references products (id),
+  rating int not null,
+  comment text
+);
+
+-- as constraint
+create table reviews (
+  id serial primary key,
+  product_id int,
+  rating int not null,
+  comment text,
+  constraint fk_product foreign key (product_id) references products (id)
+);
+
+-- alter table
+alter table reviews
+add constraint fk_product
+foreign key (product_id)
+references products (id)
+on delete cascade;
+
+-- drop constraint
+alter table reviews
+drop constraint fk_product;
+</code></pre>
+
+
+
+<!-- END: Constraints -->
+
+
+
+<!-- CREATE: Select -->
+
+<h3>Select</h3>
+
+<pre><code>
+select column_name, ...
+from table_name
+order by column_name
+limit row_count
+order by expression asc | desc;
+</code></pre>
+
+<pre><code class="pgsql">create table customers (
+  id serial primary key,
+  first_name varchar(50),
+  last_name varchar(50),
+  email varchar(255),
+  last_update DATE,
+  active bool
+);
+
+-- select all columns
+select * from customers;
+
+-- select list of columns
+select first_name, last_name from customers;
+
+-- select expression
+select first_name || ' ' || last_name from customers;
+
+-- remove duplicate rows
+select distinct first_name from customers;
+
+-- provide column alias
+select last_name as surname from customers;
+
+-- constrain number of rows
+select first_name, last_name from customers limit 10;
+
+-- skip rows
+select first_name, last_name from customers offset 3;
+
+-- order by column
+select * from table_name order by first_name asc;
+</code></pre>
+
+<!-- END: Select -->
+
+
+
+<!-- CREATE: Insert -->
+
+<h3 id="insert">Insert</h3>
+
+<pre><code>insert into table_name(column_1, column_2, ...)
+values (value_1, value_2, ...),
+       (value_1, value_2, ...),
+       ...
+returning column_1, column_2, ...;
+</code></pre>
+
+<pre><code class="sql">create table links (
+  id serial primary key,
+  url varchar(255) not null,
+  name varchar(255) not null,
+  description varchar(255)
+);
+
+-- insert values
+insert into links (url, name)
+values ('https://www.google.com','google'),
+       ('https://www.yahoo.com','yahoo'),
+       ('https://www.bing.com','bing');
+
+-- return inserted rows
+insert into links (url, name, description)
+values ('https://duckduckgo.com/', 'duckduckgo', 'privacy & simplified search engine'),
+       ('https://swisscows.com/', 'swisscows', 'privacy safe web-search');
+returning *;
+
+-- return certain columns
+insert into links(url, name, description)
+values ('https://www.searchencrypt.com/', 'searchencrypt', 'search encrypt'),
+       ('https://www.startpage.com/', 'startpage', 'the world''s most private search engine')
+returning id, url;</code></pre>
+
+<!-- END: Insert -->
+
+
+
+<!-- START: Update -->
+
+<h3 id="update">Update</h3>
+
+<pre><code>update table_name
+set column_1 = value_1,
+    column_2 = value_2,
+    ...
+where condition
+returning column_1, column_2, ...;</code></pre>
+
+<pre><code class="pgsql">create table courses (
+  id serial primary key,
+  name varchar(50) not null,
+  description text,
+  published date
+);
+
+-- update column
+update courses
+set name = 'CS101'
+where id = 1;
+
+-- update columns
+update courses
+set name = 'CS101'
+set published = '2020-07-01'
+where id = 1;</code></pre>
+
+<!-- END: Update -->
+
+
+<!-- START: Delete -->
+
+<pre>delete from table_name
+where condition
+returning column_1, column_2, ...;</pre>
+
+<pre><code class="sql">delete from links
+where id = 1;
+
+delete from links
+where id = 2
+returning *;
+
+-- delete all rows
+delete from links;</code></pre>
+
+<!-- END: Delete -->
+
+
+<!-- START: Join -->
+
+<h3 id="">Join</h3>
+
+<pre><code class="pgsql">CREATE TABLE departments (
+  dept_id BIGSERIAL,
+  dept VARCHAR(100),
+  city VARCHAR(100),
+  CONSTRAINT dept_key PRIMARY KEY (dept_id),
+  CONSTRAINT dept_city_unique UNIQUE (dept, city)
+);
+
+CREATE TABLE employees (
+  emp_id BIGSERIAL,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  salary INTEGER,
+  dept_id INTEGER REFERENCES departments (dept_id),
+  CONSTRAINT emp_key PRIMARY KEY (emp_id),
+  CONSTRAINT emp_dept_unique UNIQUE (emp_id, dept_id)
+);
+
+INSERT INTO departments (dept, city)
+VALUES ('Tax', 'Atlanta'),
+       ('IT', 'Boston');
+
+INSERT INTO employees (first_name, last_name, salary, dept_id)
+VALUES ('Nancy', 'Jones', 62500, 1),
+       ('Lee', 'Smith', 59300, 1),
+       ('Soo', 'Nguyen', 83000, 2),
+       ('Janet', 'King', 95000, 2);</code></pre>
+
+<p>
+  A join is used to combine columns from multiple tables based on the values of the common columns between the related tables. Given table A and table B, we have the following basic types of joins:
+</p>
+
+<ul>
+  <li>
+    <code>inner join</code>: Select all records from Table A and Table B, where the join condition is met.
+  </li>
+  <li>
+    <code>left join</code>: Select all records from Table A, along with records from Table B for which the join condition is met (if at all).
+  </li>
+  <li>
+    <code>right join</code>: Select all records from Table B, along with records from Table A for which the join condition is met (if at all).
+  </li>
+  <li>
+    <code>full join</code>: Select all records from Table A and Table B, regardless of whether the join condition is met or not.
+  </li>
+</ul>
+
+<pre><code class="pgsql">create table table_a (
+  id serial primary key,
+  name text not null
+);
+
+create table table_b (
+  id serial primary key,
+  name text not null
+);
+
+insert into table_a (id, name)
+values (1, 'Apple'),
+       (2, 'Orange'),
+       (3, 'Banana'),
+       (4, 'Lemon');
+
+insert into table_b (id, name)
+values (1, 'Peach')
+       (2, 'Apple'),
+       (3, 'Pear'),
+       (4, 'Banana');
+
+-- inner join
+select * from table_a
+inner join table_b
+on table_a.name = table_b.name;
+
+select * from table_a
+inner join table_b
+on table_a.name = table_b.name;
+</code></pre>
+
+<!-- 
+  https://blog.codinghorror.com/a-visual-explanation-of-sql-joins/
+-->
+
+
+<h3 id="transactions">Transactions</h3>
+
+<p>
+  A database transaction is a unit of work consisting of a sequence of one or more database operations that satisfies the following ACID conditions:
+</p>
+
+<ul>
+  <li>
+    Atomicity: each transaction either succeeds completely or fails completely.
+  </li>
+  <li>
+    Consistency: a transaction can only bring the database from one valid state to another, maintaining database invariants.
+  </li>
+  <li>
+    Isolation: concurrent execution of transactions leaves the database in the same state what would have been obtained if the transactions were executed sequently.
+  </li>
+  <li>
+    Durability: once a transaction has been committed, it will remain committed even in the case of system failure.
+  </li>
+</ul>
+
+<pre><code class="pgsql">create table accounts (
+  id serial primary key,
+  name varchar(50) not null,
+  balance decimal(15, 2) not null
+);
+
+insert into accounts (name, balance)
+values ('jack', 1000), ('jill', 1000);
+
+-- start transaction
+begin transaction;
+
+-- perform operations
+update accounts
+set balance = balance - 100
+where id = 1;
+
+update accounts
+set balance = balance + 100
+where id = 2;
+
+-- commit transaction
+commit transaction;
+
+-- rollback transaction
+rollback transaction;
+
+select * from accounts;</code></pre>
+
+<!-- END: Transaction -->
+
+
+<h3 id="explain">Explain</h3>
+
+<p>
+  The <code>EXPLAIN</code> statement returns the execution plan for a given statement.
+</p>
+
+<pre><code class="sql">-- execute statement return statistics
+explain analyze statement;
+
+-- estimate costs
+explain costs statement;
+
+-- include buffer usage information
+explain analyze buffers statement;
+
+-- include timing information
+explain analyze timing statement;</code></pre>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.postgresqltutorial.com/">PostgreSQL Tutorial</a>
+  </li>
+</ul>
+

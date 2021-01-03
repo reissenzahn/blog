@@ -1,0 +1,288 @@
+---
+title: "State"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#structure">Structure</a>
+  </li>
+  <li>
+    <a href="#example">Example</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  The State pattern is a behavioral pattern that allows an object to alter its behavior when its internal state changes.
+</p>
+
+<!--
+  The State Pattern allows an object to alter is behavior when its internal state changes. The object will appear to change its class.
+
+  The pattern encapsulates state into separate classes and delegates to the object representing the current state, we know that behavior changes along with the internal state.
+
+  The State pattern is a behavioral design pattern that lets an object alter its behavior when its internal state changes. It appears as if the object changed class.
+
+  The main idea is that, at any given moment, there’s a finite number of states which a program can be in. Within any unique state, the program behaves differently, and the program can be switched from one state to another instantaneously. However, depending on a current state, the program may or may not switch to certain other states. These switching rules, called transitions, are also finite and predetermined.
+
+  The State pattern suggests that you create new classes for all possible states of an object and extract all state-specific behaviors into these classes.
+
+  Instead of implementing all behaviors on its own, the original object, called context, stores a reference to one of the state objects that represents its current state, and delegates all the state-related work to that object.
+
+  To transition the context into another state, replace the active state object with another object that represents that new state. This is possible only if all state classes follow the same interface and the context itself works with these objects through that interface.
+-->
+
+
+
+<h3 id="structure">Structure</h3>
+
+
+<!-- 
+  Context stores a reference to one of the concrete state objects and delegates to it all state-specific work. The context communicates with the state object via the state interface. The context exposes a setter for passing it a new state object.
+
+  The State interface declares the state-specific methods. These methods should make sense for all concrete states because you don’t want some of your states to have useless methods that will never be called.
+
+  Concrete States provide their own implementations for the state-specific methods. To avoid duplication of similar code across multiple states, you may provide intermediate abstract classes that encapsulate some common behavior.
+
+  State objects may store a backreference to the context object. Through this reference, the state can fetch any required info from the context object, as well as initiate state transitions.
+
+  Both context and concrete states can set the next state of the context and perform the actual state transition by replacing the state object linked to the context.
+-->
+
+
+<h3 id="example">Example</h3>
+
+<pre><code class="java">class GumballMachine {
+  
+  private State noQuarterState;
+  private State hasQuarterState;
+  private State soldState;
+  private State soldOutState;
+
+  private State state = soldOutState;
+  private int count = 0;
+
+  public GumballMachine(int count) {
+    this.count = count;
+
+    noQuarterState = new NoQuarterState(this);
+    hasQuarterState = new HasQuarterState(this);
+    soldState = new SoldState(this);
+    soldOutState = new SoldOutState(this);
+
+    if (count > 0) {
+      state = noQuarterState;
+    }
+  }
+
+  public void insertQuarter() {
+    state.insertQuarter();
+  }
+
+  public void ejectQuarter() {
+    state.ejectQuarter();
+  }
+
+  public void turnCrank() {
+    state.turnCrank();
+    state.dispense();
+  }
+
+  public void releaseBall() {
+    System.out.println("A gumball comes rolling out the slot.");
+    if (count != 0) {
+      count--;
+    }
+  }
+
+  public void setState(State state) {
+    this.state = state;
+  }
+
+  public int getCount() {
+    return count;
+  }
+
+  public State getSoldOutState() {
+    return soldOutState;
+  }
+
+  public State getNoQuarterState() {
+    return noQuarterState;
+  }
+
+  public State getHasQuarterState() {
+    return hasQuarterState;
+  }
+
+  public State getSoldState() {
+    return soldState;
+  }
+}
+
+interface State {
+
+  void insertQuarter();
+  void ejectQuarter();
+  void turnCrank();
+  void dispense();
+}
+
+class NoQuarterState implements State {
+
+  private GumballMachine gumballMachine;
+
+  public NoQuarterState(GumballMachine gumballMachine) {
+    this.gumballMachine = gumballMachine;
+  }
+
+  @Override
+  public void insertQuarter() {
+    System.out.println("You inserted a quarter.");
+    gumballMachine.setState(gumballMachine.getHasQuarterState());
+  }
+
+  @Override
+  public void ejectQuarter() {
+    System.out.println("You haven't inserted a quarter.");
+  }
+
+  @Override
+  public void turnCrank() {
+    System.out.println("You turned, but there's no quarter.");
+  }
+
+  @Override
+  public void dispense() {
+    System.out.println("You need to pay first.");
+  }
+}
+
+class HasQuarterState implements State {
+
+  private GumballMachine gumballMachine;
+
+  public HasQuarterState(GumballMachine gumballMachine) {
+    this.gumballMachine = gumballMachine;
+  }
+
+  @Override
+  public void insertQuarter() {
+    System.out.println("You can't insert another quarter.");
+  }
+
+  @Override
+  public void ejectQuarter() {
+    System.out.println("Quarter returned.");
+    gumballMachine.setState(gumballMachine.getNoQuarterState());
+  }
+
+  @Override
+  public void turnCrank() {
+    System.out.println("You turned...");
+    gumballMachine.setState(gumballMachine.getSoldState());
+  }
+
+  @Override
+  public void dispense() {
+    System.out.println("No gumball dispensed.");
+  }
+}
+
+class SoldState implements State {
+
+  private GumballMachine gumballMachine;
+
+  public SoldState(GumballMachine gumballMachine) {
+    this.gumballMachine = gumballMachine;
+  }
+
+  @Override
+  public void insertQuarter() {
+    System.out.println("Please wait, we're already giving you a gumball.");
+  }
+
+  @Override
+  public void ejectQuarter() {
+    System.out.println("Sorry, you already turned the crank.");
+  }
+
+  @Override
+  public void turnCrank() {
+    System.out.println("Turning twice doesn't get you another gumball.");
+  }
+
+  @Override
+  public void dispense() {
+    gumballMachine.releaseBall();
+    
+    if (gumballMachine.getCount() > 0) {
+      gumballMachine.setState(gumballMachine.getNoQuarterState());
+    } else {
+      System.out.println("Out of gumballs!");
+      gumballMachine.setState(gumballMachine.getSoldOutState());
+    }
+  }
+}
+
+class SoldOutState implements State {
+
+  private GumballMachine gumballMachine;
+
+  public SoldOutState(GumballMachine gumballMachine) {
+    this.gumballMachine = gumballMachine;
+  }
+
+  @Override
+  public void insertQuarter() {
+    System.out.println("You can't insert a quarter, the machine is sold out.");
+  }
+  
+  @Override
+  public void ejectQuarter() {
+  System.out.println("You can't eject, you haven't inserted a quarter yet.");
+  }
+
+  @Override
+  public void turnCrank() {
+    System.out.println("You turned, but there are no gumballs.");
+  }
+
+  @Override
+  public void dispense() {
+    System.out.println("No gumball dispensed.");
+  }
+}
+
+public class Example {
+
+  public static void main(String[] args) {
+    GumballMachine gumballMachine = new GumballMachine(5);
+
+    gumballMachine.insertQuarter();
+    gumballMachine.ejectQuarter();
+    gumballMachine.insertQuarter();
+    gumballMachine.turnCrank();
+  }
+}</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://java-design-patterns.com/patterns/state/">State (Java Design Patterns)</a>
+  </li>
+</ul>
+

@@ -1,0 +1,125 @@
+---
+title: "Rust"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="hello-world">Hello World</h3>
+
+<pre><code class="rust">fn main() {
+  println!("Hello, Rust!");
+}</code></pre>
+
+
+<h3 id="hello-world">Cargo</h3>
+
+<pre><code class="bash">$ cargo --version
+$ cargo new project_name
+$ cd ./project_name
+$ cargo update
+$ cargo check
+$ cargo run
+$ cargo build
+$ cargo build --release
+$ cargo doc --open</code></pre>
+
+
+
+<h3 id="variables">Variables</h3>
+
+<pre><code class="rust">// declaration and assignment
+let x;
+x = 42;
+
+let y = 42;
+
+// explicit type annotations
+let x: i32;
+x = 42;
+
+let y: i32 = 42;
+
+// variable binding shadowing
+let x = 42;
+let x = 'a';
+
+// mutable variables can be changed
+let mut x = 42;
+x = 43;
+
+// throw away value
+let _ = 42;
+
+// constant declaration
+const PI: f64 = 3.14;</code></pre>
+
+
+
+<h3 id="scalar-types">Scalar Types</h3>
+
+<pre><code class="rust">let b: bool = true;
+
+let c: char = 'a';
+
+let f: f32 = 1.0;
+let d: f64 = 1.0;
+
+// i8, i16, i32, i64, i128
+let i: i32 = 1;
+
+// u8, u16, u32, u64, u128
+let u: u32 = 1;
+
+// integers default to i32 and floats to f64
+let i = 1;
+let f = 1.0;</code></pre>
+
+<pre><code class="rust">
+
+</code></pre>
+
+
+<h3 id="compound-types">Compound Types</h3>
+
+<pre><code class="rust">// tuples are fixed-length collections of values of various types
+let pair = ('a', 42)
+pair.0  // 'a'
+pair.1  // 42
+
+// explicit type annotation
+let pair: (char, i32) = ('a', 42)
+
+// destructuring
+let (left, right) = ('a', 42);
+left   // 'a'
+right  // 42
+
+// _ can be used to throw away values
+let (_, right) = ('a', 42)</code></pre>
+
+
+
+
+<h3 id="vectors">Vectors</h3>
+
+
+<!-- 
+  let x = vec![1, 2, 3, 4, 5]
+    .iter()
+    .map(|x| x + 1)
+    .fold(0, |x, y| x + y);
+
+  println!("{}", x);  // 20
+-->
+
+

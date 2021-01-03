@@ -1,12 +1,12 @@
 {{ define "main" }}
-	<main>
-    <article>
-      <h2>{{ .Title }}</h2>
-      <time>{{ .Date.Format "Jan 2, 2006" }}</time>
-      {{ .Content }}
-      <div class="back">
-        <a href="/">← back</a>
-      </div>
-    </article>
-	</main>
+  <article class="article">
+    <h2 class="article__title">{{ .Title }}</h2>
+    <time class="article__date">{{ .Date.Format "Jan 2, 2006" }}</time>
+    {{ .Content }}
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
 {{ end }}
+
+

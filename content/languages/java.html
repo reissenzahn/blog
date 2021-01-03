@@ -1,0 +1,475 @@
+---
+title: "Java"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="hello-world">Hello World</h3>
+
+<pre><code class="java">package com.reissenzahn;
+
+public class Example {
+
+  public static void main(String[] args) {
+    System.out.println("Hello, Java!");
+  }
+}</code></pre>
+
+
+
+<h3 id="variables">Variables and Constants</h3>
+
+<pre><code class="java">// separate declaration
+int one;
+one = 1;
+
+// declaration with initialization
+int two = 2;
+
+// multiple declaration
+int three, four;
+three = 3;
+four = 4;
+
+// multiple declaration with initialization
+int five = 5, six = 6;</code></pre>
+
+<pre><code class="java">// constant declaration
+final boolean FALSE;
+FALSE = false;
+
+// constant declaration with initialization
+final double PI = 3.1415;</code></pre>
+
+
+
+<h3 id="primitive-types">Primitive Types</h3>
+
+<pre><code class="java">byte ten = 10;              // 8-bit integer
+short hundred = 100;        // 16-bit integer
+int thousand = 1_000;       // 32-bit integer
+long million = 1_000_000L;  // 64-bit integer
+
+float e = 2.71828f;  // 32-bit floating point
+double pi = 3.1415;  // 64-bit floating point
+
+boolean enabled = true;  // true or false
+char letter = 'A';       // 16-bit Unicode character</code></pre>
+
+
+<pre><code class="java">// each primitive type has an immutable wrapper class
+Byte a = 1;
+Short b = 1;
+Integer c = 1;
+Long d  = 1L;
+Float e = 1.0f;
+Double f = 1.0;
+Boolean g = true;
+Character h = 'A';</code></pre>
+
+
+<h3 id="operations">Operations</h3>
+
+<pre><code class="java"></code></pre>
+
+
+<h3 id="arrays">Arrays</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 id="if">Control Structures</h3>
+
+<pre><code class="java">// if, else and else if
+if (guess &lt; 5) {
+  System.out.println("too small");
+} else if (guess > 5) {
+  System.out.println("too big");
+} else {
+  System.out.println("correct");
+}</code></pre>
+
+<pre><code class="java">// ternary operator
+String parity = (num % 2 == 0) ? "even" : "odd"</code></pre>
+
+<pre><code class="java">// while
+int i = 0;
+while (i &lt; 5) {
+  System.out.println(i);
+  i++;
+}
+
+// do while
+int i = 0;
+do {
+  System.out.println(i);
+} while (i &lt; 5);</code></pre>
+
+<pre><code class="java">// break terminates the current loop
+int i = 10;
+while (true) {
+  if (i == 0) {
+    break;
+  }
+  i--;
+}
+
+// break only terminates the loop in which it is currently located
+boolean stopped = false;
+for (int i = 0; (i &lt; 10) && !stopped; i++) {
+  for (int j = 0; j &lt; 10; j++) {
+    System.out.print(j + " ");
+    if (i == j) {
+      stopped = true;
+      break;
+    }
+  }
+  System.out.println();
+}
+
+// continue causes a loop to immediately go to the next iteration
+int n = 10;
+for (int i = 0; i &lt; n; i++) {
+  if (i % 2 != 0) {
+    continue;
+  }
+  System.out.print(i + " ");
+}</code></pre>
+
+<pre><code class="java">for (int i = 0; i &lt; 10; i++) {
+  System.out.println(i);
+}
+
+for (int i = 0, j = 10; i &lt; 10; i++, j--) {
+  System.out.println(i);
+  System.out.println(j);
+}
+
+// initialization, condition, and modification are optional
+for (;;) {
+  System.out.println("forever");
+}
+
+int[] primes = new int[] {2, 3, 5, 7, 11};
+for (int i : primes) {
+  System.out.println(i);
+}</code></pre>
+
+<pre><code class="java">// switch on int, short, char, byte, String or enum
+char choice = 'y';
+
+switch (choice) {
+  case 'y':
+    System.out.println("affirmative!");
+    break;
+  case 'n':
+    System.out.println("negative!");
+    break;
+  default:
+    System.out.println("who knows?");
+}</code></pre>
+
+
+
+<h3 id="classes">Classes</h3>
+
+<pre><code class="java">public class Circle {
+
+  // class field (compile-time constant)
+  public static final double PI = 3.14159;
+
+  // class field
+  public static Date lastCreated
+
+  // instance field
+  public double radius;
+
+  // a no-argument constructor if provided only if no constructors are defined
+  public Circle() {
+    this(0.0);
+  }
+
+  // constructor
+  public Circle(double radius) {
+    this.radius = radius;
+    lastCreated = new Date();
+  }
+
+  // instance method
+  public double area() {
+    return PI * r * r;
+  }
+
+  // class method
+  public static double radiansToDegrees(double radians) {
+    return radians * 180 / PI;
+  }
+}
+
+System.out.println(Circle.PI);
+System.out.println(Circle.radiansToDegrees(2.0));
+
+Circle c = new Circle(1.0);
+c.radius = 2.0;
+System.out.println(c.radius);
+System.out.println(c.area());
+
+// class fields are shared among all instances of the class
+new Circle()
+System.out.println(Circle.lastCreated);</code></pre>
+
+<pre><code class="java">class Account {
+
+  private String code;
+  private long balance;
+  private boolean enabled;
+  
+  public Account() {
+  }
+
+  public Account(String code, long balance, boolean enabled) {
+    this.code = code;
+    this.balance = balance;
+    this.enabled = enabled;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+
+    // getters or setters can contain a more sophisticated logic
+    if (code != null) {
+      this.code = code;
+    }
+  }
+
+  public long getBalance() {
+    return balance;
+  }
+
+  public void setBalance(long balance) {
+    this.balance = balance;
+  }
+
+  // a getter for a boolean field start with is
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+}
+
+// ...
+
+Account account = new Account();
+ 
+account.setCode("62968503812");
+account.setBalance(100_000_000);
+account.setEnabled(true);
+ 
+account.getCode()     // 62968503812
+account.getBalance()  // 100000000
+account.isEnabled()   // true</code></pre>
+
+
+
+<h3 id="access-modifiers">Access Modifiers</h3>
+
+
+<h3 id="inheritance">Inheritance</h3>
+
+<pre><code class="java"></code></pre>
+
+
+<h3 id="abstract-classes">Abstract Classes</h3>
+
+<pre><code class="java">public abstract class Pet {
+  
+  // an abstract class can contain fields and non-abstract methods
+  protected String name;
+  protected int age;
+  
+  // an abstract class can contain constructors
+  protected Pet(String name, int age) {
+    this.name = name;
+    this.age = age;
+  }
+ 
+  // an abstract class can contain abstract methods that must be implemented in non-abstract subclasses
+  public abstract void say();
+}
+
+// abstract classes cannot be instantiated
+Pet pet = new Pet("Unnamed", 5);  // error
+
+
+// below are two concrete subclasses of Pet
+class Cat extends Pet {
+
+  public Cat(String name, int age) {
+    super(name, age);
+  }
+ 
+  @Override
+  public void say() {
+    System.out.println("Meow!");
+  }
+}
+ 
+class Dog extends Pet {
+ 
+  public Dog(String name, int age) {
+    super(name, age);
+  }
+ 
+  @Override
+  public void say() {
+    System.out.println("Woof!");
+  }
+}
+
+Dog dog = new Dog("Boss", 5);
+Cat cat = new Cat("Tiger", 2);
+        
+dog.say();  // Woof!
+cat.say();  // Meow!</code></pre>
+
+
+<h3 id="interfaces">Interfaces</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 id="enumerations">Enumerations</h3>
+
+<pre><code class="java">public enum Color {
+  RED,
+  BLUE,
+  GREEN;
+}
+
+// ...
+
+Color[] colors = Color.values();  // [RED, BLUE, GREEN]
+
+Color r = Color.RED;
+r.name()     // RED
+r.ordinal()  // 0
+
+Color b = Color.valueOf("BLUE");
+b.equals(Color.BLUE)  // true
+b == Color.BLUE       // true</code></pre>
+
+<pre><code class="java">public enum Day {
+  MONDAY,
+  TUESDAY,
+  WEDNESDAY,
+  THURSDAY,
+  FRIDAY,
+  SATURDAY,
+  SUNDAY;
+}
+
+Day day = Day.WEDNESDAY;
+
+switch (day) {
+  case MONDAY: case FRIDAY: case SUNDAY:
+    System.out.println("6");
+    break;
+  case TUESDAY:
+    System.out.println("7");
+    break;
+  case THURSDAY: case SATURDAY:
+    System.out.println("8");
+    break;
+  case WEDNESDAY:
+    System.out.println("9");
+    break;
+  default:
+    throw new UnexpectedDayException(day);
+}</code></pre>
+
+<pre><code class="java">public enum Level {
+
+  HIGH(3, "red"),
+  MEDIUM(2, "orange"),
+  LOW(1, "green");
+
+  private final int code;
+  private final String color;
+
+  Level(int code, String color) {
+    this.code = code;
+    this.color = color;
+  }
+
+  public int getCode() {
+    return this.code;
+  }
+
+  public String getColor() {
+    return this.color;
+  }
+
+  public static Level findByColor(String color) {
+    for (Level value: values()) {
+      if (color.equals(value.color)) {
+        return value;
+      }
+    }
+    return null;
+  }
+}
+
+// ...
+
+Level l = Level.HIGH;
+l.getCode();   // 3
+l.getColor();  // red
+
+System.out.println(Level.findByColor("green"));  // LOW</code></pre>
+
+
+
+<h3 id="variable-arguments">Variable Arguments</h3>
+
+<pre><code class="java">// a vararg parameter must be the last parameter
+public class Example {
+
+  public static int max(int first, int... rest) {
+    int max = first;
+  
+    for (int i : rest) {
+      if (i > max) max = i;
+    }
+  
+    return max;
+  }
+}
+
+Example.max(0);
+Example.max(1, 2);
+Example.max(16, 8, 4, 2, 1);</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+
+

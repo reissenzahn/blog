@@ -4,17 +4,13 @@ date: 2020-09-29
 draft: false
 ---
 
-<ul class="contents">
-	<li>
-		<ul>
-      <li>
-        <a href="#introduction">Introduction</a>
-      </li>
-      <li>
-        <a href="#resources">Resources</a>
-      </li>
-		</ul>
-	</li>
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
 </ul>
 
 
@@ -429,23 +425,23 @@ $ git remote remove origin</code></pre>
   To have Git ignore certain files a <code>.gitignore</code> file can be created which lists patterns which match those files.
 </p>
 
-<pre># ignore all .a files
-*.a
-
-# but do track lib.a, even though you're ignoring .a files above
-!lib.a
-
-# only ignore the TODO file in the current directory, not subdir/TODO
-/TODO
-
-# ignore all files in any directory named build
-build/
-
-# ignore doc/notes.txt, but not doc/server/arch.txt
-doc/*.txt
-
-# ignore all .pdf files in the doc/ directory and any of its subdirectories
-doc/**/*.pdf</pre>
+<pre><code># ignore all .a files
+  *.a
+  
+  # but do track lib.a, even though you're ignoring .a files above
+  !lib.a
+  
+  # only ignore the TODO file in the current directory, not subdir/TODO
+  /TODO
+  
+  # ignore all files in any directory named build
+  build/
+  
+  # ignore doc/notes.txt, but not doc/server/arch.txt
+  doc/*.txt
+  
+  # ignore all .pdf files in the doc/ directory and any of its subdirectories
+  doc/**/*.pdf</code></pre>
 
 
 

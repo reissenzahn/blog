@@ -4,26 +4,22 @@ date: 2020-09-29
 draft: false
 ---
 
-<ul class="contents">
-	<li>
-		<ul>
-      <li>
-        <a href="#introduction">Introduction</a>
-      </li>
-      <li>
-        <a href="#construction">Construction</a>
-      </li>
-      <li>
-        <a href="#resizing">Resizing</a>
-      </li>
-      <li>
-        <a href="#complexity">Complexity</a>
-      </li>
-      <li>
-        <a href="#resources">Resources</a>
-      </li>
-		</ul>
-	</li>
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#construction">Construction</a>
+  </li>
+  <li>
+    <a href="#resizing">Resizing</a>
+  </li>
+  <li>
+    <a href="#complexity">Complexity</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
 </ul>
 
 
@@ -36,10 +32,13 @@ draft: false
 
 
 
-<h3 id="construction">Construction</h3>
+<h3 id="operations">Operations</h3>
+
+
+<h4>Construction</h4>
 
 <p>
-  A dynamic array can be implemented by allocating an underlying fixed-size array that is typically larger than the number of elements immediately required. The elements of the dynamic array are stored contiguously at the start of the underlying array with the remaining positions towards the end of the array being unused. Additional elements can be added at the end of the array in constant time using the unused space.
+  A dynamic array can be constructed by allocating an underlying fixed-size array that is typically larger than the number of elements immediately required. The elements of the dynamic array are stored contiguously at the start of the underlying array with the remaining positions towards the end of the array being unused. Additional elements can be added at the end of the array in constant time using the unused space.
 </p>
 
 <figure>
@@ -51,7 +50,7 @@ draft: false
 
 
 
-<h3 id="resizing">Resizing</h3>
+<h4>Resizing</h4>
 
 <p>
   Once all the unused space is consumed and an additional element is added, the underlying fixed-size array is resized. This involves allocating a new underlying array and copy each element from the current array into this new array. To avoid frequently incurring the cost of resizing, dynamic arrays typically resize by a reasonably large amount such as doubling in size.

@@ -1,0 +1,118 @@
+---
+title: "Iterator"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#structure">Structure</a>
+  </li>
+  <li>
+    <a href="#example">Example</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+
+</p>
+
+<!-- 
+  Iterator is a behavioral design pattern that lets you traverse elements of a collection without exposing its underlying representation (list, stack, tree, etc.).
+
+  But no matter how a collection is structured, it must provide some way of accessing its elements so that other code can use these elements. There should be a way to go through each element of the collection without accessing the same elements over and over.
+
+  The main idea of the Iterator pattern is to extract the traversal behavior of a collection into a separate object called an iterator.
+
+  In addition to implementing the algorithm itself, an iterator object encapsulates all of the traversal details, such as the current position and how many elements are left till the end. Because of this, several iterators can go through the same collection at the same time, independently of each other.
+
+Usually, iterators provide one primary method for fetching elements of the collection. The client can keep running this method until it doesn’t return anything, which means that the iterator has traversed all of the elements.
+
+All iterators must implement the same interface. This makes the client code compatible with any collection type or any traversal algorithm as long as there’s a proper iterator. If you need a special way to traverse a collection, you just create a new iterator class, without having to change the collection or the client.
+-->
+
+
+<!-- 
+  PROS
+
+   Single Responsibility Principle. You can clean up the client code and the collections by extracting bulky traversal algorithms into separate classes.
+ Open/Closed Principle. You can implement new types of collections and iterators and pass them to existing code without breaking anything.
+ You can iterate over the same collection in parallel because each iterator object contains its own iteration state.
+ For the same reason, you can delay an iteration and continue it when needed.
+-->
+
+
+<h3 id="structure">Structure</h3>
+
+<figure>
+  <img src="/img/design-patterns/flyweight.svg" style="max-width: 530px; width: 100%; height: auto">
+</figure>
+
+<ul>
+  <li>
+
+  </li>
+</ul>
+
+<!-- 
+The Iterator interface declares the operations required for traversing a collection: fetching the next element, retrieving the current position, restarting iteration, etc.
+
+Concrete Iterators implement specific algorithms for traversing a collection. The iterator object should track the traversal progress on its own. This allows several iterators to traverse the same collection independently of each other.
+
+The Collection interface declares one or multiple methods for getting iterators compatible with the collection. Note that the return type of the methods must be declared as the iterator interface so that the concrete collections can return various kinds of iterators.
+
+Concrete Collections return new instances of a particular concrete iterator class each time the client requests one. You might be wondering, where’s the rest of the collection’s code? Don’t worry, it should be in the same class. It’s just that these details aren’t crucial to the actual pattern, so we’re omitting them.
+
+The Client works with both collections and iterators via their interfaces. This way the client isn’t coupled to concrete classes, allowing you to use various collections and iterators with the same client code.
+
+Typically, clients don’t create iterators on their own, but instead get them from collections. Yet, in certain cases, the client can create one directly; for example, when the client defines its own special iterator.
+-->
+
+
+<!--
+The hasNext() method
+tells us if there are
+more elements in the
+aggregate to iterate
+through.
+
+The next() method
+returns the next
+object in the aggregate.
+
+When we say
+COLLECTION we just
+mean a group of objects. They
+might be stored in very different
+data structures like lists, arrays,
+hashtables, but they’re
+still collections. We also
+sometimes call these
+AGGREGATES.
+-->
+
+
+
+<h3 id="example">Example</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://refactoring.guru/design-patterns/iterator">Iterator (Refactoring Guru)</a>
+  </li>
+</ul>
+

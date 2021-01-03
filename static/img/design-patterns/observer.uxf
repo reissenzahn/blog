@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>50</x>
+      <y>330</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Subject
+--
+- subscribers
+--
++ subscribe(subscriber)
++ unsubscribe(subscriber)
++ notifySubscribers()
++ operation()
+
+bg=white
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>340</x>
+      <y>370</y>
+      <w>140</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+Observer
+--
++ update(context)
+
+bg=white
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>240</x>
+      <y>390</y>
+      <w>120</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>230</x>
+      <y>490</y>
+      <w>160</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>ConcreteObserverA
+--
+--
++ update(context)
+
+bg=white
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>430</x>
+      <y>490</y>
+      <w>160</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>ConcreteObserverA
+--
+--
++ update(context)
+
+bg=white
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>400</x>
+      <y>430</y>
+      <w>130</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-
+</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0;110.0;40.0;110.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>300</x>
+      <y>430</y>
+      <w>130</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-
+</panel_attributes>
+    <additional_attributes>110.0;10.0;110.0;40.0;10.0;40.0;10.0;60.0</additional_attributes>
+  </element>
+</diagram>
