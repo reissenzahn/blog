@@ -1,60 +1,211 @@
 
+// Bridge
+
+interface Device {
+
+  boolean isEnabled();
+
+  void enable();
+
+  void disable();
+
+  int getVolume();
+
+  void setVolume(int percent);
+
+  int getChannel();
+
+  void setChannel(int channel);
+
+  void printStatus();
+}
+
+class Radio implements Device {
+
+  private boolean on = false;
+  private int volume = 30;
+  private int channel = 1;
+
+  @Override
+  public boolean isEnabled() {
+    return on;
+  }
+
+  @Override
+  public void enable() {
+    on = true;
+  }
+
+  @Override
+  public void disable() {
+    on = false;
+  }
+
+  @Override
+  public int getVolume() {
+      return volume;
+  }
+
+  @Override
+  public void setVolume(int volume) {
+      if (volume > 100) {
+          this.volume = 100;
+      } else if (volume < 0) {
+          this.volume = 0;
+      } else {
+          this.volume = volume;
+      }
+  }
+
+  @Override
+  public int getChannel() {
+      return channel;
+  }
+
+  @Override
+  public void setChannel(int channel) {
+      this.channel = channel;
+  }
+
+  @Override
+  public void printStatus() {
+    System.out.println("------------------------------------");
+    System.out.println("| I'm radio.");
+    System.out.println("| I'm " + (on ? "enabled" : "disabled"));
+    System.out.println("| Current volume is " + volume + "%");
+    System.out.println("| Current channel is " + channel);
+    System.out.println("------------------------------------\n");
+  }
+}
+
+
+class Tv implements Device {
+
+  private boolean on = false;
+  private int volume = 30;
+  private int channel = 1;
+
+  @Override
+  public boolean isEnabled() {
+    return on;
+  }
+
+  @Override
+  public void enable() {
+    on = true;
+  }
+
+  @Override
+  public void disable() {
+    on = false;
+  }
+
+  @Override
+  public int getVolume() {
+    return volume;
+  }
+
+  @Override
+  public void setVolume(int volume) {
+    if (volume > 100) {
+      this.volume = 100;
+    } else if (volume < 0) {
+      this.volume = 0;
+    } else {
+      this.volume = volume;
+    }
+  }
+
+  @Override
+  public int getChannel() {
+    return channel;
+  }
+
+  @Override
+  public void setChannel(int channel) {
+    this.channel = channel;
+  }
+
+  @Override
+  public void printStatus() {
+    System.out.println("------------------------------------");
+    System.out.println("| I'm TV set.");
+    System.out.println("| I'm " + (on ? "enabled" : "disabled"));
+    System.out.println("| Current volume is " + volume + "%");
+    System.out.println("| Current channel is " + channel);
+    System.out.println("------------------------------------\n");
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Iterator (Head First)
 
-class MenuItem {
+// class MenuItem {
 
-  private String name;
-  private String description;
-  private boolean vegetarian;
-  private double price;
+//   private String name;
+//   private String description;
+//   private boolean vegetarian;
+//   private double price;
 
-  public MenuItem(String name, boolean vegetarian, double price) {
-    this.name = name;
-    this.vegetarian = vegetarian;
-    this.price = price;
-  }
+//   public MenuItem(String name, boolean vegetarian, double price) {
+//     this.name = name;
+//     this.vegetarian = vegetarian;
+//     this.price = price;
+//   }
 
-  public String getName() {
-    return name;
-  }
+//   public String getName() {
+//     return name;
+//   }
 
-  public boolean isVegetarian() {
-    return vegetarian;
-  }
+//   public boolean isVegetarian() {
+//     return vegetarian;
+//   }
 
-  public double getPrice() {
-    return price;
-  }
-}
+//   public double getPrice() {
+//     return price;
+//   }
+// }
 
-class DinnerMenu implements Iterable<MenuItem> {
+// class DinnerMenu implements Iterable<MenuItem> {
 
-  private ArrayList<MenuItem> menuItems;
+//   private ArrayList<MenuItem> menuItems;
 
-  public DinnerMenu() {
-    menuItems = new ArrayList<>();
+//   public DinnerMenu() {
+//     menuItems = new ArrayList<>();
 
-    menuItems.add(new MenuItem("Prime Steak", 3.50, false));
-    menuItems.add(new MenuItem("Beef Burger", 2.75, false));
-    menuItems.add(new MenuItem("Pasta", 2.50, true));
-  }
+//     menuItems.add(new MenuItem("Prime Steak", 3.50, false));
+//     menuItems.add(new MenuItem("Beef Burger", 2.75, false));
+//     menuItems.add(new MenuItem("Pasta", 2.50, true));
+//   }
 
   
-}
+// }
 
 
-class DessertMenu implements Iterable<MenuItem> {
+// class DessertMenu implements Iterable<MenuItem> {
 
-  private MenuItem[] menuItems;
+//   private MenuItem[] menuItems;
 
-  public DessertMenu() {
-    menuItems = new MenuItem[3];
+//   public DessertMenu() {
+//     menuItems = new MenuItem[3];
 
-    menuItems[0] = new MenuItem("Ice Cream", 1.50, true);
-    menuItems[1] = new MenuItem("Jelly and Custard", 1.00, false);
-    menuItems[2] = new MenuItem("Chocolate Cake", 1.75, true);
-  }
-}
+//     menuItems[0] = new MenuItem("Ice Cream", 1.50, true);
+//     menuItems[1] = new MenuItem("Jelly and Custard", 1.00, false);
+//     menuItems[2] = new MenuItem("Chocolate Cake", 1.75, true);
+//   }
+// }
 
 
 

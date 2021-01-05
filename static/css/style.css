@@ -133,6 +133,16 @@ a {
   );
 }
 
+@media screen and (max-width: 500px) {
+  .header__title a {
+    font-size: 2.5rem;
+  }
+
+  .header__rule {
+    width: 9rem;
+  }
+}
+
 .header__menu {
   display: flex;
   justify-content: space-between;
@@ -261,10 +271,11 @@ a {
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
+  margin-top: 2rem;
 }
 
 .footer__copyright {
-  margin-top: 2rem;
+
 }
 
 .error__title {

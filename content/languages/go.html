@@ -92,7 +92,7 @@ from a complete specification but illustrates many of the features that are avai
 %t boole an: true or false
 %c rune (Unicode co de point)
 %s string
-%q quoted str ing "abc" or rune 'c'
+%q quoted string "abc" or rune 'c'
 %v any value in a natural format
 %T type of any value
 %% literal percent sig n (no operand)
@@ -221,22 +221,24 @@ var s string = "hello"</code></pre>
 <h3 id="operators">Operators</h3>
 
 <pre><code class="go">// arithmetic operators
-_ = 1 + 2
-_ = 1 - 2
-_ = 1 * 2
-_ = 1 / 2
-_ = 1 % 2
+1 + 2
+1 - 2
+1 * 2
+1 / 2
+1 % 2
 
 // boolean operators
-_ = true && false
-_ = true || false
-_ = !true
+true && false
+true || false
+!true
 
 // comparison operators
-_ = 1 > 2
-_ = 1 >= 2
-_ = 1 &lt; 2
-_ = 1 &lt;= 2
+1 == 2
+1 != 2
+1 > 2
+1 >= 2
+1 &lt; 2
+1 &lt;= 2
 
 // logical operators
 var x uint8 = 1&lt;&lt;1 | 1&lt;&lt;5  // 00100010
@@ -357,6 +359,28 @@ default:
   fmt.Printf("%s.\n", os)
 }</code></pre>
 
+<!--
+switch coinflip() {
+  case "heads":
+    heads++
+  case "tails":
+    tails++
+  default:
+    fmt.Println("landed on edge!")
+}
+
+// tag-less switch
+func Signum(x int) int {
+  switch {
+  case x > 0:
+    return +1
+  default:
+    return 0
+  case x < 0:
+    return 1
+  }
+}
+-->
 
 
 <h3 id="arrays">Arrays</h3>
@@ -371,24 +395,29 @@ default:
   declare and initialize an array
 -->
 
-<pre><code class="go">var a [5]int
+<pre><code class="go">// an array is a numbered sequence of elements of a specific length
+var a [3]int
 
-fmt.Println(a)
+fmt.Println(a)  // [0 0 0]
 
-a[4] = 100
-fmt.Println(a[4])
+a[0] = 1
+a[1] = 2
+a[2] = 3
 
+fmt.Println(a[1])    // 2
+fmt.Println(len(a))  // 3
+
+// array literal
 a := [5]int{1, 2, 3, 4, 5}
 
+// multidimensional arrays
 var a [2][3]int
 
 for i := 0; i &lt; 2; i++ {
   for j := 0; j &lt; 3; j++ {
     a[i][j] = i + j
   }
-}
-
-fmt.Println(a)</code></pre>
+}</code></pre>
 
 
 
@@ -624,6 +653,13 @@ c.color = "blue"
 fmt.Println(c.Area())
 fmt.Println(c)</code></pre>
 
+<!-- 
+  type Point struct {
+    X, Y int
+  }
+
+  var p Point
+-->
 
 
 <h3 id="interfaces">Interfaces</h3>
@@ -766,6 +802,27 @@ if _, err := os.Create("/tmp/file"); err != nil {
   panic(err)
 }</code></pre>
 
+
+
+<h3 id="goroutines">Goroutines</h3>
+
+<pre><code class="go">func count(j int) {
+	for i := 0; i < j; i++ {
+		fmt.Println(i)
+	}
+}
+
+func main() {
+	go count(10)
+
+	go func(j int) {
+		for i := 0; i < j; i++ {
+			fmt.Println(i)
+		}
+	}(10)
+
+	time.Sleep(time.Second)
+}</code></pre>
 
 
 
