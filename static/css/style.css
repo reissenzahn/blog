@@ -1,6 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap');
 
 
+.header__icon {
+  height: 20px;
+  weight: 20px;
+  display: none;
+}
+
+@media screen and (max-width: 570px) {
+  .header__icon {
+    display: block;
+  }
+
+  .header__text {
+    display: none;
+  }
+}
+
 
 /* .vocab {
   border: 1px solid #222;
@@ -143,7 +159,7 @@ a {
   );
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 570px) {
   .header__title a {
     font-size: 2.5rem;
   }
