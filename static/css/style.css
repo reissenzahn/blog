@@ -17,6 +17,14 @@
   }
 }
 
+.vocab {
+  width: 100%;
+}
+
+.vocab tr td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
 
 /* .vocab {
   border: 1px solid #222;
