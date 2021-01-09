@@ -1,0 +1,81 @@
+---
+title: "HyperLogLog"
+date: 2020-09-29
+draft: false
+---
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+
+</p>
+
+<!--
+  HyperLogLog is a probabilistic data structure and algorithm for the count-distinct problem. Given a multiset, we are concerned with approximating the number of distinct elements called the cardinality. While calculating the exact cardinality of a multiset requires an amount of memory proportional to the cardinality, HyperLogLog is able to provide a reasonable estimate 
+
+  HyperLogLog uses significantly less memory than this, at the cost of obtaining only an approximation of the cardinality.
+  
+  The HyperLogLog algorithm is able to estimate cardinalities of > 10^9 with a typical accuracy (standard error) of 2%, using 1.5 kB of memory.
+
+  In this case, the term "cardinality" is used to mean the number of distinct elements in a data stream with repeated elements.
+-->
+
+<!--
+  The main trick:
+
+  If you are observing a stream of random integers then, considering their binary representations, ~50% of the numbers start with `1`, ~25% start with `01`, ~12.5% start with 001 and so on.
+  
+  This means that if you observe a random stream and see a `001` there is a higher chance 
+-->
+
+<!--
+  To ensure that the entries are evenly distributed, we can use a hash function and estimate the cardinality from the hashed values instead of from the entries themselves.
+-->
+
+
+<h3 id="structure">Structure</h3>
+
+<!--
+  The data of the HyperLogLog is stored in an array M of counters called registers with size m that are set to 0 in their initial state.
+-->
+
+<!--
+  The basis of the HyperLogLog algorithm is the observation that the cardinality of a multiset of uniformly distributed random numbers can be estimated by calculating the maximum number of leading zeros in the binary representation of each number in the set.
+
+  If the maximum number of leading zeros observed is n, an estimate for the number of distinct elements in the set is 2^n.
+
+  In the HyperLogLog algorithm, a hash function is applied to each element in the original multiset to obtain a multiset of uniformly distributed random numbers with the same cardinality as the original multiset. The cardinality of this randomly distributed set can then be estimated using the algorithm above.
+
+  The simple estimate of cardinality obtained using the algorithm above has the disadvantage of a large variance. In the HyperLogLog algorithm, the variance is minimised by splitting the multiset into numerous subsets, calculating the maximum number of leading zeros in the numbers in each of these subsets, and using a harmonic mean to combine these estimates for each subset into an estimate of the cardinality of the whole set.
+-->
+
+
+<h3 id="operations">Operations</h3>
+
+<!--
+  The HyperLogLog has three main operations: add to add a new element to the set, count to obtain the cardinality of the set and merge to obtain the union of two sets.
+-->
+
+<h4 id="add">Add</h4>
+
+<!-- 
+  The add operation consists of computing the hash of the input data v with a hash function h, getting the first b bits (where b is log_2(m)) and adding 1 to them to obtain the address of the register to modify. 
+-->
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=ZRCLZ3aIaVU">Insight Data Engineering Project (Kendrick Lo)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=jD2d7jr7z1Q">Know your Data Structures: HyperLogLog (Robin Roth)</a>
+  </li>
+</ul>
+
+<!--
+  https://engineering.fb.com/2018/12/13/data-infrastructure/hyperloglog/
+-->

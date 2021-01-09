@@ -73,7 +73,7 @@ A regular singly linked list only has efficient insertion and deletion at one en
 </p>
 
 <figure>
-  <img src="/img/data-structures/queue/dequeue.svg" style="max-width: calc(79.49mm / 1.2);">
+  <img src="/img/data-structures/queue/queue.svg" style="max-width: calc(79.49mm / 1.2);">
   <figcaption>
     <i>figure 3</i>
   </figcaption>
@@ -117,11 +117,11 @@ A regular singly linked list only has efficient insertion and deletion at one en
 
 <pre><code class="java">public class Queue<T> {
 
-  private Node<T> front;
-  private Node<T> back;
+  private Node&lt;T> front;
+  private Node&lt;T> back;
 
   public void enqueue(T value) {
-    Node<T> node = new Node<>(value, null);
+    Node&lt;T> node = new Node&lt;>(value, null);
 
     if (back != null)
       back.next = node;
@@ -156,12 +156,12 @@ A regular singly linked list only has efficient insertion and deletion at one en
     return front == null;
   }
 
-  private static class Node<T> {
+  private static class Node&lt;T> {
 
     private T value;
-    private Node<T> next;
+    private Node&lt;T> next;
 
-    public Node(T value, Node<T> next) {
+    public Node(T value, Node&lt;T> next) {
       this.value = value;
       this.next = next;
     }

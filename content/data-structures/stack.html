@@ -12,6 +12,9 @@ draft: false
     <a href="#operations">Operations</a>
   </li>
   <li>
+    <a href="#example">Example</a>
+  </li>
+  <li>
     <a href="#complexity">Complexity</a>
   </li>
   <li>
@@ -30,13 +33,6 @@ draft: false
   A stack is a collection of elements that are maintained in a sequence and can be modified by the insertion and removal of elements from one end. The end of the sequence at which elements are inserted and removed is called the top. A stack is a last in, first out (LIFO) data structure as the last element to be inserted will be the first one to be removed 
 </p>
 
-<figure>
-  <img src="/img/data-structures/stack/top.svg" style="max-width: calc(37.91mm / 1.2);">
-  <figcaption>
-    <i>figure 1</i>
-  </figcaption>
-</figure>
-
 
 <h3 id="operations">Operations</h3>
 
@@ -46,13 +42,6 @@ draft: false
   The push operation inserts an element at the top of the stack. This can be implemented using a linked list by appending the element as the first element of the list.
 </p>
 
-<figure>
-  <img src="/img/data-structures/stack/push.svg" style="max-width: calc(38.55mm / 1.2);">
-  <figcaption>
-    <i>figure 2</i>
-  </figcaption>
-</figure>
-
 
 <h4>Pop</h4>
 
@@ -60,10 +49,14 @@ draft: false
   The pop operation removes the most recently added element that was not yet removed. This can be implemented using a linked list by removing the first element of the list. A non-essential peek operation may be included to return the most recently added element without removing it.
 </p>
 
+
+<h3 id="example">Example</h3>
+
+
 <figure>
-  <img src="/img/data-structures/stack/pop.svg" style="max-width: calc(36.61mm / 1.2);">
+  <img src="/img/data-structures/stack/stack.svg" style="max-width: 25rem;">
   <figcaption>
-    <i>figure 3</i>
+    <i>figure 1</i>
   </figcaption>
 </figure>
 
