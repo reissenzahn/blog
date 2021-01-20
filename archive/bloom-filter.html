@@ -1,0 +1,138 @@
+---
+title: "Bloom Filters (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#description">Description</a>
+        </li>
+				<li>
+          <a href="#operation">Operation</a>
+        </li>
+				<li>
+          <a href="#false-positive-rate">False Positive Rate</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  A Bloom filter is a space-efficient probabilistic data structure that is used to test whether an element is a member of a set. Two key properties of Bloom filters are:
+</p>
+
+<ul>
+  <li>
+    <i>No false negatives</i>: If a query returns negative then the queried item is guaranteed not to be present in the set.
+  </li>
+  <li>
+    <i>Low false positive rate</i>: If a query returns positive then it is fairly unlikely that the queried item is not in the set.
+  </li>
+</ul>
+
+<p>
+  In other words, a query can either return "definitely not in set" or "possibly in set".
+</p>
+
+
+
+<h3 id="description">Description</h3>
+
+<p>
+  A Bloom filter is composed of two parts:
+</p>
+
+<ol>
+  <li>
+    An array of \(m\) bits which are all initially set to zero.
+  </li>
+  <li>
+    A set of \(k\) hash functions that map set elements to one of the \(m\) array positions.
+  </li>
+</ol>
+
+<p>
+  The hash functions should be independent and uniformly distributed as well as fast. Suitable implementations include 
+</p>
+
+
+
+<h3 id="operation">Operation</h3>
+
+<h4 id="insert">Insert</h4>
+
+<p>
+  To insert an element \(x\) into a Bloom Filter, hash it using each of the \(k\) hash functions to get \(k\) array positions. Then set these \(k\) array positions to \(1\) in the bit array.
+</p>
+
+<figure>
+  <img src="/img/bloom-filters/insert.svg" style="max-height: 200px;">
+  <figcaption>
+    <i>Figure 1</i>
+  </figcaption>
+</figure>
+
+
+<h4 id="query">Query</h4>
+
+<p>
+  To query whether an element \(y\) is in the set, hash it using each of the \(k\) hash functions to get \(k\) array positions. Then:
+</p>
+
+<ul>
+  <li>
+    If any of the bits at these positions is \(0\) then the \(y\) is definitely not in the set as, if it was, all these bits would have been set to \(1\) when it was inserted.
+  </li>
+  <li>
+    If all the bits at these positions is \(1\) then either the element is in the set or the bits have by chance been set to \(1\) during the insertion of other elements.
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/bloom-filters/query.svg" style="max-height: 200px;">
+  <figcaption>
+    <i>Figure 2</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="false-positive-rate">False Positive Rate</h3>
+
+<p>
+  Given a Bloom filter containing \(n\) elements with a bit array of length \(m\) a set of \(k\) has functions, the rate of false positives is given by:
+
+  \[\left(1 - \left[1 - \frac{1}{m}\right]^{kn} \right)^k \approx \left(1- e^{-kn/m}\right)^k\]
+</p>
+
+<p>
+  Given a Bloom filter with \(m\) bits in the bitfield and \(n\) elements we want to store, the optimum number of hash functions is given by:
+
+  \[k = \frac{m}{n} \ln 2\]
+</p>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Bloom_filter">Bloom Filter (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://github.com/reddragon/bloomfilter.go/blob/master/bloomfilter.go">Bloom Filter Implementation</a>
+  </li>
+</ul>
+
+

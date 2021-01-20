@@ -1,0 +1,134 @@
+---
+title: "Insertion Sort (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#procedure">Procedure</a>
+      </li>
+      <li>
+        <a href="#implementation">Implementation</a>
+      </li>
+      <li>
+        <a href="#complexity">Complexity</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Insertion sort is a in-place sorting algorithm that builds the final sorted array behind it. Unlike selection sort, the running time of insertion sort depends on the initial ordering of the array. As such, insertion sort is an excellent method for partially sorted arrays and is also a fine method for tiny arrays.
+</p>
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+  Insertion sort proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Start at the second element of the array.
+  </li>
+  <li>
+    Compare the current element to the element to its left. If the current element is smaller then swap the elements.
+  </li>
+  <li>
+    Continuing swapping until the current element is larger than the element to its left or the end of the array is reached.
+  </li>
+  <li>
+    Repeat this process for each subsequent element of the array.
+  </li>
+</ol>
+
+<figure>
+  <img src="/img/sorting/insertion-sort/insertion-sort.svg" style="max-width: 250px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 class="implementation">Implementation</h3>
+
+<pre><code class="java">public class Insertion {
+
+  public static void sort(int[] array) {
+    if (array == null) {
+      return;
+    }
+
+    for (int i = 1; i &lt; array.length; i++) {
+      for (int j = i; j > 0 && array[j] &lt; array[j - 1]; j--) {
+        swap(array, j - 1, j);
+      }
+    }
+  }
+
+  private static void swap(int[] array, int i, int j) {
+    int tmp = array[i];
+    array[i] = array[j];
+    array[j] = tmp;
+  }
+
+  public static void main(String[] args) {
+    int[] array = { 6, 4, 2, 8, 9, 1, 5, 3, 7 };
+
+    Insertion.sort(array);
+
+    System.out.println(Arrays.toString(array));  // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  }
+}</code></pre>
+
+
+
+<h3 class="complexity">Complexity</h3>
+
+<table>
+  <tr>
+    <td>Worst case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Best case time</td>
+    <td>\(O(n)\)</td>
+  </tr>
+  <tr>
+    <td>Average case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Space</td>
+    <td>\(O(1)\)</td>
+  </tr>
+</table>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Insertion_sort">Insertion Sort (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=JU767SDMDvA">Insertion sort in 2 minutes
+ (YouTube)</a>
+  </li>
+</ul>

@@ -1,0 +1,122 @@
+---
+title: "Newscast (DRAFT)"
+date: 2020-09-30
+draft: false
+---
+
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#agents-and-agencies">Agents and Agencies</a>
+        </li>
+				<li>
+          <a href="#correspondents">Correspondents</a>
+        </li>
+				<li>
+          <a href="#cache-exchanges">Cache Exchanges</a>
+        </li>
+				<li>
+          <a href="#merging-caches">Merging Caches</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Newscast is a gossip protocol for the maintenance of dynamic unstructured P2P overlay networks proposed by Jelasity et al. in 2002. It provides both efficient membership management and information dissemination services while offering strong scalability and dependability properties. Participants can join and leave the network without affecting the information-dissemination properties of the protocol.
+</p>
+
+
+
+<h3 id="agents-and-agencies">Agents and Agencies</h3>
+
+<p>
+  The two primary components of the newscast model are a collective of <i>agents</i> and a <i>news agency</i>. Agents produce application-specific news while the news agency regularly asks all agents for news using a <code>getNews()</code> callback. The news agency also provides each agent with news about the other agents in the collective by means of the <code>newsUpdate(news[])</code> callback.
+</p>
+
+<figure>
+  <img src="/img/newscast/news-agency.svg" style="max-width: 400px">
+  <figcaption>
+    <i>Figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="correspondents">Correspondents</h3>
+
+<p>
+  Each agent has an associated <i>correspondent</i> running on the same machine. These correspondents jointly form the distributed implementation of the news agency. Each correspondent maintains a fixed-sized cache of \(c\) cache entries. Correspondents are passed news from agents in the form of <i>news items</i> consisting of an agent identifier and the application specific news. The correspondent adds these news items to its cache along with the current timestamp and the correspondent's network address.
+</p>
+
+<figure>
+  <img src="/img/newscast/cache-entry.svg" style="max-width: 400px">
+  <figcaption>
+    <i>Figure 2</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="cache-exchanges">Cache Exchanges</h3>
+
+<p>
+  Correspondents exchange caches once every <i>refresh interval</i> \(\Delta t\) as follows:
+</p>
+
+<ol>
+  <li>
+    Request a fresh news item from the local agent by calling <code>getNews()</code> and add the item to the cache.
+  </li>
+  <li>
+    Randomly select a peer correspondent by considering the network address of other available correspondents as found in the cache.
+  </li>
+  <li>
+    Send all cache entries to the selected peer and, in turn, receive all the peer's cache entries. Merge the received entries into the local cache.
+  </li>
+  <li>
+    Pass the received cache entries from the peer agent to the local agent by calling <code>newsUpdate()</code>.
+  </li>
+  <li>
+    The correspondent now has \(2c\) cache entries and so it throws away the \(c\) oldest ones.
+  </li>
+</ol>
+
+
+
+<h3 id="merging-caches">Merging Caches</h3>
+
+<p>  
+  Newscast does not require the clocks of correspondents to be  synchronized. Instead, when a correspondent \(A\) passes its cache to another correspondent \(B\), it also sends along its current local time \(T_A\). When \(B\) receives the cache entries, it uses its own current local time \(T_B\) to adjust the timestamp of each entry by adding \(T_A - T_B\). This effectively normalizes the time of each new entry to those already cached.
+</p>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.14.8154&rep=rep1&type=pdf">Large-Scale Newscast Computing on the Internet</a>
+  </li>
+  <li>
+    <a href="http://www.cs.unibo.it/bison/publications/ap2pc03.pdf">A Robust and Scalable Peer-to-Peer Gossiping Protocol</a>
+  </li>
+  <li>
+    <a href="https://link.springer.com/chapter/10.1007/978-3-662-44893-9_8">Analysis of the Data Flow in the Newscast Protocol for Possible Vulnerabilities</a>
+  </li>
+</ul>
+
+
+
+

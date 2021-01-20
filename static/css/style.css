@@ -9,7 +9,7 @@
 
 @media screen and (max-width: 570px) {
   .header__icon {
-    display: block;
+    /* display: block; */
   }
 
   .header__text {
@@ -169,11 +169,11 @@ a {
 
 @media screen and (max-width: 570px) {
   .header__title a {
-    font-size: 2.5rem;
+    /* font-size: 2.5rem; */
   }
 
   .header__rule {
-    width: 9rem;
+    /* width: 9rem; */
   }
 }
 
@@ -229,6 +229,11 @@ a {
 .article ul {
   margin-top: 1.25rem;
   margin-left: 1.75rem;
+}
+
+.article ul ul {
+  margin-top: 0;
+  list-style-type: disc;
 }
 
 .article ol {

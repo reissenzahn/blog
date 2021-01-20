@@ -1,0 +1,44 @@
+---
+title: "Hacker News"
+date: 2021-01-09
+draft: false
+---
+
+<style>
+#hacker-news {
+  list-style-type: none;
+  margin-left: 0;
+}
+
+#hacker-news-entry {
+
+}
+</style>
+
+<ul id="hacker-news"></ul>
+
+<script>
+
+
+const list = document.getElementById('hacker-news');
+            
+fetch('https://hacker-news.firebaseio.com/v0/topstories.json')
+  .then((response) => response.json())
+  .then((json) => {
+    json.forEach((id) => {
+      fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`)
+        .then((response) => response.json())
+        .then((json) => {
+          const entry = document.createElement('li');
+          entry.id = 'hacker-news-entry';
+
+          const link = document.createElement('a');
+          link.textContent = json.title;
+          link.href = json.url;
+          
+          entry.appendChild(link);
+          list.appendChild(entry);
+        });
+    });
+  });
+</script>
