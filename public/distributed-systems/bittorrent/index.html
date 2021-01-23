@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">BitTorrent</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  BitTorrent is a peer-to-peer file sharing protocol designed to facilitate file transfers among a swarm of peers across unreliable networks. While a traditional client-server architecture places all upload cost on the file host, BitTorrent redistributes this cost among downloaders by having them upload pieces of the file to each other. This offers substantial scalability and affordability advantages.
+</p>
+
+
+
+
+
+<h3 id="pieces-and-blocks">Pieces and Blocks</h3>
+
+<p>
+  A torrent consisting of one or more files is treated as a contiguous sequence of bytes which is divided into a number of fixed-size pieces. Pieces may overlap file boundaries and the last piece may be smaller than the rest. The piece size is constrained by the fact that too large piece sizes result in less efficient transfers while too small piece sizes cause large metainfo files. Typical piece sizes include 256KB, 512Kb and 1MB.
+</p>
+
+<p>
+  When distributing pieces between peers, those pieces are further broken into blocks. This allows a peer to download a given piece from multiple peers. Typical client implementations use a block size of 16KB.
+</p>
+
+<!--
+  The complete file is derived by combining all the pieces into one string of bytes.
+
+  Pieces are indexed starting from zero.
+
+  Once a peer has downloaded a complete piece it can immediately begin sharing it with other peers. A peer can only share the complete pieces it has obtained.
+
+  Each piece represents a range of data which it is possible to verify using a piece SHA-1 hash.
+
+  Each piece has a corresponding SHA1 hash of the data contained within that piece. These hashes are concatenated to form the pieces value in the above info dictionary. Note that this is not a list but rather a single string. The length of the string must be a multiple of 20.
+-->
+
+
+
+<h3 id="metainfo-file">Metainfo File</h3>
+
+<p>
+  To publish a file using BitTorrent, a metainfo file containing information about the torrent must be created. This includes tracker information, the piece length, hashes for each piece and metadata about the torrent. A metainfo file has a .torrent extension.
+</p>
+
+<!-- 
+In order for a client to download a torrent the following steps must be carried through:
+
+1. A metainfo file must be retrieved.
+2. Instructions that will allow the client to contact other peers must be periodically requested from the tracker using THP.
+3. The torrent must be downloaded by connecting to peers in the swarm and trading pieces using PWP.
+
+To publish a torrent the following steps must be taken:
+
+1. A tracker must be set up.
+2. A metainfo file pointing to the tracker and containing information on the structure of the torrent must be produced and published.
+3. At least one seeder with access to the complete torrent must be set up
+ -->
+
+<!--
+  The metainfo file provides the client with information on the tracker location as well as the torrent to be downloaded. Besides listing which files will result from downloading the torrent, it also lists how the client should split up and verify individual pieces making up the complete torrent.
+
+In order for a client to recognize the metainfo file it SHOULD have the extension .torrent and the associated the media type "application/x-bittorrent". How the client retrieves the metainfo file is beyond the scope of this document, however, the most user-friendly approach is for a client to find the file on a web page, click on it, and start the download immediately. This way, the apparent complexity of BTP as opposed to FTP or HTTP transfer is transparent to the user.
+-->
+
+<p>
+  The metainfo file contains a bencoded dictionary with the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>announce</code>: A string containing the announce URL of the tracker.
+  </li>
+  <li>
+    <code>comment</code>: A string containing comments from the torrent author (optional).
+  </li>
+  <li>
+    <code>created by</code>: A string containing the name and version of the program used to create the metainfo file (optional).
+  </li>
+  <li>
+    <code>creation date</code>: A string containing the creation time of the torrent in UNIX epoch format (optional).
+  </li>
+  <li>
+    <code>info</code>: A dictionary containing information about the files in the torrent.
+  </li>
+</ul>
+
+<p>
+  If the torrent contains a single file then the info dictionary must have the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>name</code>: A string containing the name of the file.
+  </li>
+  <li>
+    <code>length</code>: An integer indicating the length of the file in bytes.
+  </li>
+  <li>
+    <code>piece length</code>: An integer indicating the number of bytes in each piece.
+  </li>
+  <li>
+    <code>pieces</code>: A string containing the concatenation of the SHA-1 hash for each piece in the torrent.
+  </li>
+</ul>
+
+<p>
+  If the torrent contains multiple files then the info dictionary must have the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>name</code>: A string containing the name of the topmost directory in the file structure.
+  </li>
+  <li>
+    <code>files</code>: A list containing a dictionary for each file in the torrent. Each dictionary has the following keys:
+    <ul>
+      <li>
+        <code>path</code>: List of strings that specifies the path to the file relative to the topmost directory.
+      </li>
+      <li>
+        <code>length</code>: An integer indicating the total length of the file in bytes.
+      </li>
+    </ul>
+  </li>
+  <li>
+    <code>piece length</code>: An integer indicating the number of bytes in each piece.
+  </li>
+  <li>
+    <code>pieces</code>: A string containing the concatenation of the SHA-1 hash for each piece in the torrent.
+  </li>
+</ul>
+
+<!-- 
+  The decision to use BitTorrent is made by the publisher of a file.
+
+  The metainfo file contains information about the file: its length, name, hashing information and the url of a tracker.
+
+  When someone wants to publish data using the BitTorrent protocol, they must create a metainfo file.
+
+  The content of a metainfo file is a bencoded dictionary containing an info key that describes the 
+-->
+
+
+
+
+
+<h3 id="peer-wire-protocol">Peer Wire Protocol</h3>
+
+<p>
+  The peer wire protocol consists of an initial handshake followed by the asynchronous exchange of length-prefixed messages. These messages have the dual purpose of informing peers of changes in the state of neighboring peers as well as transferring blocks between neighboring peers.
+</p>
+
+<ul>
+  <li>
+
+  </li>
+</ul>
+
+<!-- 
+
+
+
+  All integer members are encoded as 4-byte big-endian numbers. Furthermore, all index and offset members are zero-based.
+-->
+
+
+<h4>Handshaking</h4>
+
+<p>
+  Should a given peer want to communicate with another peer, it must start by opening a TCP connection and perform a symmetric handshake operation. This consists of an exchange of handshake messages.
+</p>
+
+<!-- 
+  handshake: <pstrlen><pstr><reserved><info_hash><peer_id>
+-->
+
+<ul>
+  <li>
+    <code>pstrlen</code>: A byte indicating the length of the protocol name.
+  </li>
+  <li>
+    <code>pstr</code>: A character string containing the protocol name in ASCII.
+  </li>
+  <li>
+    <code>reserved</code>: Eight reserved bytes typically all set to zero.
+  </li>
+  <li>
+    <code>info_hash</code>: The 20 byte SHA-1 hash of the info key in the metainfo file.
+  </li>
+  <li>
+    <code>peer_id</code>: The 20 byte self-designated unique identifier of the peer.
+  </li>
+</ul>
+
+
+<!--
+ Version 1.0 uses the name <code>BitTorrent protocol</code> which has a length of 19.
+-->
+
+
+<!--
+  The initiator of a connection is expected to transmit their handshake immediately. The recipient may wait for the initiator's handshake, if it is capable of serving multiple torrents simultaneously. However, the recipient must respond as soon as it sees the info_hash part of the handshake (the peer id will presumably be sent after the recipient sends its own handshake).
+
+  If a client receives a handshake with an info_hash that it is not currently serving, then the client must drop the connection.
+
+  If the initiator of the connection receives a handshake in which the peer_id does not match the expected peerid, then the initiator is expected to drop the connection. Note that the initiator presumably received the peer information from the tracker, which includes the peer_id that was registered by the peer. The peer_id from the tracker and in the handshake are expected to match.
+-->
+
+
+<h4>State-Oriented Messages</h4>
+
+<!-- 
+  These messages serve the sole purpose of informing peers of changes in the state of neighboring peers. A message of this type MUST be sent whenever a change occurs in a peer's state, regardless of the state of other peers.
+ -->
+
+<!-- 
+  Choke
+  This message has ID 0 and no payload. A peer sends this message to a remote peer to inform the remote peer that it is being choked.
+
+  Unchoke
+  This message has ID 1 and no payload. A peer sends this message to a remote peer to inform the remote peer that it is no longer being choked.
+
+  Interested
+  This message has ID 2 and no payload. A peer sends this message to a remote peer to inform the remote peer of its desire to request data.
+
+  Uninterested
+  This message has ID 3 and no payload. A peer sends this message to a remote peer to inform it that it is not interested in any pieces from the remote peer.
+
+  Request
+  This message has ID 6 and a payload of length 12. The payload is 3 integer values indicating a block within a piece that the sender is interested in downloading from the recipient. The recipient MUST only send piece messages to a sender that has already requested it, and only in accordance to the rules given above about the choke and interested states. The payload has the following structure:
+
+  ---------------------------------------------
+  | Piece Index | Block Offset | Block Length |
+  ---------------------------------------------
+
+  Piece
+  This message has ID 7 and a variable length payload. The payload holds 2 integers indicating from which piece and with what offset the block data in the 3rd member is derived. Note, the data length is implicit and can be calculated by subtracting 9 from the total message length. The payload has the following structure:
+
+  -------------------------------------------
+  | Piece Index | Block Offset | Block Data |
+  -------------------------------------------
+
+  Cancel
+  This message has ID 8 and a payload of length 12. The payload is 3 integer values indicating a block within a piece that the sender has requested for, but is no longer interested in. The recipient MUST erase the request information upon receiving this messages. The payload has the following structure:
+
+  ---------------------------------------------
+  | Piece Index | Block Offset | Block Length |
+  ---------------------------------------------
+-->
+
+
+
+<h4>Data-Oriented Messages</h4>
+
+<!-- 
+  These messages handle the requesting and sending of data portions.
+ -->
+
+<!--
+  Have
+
+  This message has ID 4 and a payload of length 4. The payload is a number denoting the index of a piece that the peer has successfully downloaded and validated. A peer receiving this message must validate the index and drop the connection if this index is not within the expected bounds. Also, a peer receiving this message MUST send an interested message to the sender if indeed it lacks the piece announced. Further, it MAY also send a request for that piece.
+
+  have: <len=0005><id=4><piece index>
+
+  The have message is fixed length. The payload is the zero-based index of a piece that has just been successfully downloaded and verified via the hash.
+
+
+  Bitfield
+
+  This message has ID 5 and a variable payload length. The payload is a bitfield representing the pieces that the sender has successfully downloaded, with the high bit in the first byte corresponding to piece index 0. If a bit is cleared it is to be interpreted as a missing piece. A peer MUST send this message immediately after the handshake operation, and MAY choose not to send it if it has no pieces at all. This message MUST not be sent at any other time during the communication.
+
+
+
+-->
+
+
+<h3 id="piece-selection">Piece Selection</h3>
+
+<p>
+  The method used to select which pieces to begin downloading is very important for ensuring high performance.
+</p>
+
+
+<h4>Strict Policy</h4>
+
+<p>
+  Once a block for a particular piece has been requested, the remaining blocks for that piece are requested before blocks from any other piece. This ensures that complete pieces are obtained as quickly as possible so the peer has something to upload.
+</p>
+
+
+<h4>Rarest First</h4>
+
+<p>
+  When selecting which piece to start download next, 
+</p>
+
+<!-- 
+  Rarest First:
+
+    When selecting which piece to start downloading next, peers generally download pieces which the fewest of their own peers have first.
+
+    This technique does a good job of making sure that peers have pieces which all of their peers want so uploading can be down when wanted.
+
+    It also makes sure that pieces which are more common are left for later so the likelihood that a peer which is currently offering upload will later not have anything of interest is reduced.
+
+    Additionally, since no downloaders can complete until the seed has uploaded every part of the file, performance is much better if different downloaders get different pieces from the seed since redundant downloads waste the opportunity for the seed to get more information out.
+
+    Rarest first does a good job of only downloading new pieces from the seed, since downloaders will be able to see that their other peers have pieces the seed has uploaded already.
+
+    Replicating the rarest pieces as quickly as possible reduces the risk of them getting completely lost as current peers stop uploading.
+
+
+  Random First Piece:
+
+    An exception to rarest first is when downloading starts.
+
+    At that time, the peer has nothing to upload so it's important to get a complete piece as quickly as possible.
+
+    Rare pieces are generally only present on one peer so they would be downloaded slower than pieces which are present on multiple peers for which it's possible to download sub-pieces from different places.
+
+    For this reason, pieces to download are selected at random until the first complete piece is assembled and then the strategy changes to rarest first.
+-->
+
+
+
+
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.bittorrent.org/bittorrentecon.pdf">Incentives Build Robustness in BitTorrent (Bram Cohen)</a>
+  </li>
+  <li>
+    <a href="https://www.bittorrent.org/beps/bep_0003.html">Official Specification</a>
+  </li>
+</ul>
+
+<!-- 
+
+  https://mandreyel.github.io/posts/rust-bittorrent-engine/
+ -->
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

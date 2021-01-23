@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">Linked List (DRAFT)</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+<ul class="contents">
+	<li>
+		<ul>
+      <li>
+        <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+        <a href="#resources">Resources</a>
+      </li>
+		</ul>
+	</li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  A linked list is a linear collection of elements that consists of a set of nodes that collectively form the sequence. Each node contains a reference to the next node in the sequence and a reference to an element of the list. The first node is called the head and the last node is called the tail. The next reference of the tail points to null.
+</p>
+
+<!--
+  Linked lists are some of the most fundamental data structures.
+
+  Linked lists consist of a number of elements grouped, or linked, together in a specific order.
+
+  They are useful in maintaining collections of data, similar to the way that arrays are often used.
+
+  Linked lists offer important advantages over arrays in many cases.
+
+  Linked lists are considerably more efficient in performing insertions and deletions.
+
+  Linked lists also make use of dynamically allocated storage which is storage allocated at runtime.
+
+  Since in many applications the size of the data is not known at compile time this can be a nice attribute as well.
+
+  Singly-linked lists: The simplest linked lists, in which elements are linked by a single pointer. This structure allows the list to be traversed from its first element to its last.
+
+  Doubly-linked lists Linked lists in which elements are linked by two pointers instead of one. This structure allows the list to be traversed both forward and backward.
+
+  Circular lists: Linked lists in which the last element is linked to the first instead of being set to NULL. This structure allows the list to be traversed in a circular fashion.
+
+  Singly-linked list, usually simply called linked lists, are composed of individual elements, each linked by a single pointer.
+  
+  Each element consists of two parts: a data member and a pointer, called the next pointer.
+  
+  Using this two-member structure, a linked list is formed by setting the next pointer of each element to point to the element that follows it (see Figure 5-1).
+  
+  The next pointer of the last element is set to NULL, a convenient sentinel marking the end of the list.
+  
+  The element at the start of the list is its head; the element at the end of the list is its tail.
+
+  To access an element in a linked list, we start at the head of the list and use the next pointers of successive elements to move from element to element until the desired element is reached.
+  
+  With singly-linked lists, the list can be traversed in only one direction—from head to tail—because each element contains no link to its predecessor.
+  
+  Therefore, if we start at the head and move to some element, and then wish to access an element preceding it, we must start over at the head (although sometimes we can anticipate the need to know an element and save a pointer to it).
+  
+  Often this weakness is not a concern. When it is, we use a doubly-linked list or circular list.
+-->
+
+
+<figure>
+  <img src="/img/linked-list/linked-list.svg" style="max-width: 380px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+<!-- This structure allows for efficient insertion or removal of elements from any position in the sequence during iteration. A drawback of linked lists is that access time is linear.
+
+The principal benefit of a linked list over a conventional array is that the list elements can be easily inserted or removed without reallocation or reorganization of the entire structure because the data items need not be stored contiguously in memory or on disk, while restructuring an array at run-time is a much more expensive operation. Linked lists allow insertion and removal of nodes at any point in the list, and allow doing so with a constant number of operations by keeping the link previous to the link being added or removed in memory during list traversal.
+
+On the other hand, since simple linked lists by themselves do not allow random access to the data or any form of efficient indexing, many basic operations—such as obtaining the last node of the list, finding a node that contains a given datum, or locating the place where a new node should be inserted—may require iterating through most or all of the list elements. -->
+
+
+<h3 id="complexity">Add First</h3>
+
+<figure>
+  <img src="/img/linked-list/add-first.svg" style="max-width: 380px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="complexity">Add Last</h3>
+
+<figure>
+  <img src="/img/linked-list/add-last.svg" style="max-width: 380px;">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="complexity">Complexity</h3>
+        worst case
+space	  O(n)
+prepend	O(1)
+append	O(1)
+lookup	O(n)
+insert	O(n)
+delete	O(n)
+
+<table>
+  <tr>
+    <td></td>
+  </tr>
+</table>
+
+<!-- 
+A dynamic array is a data structure that allocates all elements contiguously in memory, and keeps a count of the current number of elements. If the space reserved for the dynamic array is exceeded, it is reallocated and (possibly) copied, which is an expensive operation.
+
+Linked lists have several advantages over dynamic arrays. Insertion or deletion of an element at a specific point of a list, assuming that we have indexed a pointer to the node (before the one to be removed, or before the insertion point) already, is a constant-time operation (otherwise without this reference it is O(n)), whereas insertion in a dynamic array at random locations will require moving half of the elements on average, and all the elements in the worst case. While one can "delete" an element from an array in constant time by somehow marking its slot as "vacant", this causes fragmentation that impedes the performance of iteration.
+
+Moreover, arbitrarily many elements may be inserted into a linked list, limited only by the total memory available; while a dynamic array will eventually fill up its underlying array data structure and will have to reallocate—an expensive operation, one that may not even be possible if memory is fragmented, although the cost of reallocation can be averaged over insertions, and the cost of an insertion due to reallocation would still be amortized O(1). This helps with appending elements at the array's end, but inserting into (or removing from) middle positions still carries prohibitive costs due to data moving to maintain contiguity. An array from which many elements are removed may also have to be resized in order to avoid wasting too much space.
+
+On the other hand, dynamic arrays (as well as fixed-size array data structures) allow constant-time random access, while linked lists allow only sequential access to elements. Singly linked lists, in fact, can be easily traversed in only one direction. This makes linked lists unsuitable for applications where it's useful to look up an element by its index quickly, such as heapsort. Sequential access on arrays and dynamic arrays is also faster than on linked lists on many machines, because they have optimal locality of reference and thus make good use of data caching.
+
+Another disadvantage of linked lists is the extra storage needed for references, which often makes them impractical for lists of small data items such as characters or boolean values, because the storage overhead for the links may exceed by a factor of two or more the size of the data. In contrast, a dynamic array requires only the space for the data itself (and a very small amount of control data).[note 1] It can also be slow, and with a naïve allocator, wasteful, to allocate memory separately for each new element, a problem generally solved using memory pools.
+
+Some hybrid solutions try to combine the advantages of the two representations. Unrolled linked lists store several elements in each list node, increasing cache performance while decreasing memory overhead for references. CDR coding does both these as well, by replacing references with the actual data referenced, which extends off the end of the referencing record.
+
+A good example that highlights the pros and cons of using dynamic arrays vs. linked lists is by implementing a program that resolves the Josephus problem. The Josephus problem is an election method that works by having a group of people stand in a circle. Starting at a predetermined person, one may count around the circle n times. Once the nth person is reached, one should remove them from the circle and have the members close the circle. The process is repeated until only one person is left. That person wins the election. This shows the strengths and weaknesses of a linked list vs. a dynamic array, because if the people are viewed as connected nodes in a circular linked list, then it shows how easily the linked list is able to delete nodes (as it only has to rearrange the links to the different nodes). However, the linked list will be poor at finding the next person to remove and will need to search through the list until it finds that person. A dynamic array, on the other hand, will be poor at deleting nodes (or elements) as it cannot remove one node without individually shifting all the elements up the list by one. However, it is exceptionally easy to find the nth person in the circle by directly referencing them by their position in the array.
+
+The list ranking problem concerns the efficient conversion of a linked list representation into an array. Although trivial for a conventional computer, solving this problem by a parallel algorithm is complicated and has been the subject of much research.
+
+A balanced tree has similar memory access patterns and space overhead to a linked list while permitting much more efficient indexing, taking O(log n) time instead of O(n) for a random access. However, insertion and deletion operations are more expensive due to the overhead of tree manipulations to maintain balance. Schemes exist for trees to automatically maintain themselves in a balanced state: AVL trees or red-black trees. -->
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Linked_list">Linked List (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.cs.cmu.edu/~adamchik/15-121/lectures/Linked%20Lists/linked%20lists.html">Linked List Lecture Notes (Victor Adamchik)</a>
+  </li>
+</ul>
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

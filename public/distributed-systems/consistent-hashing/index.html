@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">Consistent Hashing (DRAFT)</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Consistent hashing is a hashing scheme that assigns a set of keys to buckets so that each bucket receives roughly the same number of keys. Unlike standard hashing schemas, adding or removing buckets does not induce a total remapping of keys to buckets. Instead, only \(n / m\) keys need to be remapped on average where \(n\) is the number of keys and \(m\) is the number of buckets.
+</p>
+
+<!--
+  Running a large-scale web service, such as content hosting, necessarily requires load balancing -- distributing clients uniformly across multiple servers such that none get overloaded.
+
+  It is desirable to find an allocation that does not change very much over time in a dynamic environment in which both clients and servers can be added or removed at any time.
+-->
+
+
+
+<h3 id="naive-approach">Naive Approach</h3>
+
+
+<!-- 
+  Let's start with the naive method. Suppose we have a cluster of n computers.
+
+  We number the computers 0, 1, ..., n - 1 and then store the key-value pair (k, v) on the computer with number hash(k) mod n where hash(.) is a hash function.
+
+  If 
+-->
+
+<!-- 
+  Consider the problem of load balancing where a set of objects needs to be assigned to a set of n servers.
+
+  One way of distributing objects evenly across the n servers is to use a standard hash function and place object o in the server with id hash(o) % n.
+
+  However, if a server is added or removed, the server assignment of nearly every object in the system may change.
+
+  This is problematic since servers often go up or down and each such event would require nearly all objects to be reassigned and moved to new servers.
+-->
+
+
+
+<h3 id="">Improved Approach</h3>
+
+<!--
+  Each hash function produces a range of values. We can visualize this as  
+-->
+
+<!--
+  Nodes are mapped to a ring, forming partitions, which are then used to find the node responsible for a key by mapping the key to the same ring, and finding the first node in a clockwise direction after the key position.
+
+  Visualization:
+
+  Given a function with an output range from x_0 to x_n we can connect the ends of this range to get a ring.
+
+  Using the same function f, we can map each node to a point in the ring.
+
+  The interval between two nodes in the ring form a partition.
+
+  If we use the same function f over the key we will end up with a projection of that key in the ring.
+
+  With this notion we can define the server responsible for our key as the first node in a clockwise direction after the key projection.
+
+  Adding a new node to the ring does not mean that all keys will need to be remapped. Only a fraction4 of keys will need to move to a different node.
+  
+  A fraction of the keys are also remapped when a node leaves the ring.
+
+  Usually, systems using consistent hashing construct their rings as the output range of a hash function like SHA-1, or SHA-2, for example.
+  
+  Using any of these functions to map the nodes in the ring will have the effect of placing the nodes in random positions. The partitions will very likely have different sizes which means nodes will be responsible for different amounts of data.
+  
+  It may not be attractive to have this characteristic and since the range is well defined, the ring could be split into partitions of equal size and then each node could claim ownership of a number of these partitions, guaranteeing that each node handles more or less the same amount of data.
+-->
+
+<!--
+  Consistent hashing was designed to avoid the problem of having to change the server assignment of every object when a server is added or removed.
+  
+  The main idea is to use a hash function to randomly map both the objects and the servers to a unit circle.
+  
+  Each object is then assigned to the next server that appears on the circle in clockwise order.
+  
+  This provides an even distribution of objects to servers.
+  
+  But, more importantly, if a server fails and is removed from the circle, only the objects that were mapped to the failed server need to be reassigned to the next server in clockwise order.
+  
+  Likewise, if a new server is added, it is added to the unit circle, and only the objects mapped to that server need to be reassigned.
+  
+  Importantly, when a server is added or removed, the vast majority of the objects maintain their prior server assignments.
+-->
+
+
+<h3 id="virtual-nodes">Virtual Nodes</h3>
+
+<p>
+  Having a one-to-one mapping between physical nodes and nodes on the circle may lead to a non-uniform distribution of keys among nodes as a result of the random placement of nodes on the circle.
+</p>
+
+<!--
+  Having a one-to-one mapping between physical nodes and nodes presents a challenge that randomly placing nodes in the ring might lead to a non-uniform distribution of data between nodes.
+
+  This problem becomes more evident when a node leaves the ring which requires that all the data handled by that node need to be moved entirely to a single other node.
+
+  To avoid overloading a single node when another one leaves the ring, and to distribute the keys more evenly, the system can create a different mapping between physical nodes and nodes in the ring. Instead of having a one-to-one mapping, the system creates virtual nodes, creating a M-to-N mapping between physical nodes and virtual nodes in the ring.
+
+  With virtual nodes, each physical node becomes responsible for multiple partitions in the ring. Then if a node leaves the ring, the load handled by this node is evenly dispersed across the remaining nodes in the ring.
+
+  And similarly when a node joins the ring, it receives a roughly equivalent amount of data from the other nodes in the ring. The virtual nodes scheme also helps when the system is comprised of heterogeneous nodes in terms of resources such as CPU cores, RAM, disk space, etc. With an heterogeneous cluster the number of virtual nodes for each physical node can be chosen considering the characteristics of each physical node.
+-->
+
+
+
+<h3 id="bounded-loads">Bounded Loads</h3>
+
+<!-- 
+  While the concept of consistent hashing has been developed in the past to deal with load balancing in dynamic environments, a fundamental issue with all the previously developed schemes is that, in certain scenarios, they may result in sub-optimal load balancing on many servers.
+
+  Additionally, both clients and servers may be added or removed periodically, and with such changes, we do not want to move too many clients. Thus, while the dynamic allocation algorithm has to always ensure a proper load balancing, it should also aim to minimize the number of clients moved after each change to the system. Such allocation problems become even more challenging when we face hard constraints on the capacity of each server - that is, each server has a capacity that the load may not exceed. Typically, we want capacities close to the average loads.
+
+  In other words, we want to simultaneously achieve both uniformity and consistency in the resulting allocations. There is a vast amount of literature on solutions in the much simpler case where the set of servers is fixed and only the client set is updated, but in this post we discuss solutions that are relevant in the fully dynamic case where both clients and servers can be added and removed.
+
+
+-->
+
+
+<h3 id="applications">Applications</h3>
+
+<!-- 
+  Load balancing clients uniformly across multiple servers such that none get overloaded.
+-->
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://ai.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html">Consistent Hashing with Bounded Loads</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=aUF5erIkBi8">Consistent Hashing With Bounded Load Algorithm (Manan Shah)</a>
+  </li>
+</ul>
+
+<!--
+  https://arxiv.org/pdf/1608.01350.pdf
+
+  https://www.youtube.com/watch?v=aUF5erIkBi8
+-->
+
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

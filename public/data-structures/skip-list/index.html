@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">Skip List</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+
+
+<!-- 
+  A skip list is a data structure that is used for storing a sorted list of items with the help of a hierarchy of linked lists that connect increasingly sparse subsequences of the items.
+
+  It consists of a base list holding the elements, together with a tower of lists maintaining a linked hierarchy of subsequences, each skipping over fewer elements.
+
+  A skip list allows the process of item lookup in an efficiently manner.
+
+  The skip list skips over many of the items of the full list in one step.
+-->
+
+<!-- 
+  A skip list is a probabilistic data structure that allows O(log n) search complexity as well as O(log n) insertion within an ordered sequence of n elements.
+
+  It can get the best features of a sorted array (for searching) while maintaining a list-link structure that allows insertion.
+
+  Fast search is made possible by maintaining a linked hierarchy of subsequences, with each successive subsequence skipping over fewer elements than the previous one.
+
+  Searching starts in the sparsest subsequence until two consecutive elements have been found, one smaller and one larger than or equal to the element searched for.
+  
+  Via the linked hierarchy, these two elements link to elements of the next sparsest subsequence, where searching is continued until finally we are searching in the full sequence.
+  
+  The elements that are skipped over may be chosen probabilistically or deterministically, with the former being more common.
+-->
+
+<!-- 
+  A skip list is built in layers.
+
+  The bottom layer is an ordinary ordered linked list.
+
+  Each higher layer acts as an "express lane" for lists below where an element in layer i appears in layer i + 1 with some fixed probability (commonly 1/2 or 1/4).
+
+  On average, each element appears in 1/(1-p) lists.
+
+  A special head element at the front of the skip list appears in all the lists.
+
+  The skip list contains log_{1/p) n lists.
+-->
+
+
+<h3 id="operations">Operations</h3>
+
+
+<h3 id="complexity">Complexity</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Algorithm</th>
+      <th>Average Case</th>
+      <th>Worst Case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        Space
+      </td>
+      <td>
+        \(O(n)\)
+      </td>
+      <td>
+        \(O(n \log n)\)
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Search
+      </td>
+      <td>
+        \(O(\log n)\)
+      </td>
+      <td>
+        \(O(n)\)
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Insert
+      </td>
+      <td>
+        \(O(\log n)\)
+      </td>
+      <td>
+        \(O(n)\)
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Delete
+      </td>
+      <td>
+        \(O(\log n)\)
+      </td>
+      <td>
+        \(O(n)\)
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=UGaOXaXAM5M">Skip List (Shusen Wang)</a>
+  </li>
+</ul>
+
+
+<!-- 
+  https://github.com/spratt/SkipList
+-->
+
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

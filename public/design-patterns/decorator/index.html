@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">Decorator</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#structure">Structure</a>
+  </li>
+  <li>
+    <a href="#example">Example</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  The Decorator Pattern is a structural design pattern that allows behavior to be added to an object dynamically without affecting the behavior of other objects of the same class. This is achieved by wrapping the object in one or more decorator objects of the same type which add their own behavior before or after delegating to the decorated object. The pattern provides a flexible alternative to subclassing for extending functionality.
+</p>
+
+<!-- 
+
+Decorators have the same supertype as the objects they decorate.
+
+You can use one or more decorators to wrap an object.
+
+Given that the decorator has the same supertype as the object it decorates, we can pass
+around a decorated object in place of the original (wrapped) object.
+
+The decorator adds its own behavior either before and/or after delegating to the object it
+decorates to do the rest of the job.
+
+ So here we’re using inheritance to achieve the type matching,
+but we aren’t using inheritance to get behavior
+
+ß Given that the decorator has the same supertype as the object it decorates, we can pass
+around a decorated object in place of the original (wrapped) object.
+ß The decorator adds its own behavior either before and/or after delegating to the object it
+decorates to do the rest of the job.
+ß Objects can be decorated at any time, so we can decorate objects dynamically at runtime
+with as many decorators as we like.
+-->
+
+
+
+<h3 id="structure">Structure</h3>
+
+<figure>
+  <img src="/img/design-patterns/decorator.svg" style="max-width: 530px; width: 100%; height: auto">
+</figure>
+
+<ul>
+  <li>
+    The <code>Component</code> interface declares the common interface for the objects to be decorated and their decorators.
+  </li>
+  <li>
+    A concrete <code>Component</code> implementation defines the basic behavior of the component which can be altered by decorators.
+  </li>
+  <li>
+    The abstract <code>Decorator</code> class implements the <code>Component</code> interfaces so all decorators have the same supertype as the objects they decorate.
+  </li>
+  <li>
+    The abstract <code>Decorator</code> class maintains a references to the decorated object and forwards all method calls to it.
+  </li>
+  <li>
+    Concrete <code>Decorator</code> classes override the methods of the base decorator and execute additional behavior before or after calling the parent method.
+  </li>
+</ul>
+
+
+<h3 id="example">Example</h3>
+
+<pre><code class="java">interface Coffee {
+
+  public double getCost();
+}
+
+class Espresso implements Coffee {
+
+  @Override
+  public double getCost() {
+    return 1.0;
+  }
+}
+
+class Cappuccino implements Coffee {
+
+  @Override
+  public double getCost() {
+    return 1.5;
+  }
+}
+
+abstract class CoffeeDecorator implements Coffee {
+
+  private final Coffee coffee;
+
+  public CoffeeDecorator(Coffee coffee) {
+    this.coffee = coffee;
+  }
+
+  @Override
+  public double getCost() {
+    return coffee.getCost();
+  }
+}
+
+class WithMilk extends CoffeeDecorator {
+
+  public WithMilk(Coffee coffee) {
+    super(coffee);
+  }
+
+  @Override
+  public double getCost() {
+    return super.getCost() + 0.5;
+  }
+}
+
+class WithSugar extends CoffeeDecorator {
+
+  public WithSugar(Coffee coffee) {
+    super(coffee);
+  }
+
+  @Override
+  public double getCost() {
+    return super.getCost() + 0.2;
+  }
+}
+
+public class Example {
+
+  public static void main(String[] args) {
+    Coffee coffee = new Espresso();
+    
+    coffee = new WithMilk(coffee);
+    
+    coffee = new WithSugar(coffee);
+    
+    System.out.println(coffee.getCost());
+  }
+}</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://java-design-patterns.com/patterns/">Decorator (Java Design Patterns)</a>
+  </li>
+</ul>
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

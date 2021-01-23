@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title"></h2>
+    <time class="article__date">Jan 1, 0001</time>
+    <h1 id="pre-install">Pre-install</h1>
+<ol>
+<li>DISABLE FAST STARTUP AND HIBERNATION</li>
+</ol>
+<p><a href="https://www.tenforums.com/tutorials/4189-turn-off-fast-startup-windows-10-a.html">https://www.tenforums.com/tutorials/4189-turn-off-fast-startup-windows-10-a.html</a></p>
+<p><a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/disable-and-re-enable-hibernation">https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/disable-and-re-enable-hibernation</a></p>
+<ol>
+<li>
+<p>Disable secure boot</p>
+</li>
+<li>
+<p>Partition drive</p>
+</li>
+</ol>
+<p>right click C: &gt; Shrink volume &gt; enter amount of space to shrink in md &gt; shrink</p>
+<ol start="2">
+<li>
+<p>Download Arch Linux x86_64 .iso</p>
+</li>
+<li>
+<p>Etcher &gt; select image &gt; select usb &gt; flash!</p>
+</li>
+<li>
+<p>Boot from usb</p>
+</li>
+</ol>
+<p>Change advanced startup options &gt; restart now &gt; use a device &gt; usb device name &gt; Arch Linux archiso x86_64 UEFI CD</p>
+<h1 id="install">Install</h1>
+<ol start="5">
+<li>Verify the boot mode</li>
+</ol>
+<p>$ ls /sys/firmware/efi/efivars/  (should get output)</p>
+<ol start="7">
+<li>Connect to Internet</li>
+</ol>
+<p>$ ip link  (check for network interface)</p>
+<p>$ rfkill list          (check if wifi blocked)
+$ rfkill unblock wifi  (unblock soft-blocked)</p>
+<p>$ iwctl</p>
+<blockquote>
+<p>device list
+static device scan
+static device get-networks
+static device connect \SSID\  (will prompt for password)</p>
+</blockquote>
+<p>$ ping reissenzahn.com</p>
+<ol start="8">
+<li>Configure Date and Time</li>
+</ol>
+<p>$ timedatectl set-ntp true
+$ timedatectl status  (check date is correct)</p>
+<ol start="9">
+<li>Configure root and swap partitions</li>
+</ol>
+<p>$ cfdisk</p>
+<p>Move to free space &gt; New &gt; XXG &gt; Move to free space &gt; New &gt; XXG &gt; Type &gt; Linux swap &gt; Write &gt; Quit</p>
+<p>(take note of new partition paths and EFI System path)</p>
+<ol start="10">
+<li>Format partitions</li>
+</ol>
+<p>$ mkfs.ext4 /dev/sda5   (root partition name)
+$ mkswap /dev/sda6      (swap partition name)</p>
+<p>$ mount /dev/sda5 /mnt  (mount root filesystem)
+$ swapon /dev/sda6      (enable swap)</p>
+<p>$ mkdir /mnt/efi            (mount EFI)
+$ mount /dev/sda2 /mnt/efi  (EFI system partition name)</p>
+<ol start="11">
+<li>Install essential packages</li>
+</ol>
+<p>$ pacstrap /mnt base linux linux-firmware base-devel</p>
+<p>??? base-devel</p>
+<ol start="12">
+<li>Generate fstab</li>
+</ol>
+<p>$ genfstab -U /mnt &raquo; /mnt/etc/fstab</p>
+<ol start="13">
+<li>Switch to root</li>
+</ol>
+<p>$ arch-chroot /mnt   (change root into new system)
+$ ls</p>
+<ol start="14">
+<li>Set timezone</li>
+</ol>
+<p>$ ln -sf /usr/share/zoneinfo/(tab to look for zone) /etc/localtime
+$ hwclock &ndash;systohc  (sync hardware clock)</p>
+<ol start="15">
+<li>Update package repo</li>
+</ol>
+<p>$ pacman -Sy nano</p>
+<ol start="16">
+<li>Set locale</li>
+</ol>
+<p>$ nano /etc/locale.gen</p>
+<p>en_US.UTF-8 UTF-8  (uncomment + save changes)</p>
+<p>$ locale-gen</p>
+<p>$ nano /etc/locale.conf</p>
+<p>LANG=en_US.UTF-8  (save changes)</p>
+<ol start="17">
+<li>Hostname file</li>
+</ol>
+<p>$ nano /etc/hostname</p>
+<p>magi   (save changes)</p>
+<p>$ nano /etc/hosts</p>
+<p>127.0.0.1  \TAB   localhost
+::1        \TAB   localhost
+127.0.1.1  \TAB   magi.localdomain  \TAB  magi</p>
+<ol start="18">
+<li>Setup WiFi packages</li>
+</ol>
+<p>$ pacman -S networkmanager</p>
+<p>OR?</p>
+<p>$ pacman -Syyu wpa_supplicant wifi-menu dialog</p>
+<ol start="19">
+<li>Default user</li>
+</ol>
+<p>$ useradd -G wheel -m rei</p>
+<p>$ passwd rei
+New password:
+Retype password:</p>
+<p>$ ls /home/rei</p>
+<ol start="20">
+<li>Install boot loader</li>
+</ol>
+<p>$ pacman -S grub efibootmgr   (install grub)
+$ pacman -S os-prober         (detect windows os)
+$ grub-install &ndash;target=x86_64-efi &ndash;efi-directory=/efi/ &ndash;bootloader-id=GRUB
+$ grub-mkconfig -o /boot/grub/grub.cfg</p>
+<p>Found Windows Boot Manager  (yay)</p>
+<ol start="21">
+<li>Set root user</li>
+</ol>
+<p>$ passwd
+New password:
+Retype password:</p>
+<ol start="22">
+<li>Reboot</li>
+</ol>
+<p>$ exit
+$ reboot</p>
+<p>(should show GRUB boot loader; check both installs)</p>
+<ol start="23">
+<li>Configure network manager</li>
+</ol>
+<p>$ cd /etc/netctl
+$ cp examples/ethernet-dhcp ./custom-dhcp-profile
+$ nano custom-dhcp-profile</p>
+<p>SETUP</p>
+<p>$ ip link</p>
+<p>??? Confusing things</p>
+<h1 id="post-install">Post Install</h1>
+<ol>
+<li>Setup Wifi with NetworkManager</li>
+</ol>
+<p>$ systemctl start NetworkManager.service
+$ systemctl status NetworkManager.service
+$ nmtui</p>
+<ol start="3">
+<li>Setup sudo</li>
+</ol>
+<p>$ su (switch to root)
+$ nano /etc/sudoers</p>
+<p>%wheel ALL=(ALL) ALL  (uncomment)</p>
+<p><a href="https://www.youtube.com/watch?v=nSHOb8YU9Gw">https://www.youtube.com/watch?v=nSHOb8YU9Gw</a></p>
+<ol start="2">
+<li>Nvidea PRIME</li>
+</ol>
+<p>$</p>
+<p><a href="https://www.youtube.com/watch?v=jncc3QL8RWI">https://www.youtube.com/watch?v=jncc3QL8RWI</a></p>
+<ol start="4">
+<li>
+<p>i3</p>
+</li>
+<li>
+<p>bashrc</p>
+</li>
+</ol>
+<p>V bottom of .profile ???</p>
+<p>if [[ &ldquo;$(tty)&rdquo; = &ldquo;/dev/tty1&rdquo; ]]; then
+pgrep i3 || startx
+fi</p>
+<ol start="6">
+<li>Wallpaper</li>
+</ol>
+<p><a href="https://www.youtube.com/watch?v=lvLExb1SUzM">https://www.youtube.com/watch?v=lvLExb1SUzM</a></p>
+<h1 id="resources">Resources</h1>
+<p><a href="https://www.youtube.com/watch?v=LGhifbn6088&amp;feature=youtu.be">https://www.youtube.com/watch?v=LGhifbn6088&amp;feature=youtu.be</a></p>
+<p><a href="https://gist.github.com/ppartarr/175aa0c3416daf3baacde17f442f80e1">https://gist.github.com/ppartarr/175aa0c3416daf3baacde17f442f80e1</a></p>
+<p><a href="https://medium.com/@mudrii/arch-linux-installation-on-hw-with-i3-windows-manager-part-2-x-window-system-and-i3-installation-86735e55a0a0">https://medium.com/@mudrii/arch-linux-installation-on-hw-with-i3-windows-manager-part-2-x-window-system-and-i3-installation-86735e55a0a0</a></p>
+<p><a href="https://www.youtube.com/watch?v=lvLExb1SUzM">https://www.youtube.com/watch?v=lvLExb1SUzM</a></p>
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

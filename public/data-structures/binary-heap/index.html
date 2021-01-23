@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">Binary Heap</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+<ul class="contents">
+	<li>
+		<ul>
+				<li>
+          <a href="#introduction">Introduction</a>
+        </li>
+				<li>
+          <a href="#insertion">Insertion</a>
+        </li>
+				<li>
+          <a href="#extraction">Extraction</a>
+        </li>
+				<li>
+          <a href="#array-representation">Array Representation</a>
+        </li>
+				<li>
+          <a href="#complexity">Complexity</a>
+        </li>
+				<li>
+          <a href="#implementation">Implementation</a>
+        </li>
+				<li>
+          <a href="#resources">Resources</a>
+        </li>
+		</ul>
+	</li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  A binary heap is a complete binary tree that satisfies the heap ordering property. The ordering can be one of two variants:
+</p>
+
+<ul>
+  <li>
+    Min-heap: the key of each node is greater than or equal to the key of its parent.
+  </li>
+  <li>
+    Max-heap: the key of each node is less than or equal to the key of its parent.
+  </li>
+</ul>
+
+<p>
+  We will consider the case of the min-heap where the minimum value is at the root.
+</p>
+
+<figure>
+  <img src="/img/binary-heap/min-heap.svg" style="max-width: 400px">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="insertion">Insertion</h3>
+
+<p>
+  To insert an element into the heap we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Insert the element as a new node at the bottom level of the heap at the leftmost available position.
+  </li>
+  <li>
+    Compare the added node to its parent. If the node is smaller than its parent then swap it with its parent.
+  </li>
+  <li>
+    Repeat step 2 until the parent node is smaller than the inserted node.
+  </li>
+</ol>
+
+<figure>
+  <img src="/img/binary-heap/insertion.svg" style="max-width: 450px">
+  <figcaption>
+    <i>figure 2</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="extract">Extraction</h3>
+
+<p>
+  To extract the node with the minimum element we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Remove the root node and replace it with the last element on the last level.
+  </li>
+  <li>
+    If the replacement node is larger than one of its children then swap it with the smaller node.
+  </li>
+  <li>
+    Repeat step 2 until the replacement node does not have any children smaller than it.
+  </li>
+</ol>
+
+<figure>
+  <img src="/img/binary-heap/extraction.svg" style="max-width: 450px">
+  <figcaption>
+    <i>figure 3</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="array-representation">Array Representation</h4>
+
+<p>
+  A binary heaps can be implemented by storing its level order traversal in an array. Let \(n\) be the number of nodes in the heap and \(i\) be an arbitrary valid index of the array storing the heap. If the root node is at index \(0\) then each node at index \(i\) has
+</p>
+
+<ul>
+  <li>
+    a left child at index \(2i+1\),
+  </li>
+  <li>
+    a right child at index \(2i+2\), and
+  </li>
+  <li>
+    a parent at index \(\lfloor(i-1)/2\rfloor\).
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/binary-heap/array-representation.svg" style="max-width: 450px">
+  <figcaption>
+    <i>figure 4</i>
+  </figcaption>
+</figure>
+
+
+<!--
+  TODO: heapify
+
+  https://www.interviewcake.com/concept/java/heap
+-->
+
+
+<h3 id="complexity">Complexity</h3>
+
+<table>
+  <tr>
+    <th>Operation</th>
+    <th>Average case</th>
+    <th>Worst case</th>
+  </tr>
+  <tr>
+    <td>Insert</td>
+    <td>\(O(1)\)</td>
+    <td>\(O(\log n)\)</td>
+  </tr>
+  <tr>
+    <td>Extract</td>
+    <td>\(O(\log n)\)</td>
+    <td>\(O(\log n)\)</td>
+  </tr>
+  <tr>
+    <td>Space</td>
+    <td>\(O(n)\)</td>
+    <td>\(O(n)\)</td>
+  </tr>
+</table>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java">@SuppressWarnings("unchecked")
+public class BinaryHeap<T extends Comparable<T>> {
+
+  private static final int DEFAULT_CAPACITY = 10;
+
+  private T[] array;
+  private int capacity;
+  private int size = 0;
+
+  public BinaryHeap() {
+    this(DEFAULT_CAPACITY);
+  }
+
+  public BinaryHeap(int capacity) {
+    this.capacity = capacity;
+    array = (T[]) new Comparable[capacity];
+  }
+
+  public void insert(T value) {
+    ensureExtraCapacity();
+    array[size] = value;
+    size++;
+    heapifyUp();
+  }
+
+  public void heapifyUp() {
+    int index = size - 1;
+    while (hasParent(index) && array[index].compareTo(parent(index)) < 0) {
+      swap(getParentIndex(index), index);
+      index = getParentIndex(index);
+    }
+  }
+
+  public T extract() {
+    if (size == 0)
+      throw new IllegalStateException();
+    
+    T value = array[0];
+    array[0] = array[size - 1];
+    size--;
+    heapifyDown();
+    
+    return value;
+  }
+
+  public void heapifyDown() {
+    int index = 0;
+    while (hasLeftChild(index)) {
+      int smallerChildIndex = getLeftChildIndex(index);
+      if (hasRightChild(index) && rightChild(index).compareTo(leftChild(index)) < 0) {
+        smallerChildIndex = getRightChildIndex(index);
+      }
+      if (array[index].compareTo(array[smallerChildIndex]) < 0) {
+        break;
+      }
+      swap(index, smallerChildIndex);
+      index = smallerChildIndex;
+    }
+  }
+
+  private int getLeftChildIndex(int index) {
+    return 2 * index + 1;
+  }
+
+  private int getRightChildIndex(int index) {
+    return 2 * index + 2;
+  }
+
+  private int getParentIndex(int index) {
+    return (index - 1) / 2;
+  }
+
+  private boolean hasLeftChild(int index) {
+    return getLeftChildIndex(index) < size;
+  }
+
+  private boolean hasRightChild(int index) {
+    return getRightChildIndex(index) < size;
+  }
+
+  private boolean hasParent(int index) {
+    return getParentIndex(index) >= 0;
+  }
+
+  private T leftChild(int index) {
+    return array[getLeftChildIndex(index)];
+  }
+
+  private T rightChild(int index) {
+    return array[getRightChildIndex(index)];
+  }
+
+  private T parent(int index) {
+    return array[getParentIndex(index)];
+  }
+
+  private void swap(int indexOne, int indexTwo) {
+    T temp = array[indexOne];
+    array[indexOne] = array[indexTwo];
+    array[indexTwo] = temp;
+  }
+
+  private void ensureExtraCapacity() {
+    if (size == capacity) {
+      array = Arrays.copyOf(array, capacity * 2);
+      capacity *= 2;
+    }
+  }
+}</code></pre>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Binary_heap">Binary Heap (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=t0Cq6tVNRBA">Binary Heap (Gayle McDowell)</a>
+  </li>
+  <li>
+    <a href="https://www.cs.cmu.edu/~adamchik/15-121/lectures/Binary%20Heaps/heaps.html">Binary Heap (Victor Adamchik)</a>
+  </li>
+  <li>
+    <a href="https://www.cs.usfca.edu/~galles/visualization/Heap.html">Min-Heap Visualization</a>
+  </li>
+  <li>
+    <a href="http://www.btv.melezinek.cz/binary-heap.html">Max-Heap Visualization</a>
+  </li>
+</ul>
+
+<!-- 
+  12 2 Heaps Operations and Applications 18 min
+  https://www.youtube.com/watch?v=mNYHDv7SbDI&list=PLXFMmlk03Dt7Q0xr1PIAriY5623cKiH7V&index=59
+
+-->
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

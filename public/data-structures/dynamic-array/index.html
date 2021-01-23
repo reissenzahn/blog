@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">Dynamic Array</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#construction">Construction</a>
+  </li>
+  <li>
+    <a href="#resizing">Resizing</a>
+  </li>
+  <li>
+    <a href="#complexity">Complexity</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  A dynamic array is an variable-size array that expands as additional elements are added. Dynamic arrays overcome the fixed-size limitation of static arrays that requires their size to be specified ahead of time. This is useful when the maximum logical size of the array is unknown before the array is allocated. Just like static arrays, dynamic arrays store elements contiguously in memory which allows efficient use of caching.
+</p>
+
+
+
+<h3 id="operations">Operations</h3>
+
+
+<h4>Construction</h4>
+
+<p>
+  A dynamic array can be constructed by allocating an underlying fixed-size array that is typically larger than the number of elements immediately required. The elements of the dynamic array are stored contiguously at the start of the underlying array with the remaining positions towards the end of the array being unused. Additional elements can be added at the end of the array in constant time using the unused space.
+</p>
+
+<figure>
+  <img src="/img/dynamic-array/length-and-capacity.svg" style="max-width: 280px;" alt="">
+  <figcaption>
+    <i>figure 1</i>
+  </figcaption>
+</figure>
+
+
+
+<h4>Resizing</h4>
+
+<p>
+  Once all the unused space is consumed and an additional element is added, the underlying fixed-size array is resized. This involves allocating a new underlying array and copy each element from the current array into this new array. To avoid frequently incurring the cost of resizing, dynamic arrays typically resize by a reasonably large amount such as doubling in size.
+</p>
+
+<figure>
+  <img src="/img/dynamic-array/reallocation.svg" style="max-width: 330px;" alt="">
+  <figcaption>
+    <i>figure 2</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="complexity">Complexity</h3>
+
+<p>
+  When an append operation require us to create a new double-size underlying array, the append operation takes \(O(n)\) time. The cost of this expensive append doubles each time it is performed. However, the number of \(O(1)\) appends until the next doubling append is required also doubles. These two factors essentially cancel out and so we say that each append has an amortized cost of \(O(1)\).
+</p>
+
+<table>
+  <tr>
+    <th>
+    </th>
+    <th>
+      Average
+    </th>
+    <th>
+      Worst
+    </th>
+  </tr>
+  <tr>
+    <td>
+      Lookup
+    </td>
+    <td>
+      \(O(1)\)
+    </td>
+    <td>
+      \(O(1)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Append
+    </td>
+    <td>
+      \(O(1)\)
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Insert
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Delete
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Space
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+  </tr>
+</table>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java">import java.util.Iterator;
+
+@SuppressWarnings("unchecked")
+public class DynamicArray<T> implements Iterable<T> {
+
+  private static int DEFAULT_CAPACITY = 10;
+
+  private T[] array;
+  private int length = 0;
+  private int capacity = 0;
+
+  public DynamicArray() {
+    this(DEFAULT_CAPACITY);
+  }
+
+  public DynamicArray(int capacity) {
+    if (capacity &lt;= 0)
+      throw new IllegalArgumentException();
+    
+    this.capacity = capacity;
+    array = (T[]) new Object[capacity];
+  }
+
+  public T get(int index) {
+    if (index >= length || index &lt; 0)
+      throw new IndexOutOfBoundsException();
+    
+    return array[index];
+  }
+
+  public int indexOf(T value) {
+    for (int i = 0; i &lt; length; i++) {
+      if (value == null) {
+        if (array[i] == null)
+          return i;
+      } else {
+        if (value.equals(array[i]))
+          return i;
+      }
+    }
+
+    return -1;
+  }
+
+  public boolean contains(T value) {
+    return indexOf(value) != -1;
+  }
+
+  public void set(int index, T value) {
+    if (index >= length || index &lt; 0)
+      throw new IndexOutOfBoundsException();
+    
+    array[index] = value;
+  }
+
+  public void add(T value) {
+    if (length + 1 >= capacity) {
+      if (capacity == 0)
+        capacity = 1;
+      else
+        capacity *= 2;
+      
+      T[] newArray = (T[]) new Object[capacity];
+
+      for (int i = 0; i &lt; length; i++)
+        newArray[i] = array[i];
+      
+      array = newArray;
+    }
+
+    array[length] = value;
+    length++;
+  }
+
+  public T removeAt(int index) {
+    if (index >= length || index &lt; 0)
+      throw new IndexOutOfBoundsException();
+    
+    T value = array[index];
+    
+    T[] newArray = (T[]) new Object[length - 1];
+
+    for (int i = 0, j = 0; i &lt; length; i++, j++)
+      if (i == index)
+        j--;
+      else
+        newArray[j] = array[i];
+  
+    array = newArray;
+    capacity = --length;
+
+    return value;
+  }
+
+  public boolean remove(T value) {
+    int index = indexOf(value);
+
+    if (index == -1)
+      return false;
+
+    removeAt(index);
+
+    return true;
+  }
+
+  public void clear() {
+    for (int i = 0; i &lt; length; i++)
+      array[i] = null;
+    
+    length = 0;
+  }
+
+  public int size() {
+    return length;
+  }
+
+  public boolean isEmpty() {
+    return size() == 0;
+  }
+
+  @Override
+  public Iterator<T> iterator() {
+    return new Iterator<T>() {
+      int index = 0;
+
+      @Override
+      public boolean hasNext() {
+        return index &lt; length;
+      }
+
+      @Override
+      public T next() {
+        return array[index++];
+      }
+
+      @Override
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+
+  @Override
+  public String toString() {
+    if (length == 0)
+      return "[]";
+    
+    StringBuilder builder = new StringBuilder();
+    builder.append("[");
+    
+    for (int i = 0; i &lt; length - 1; i++)
+      builder.append(array[i] + ", ");
+    
+    builder.append(array[length - 1] + "]");
+    
+    return builder.toString();
+  }
+}</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Dynamic_array">Dynamic Array (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.interviewcake.com/concept/java/dynamic-array">Dynamic Array (Interview Cake)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=PEnFFiQe1pM">Dynamic and Static Arrays (YouTube)</a>
+  </li>
+</ul>
+
+<!-- 
+Strengths:
+
+- Fast lookups. Just like arrays, retrieving the element at a given index takes O(1) time.
+- Variable size. You can add as many items as you want, and the dynamic array will expand to hold them.
+- Cache-friendly. Just like arrays, dynamic arrays place items right next to each other in memory, making efficient use of caches.
+
+
+Weaknesses:
+
+- Slow worst-case appends. Usually, adding a new element at the end of the dynamic array takes O(1) time. But if the dynamic array doesn't have any room for the new item, it'll need to expand, which takes O(n) time.
+- Costly inserts and deletes. Just like arrays, elements are stored adjacent to each other. So adding or removing an item in the middle of the array requires "scooting over" other elements, which takes O(n) time.
+-->
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

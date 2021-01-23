@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title"></h2>
+    <time class="article__date">Jan 1, 0001</time>
+    <h1 id="bittorrent-algorithms">BitTorrent Algorithms</h1>
+<h2 id="introduction">Introduction</h2>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<h1 id="bittorrent-protocol">BitTorrent Protocol</h1>
+<h2 id="bencoding">Bencoding</h2>
+<p>Bencoding encodes data in a platform independent way. In BTP/1.0 the metainfo file and all responses from the tracker are encoded in the bencoding format. The format specifies two scalar types (integers and strings) and two compound types (lists and dictionaries).</p>
+<p>Integers are encoded by prefixing a string containing the base ten representation of the integer with the letter &ldquo;i&rdquo; and postfixing it with the letter &ldquo;e&rdquo;. E.g. the integer 123 is encoded as i123e.</p>
+<p>Strings are encoded by prefixing the string content with the length of the string followed by a colon. E.g. the string &ldquo;announce&rdquo; is encoded as &ldquo;8:announce&rdquo;.</p>
+<p>The compound types provides a mean to structure elements of any bencoding type.</p>
+<p>Lists are an arbitrary number of bencoded elements prefixed with the letter &ldquo;l&rdquo; and postfixed with the letter &ldquo;e&rdquo;. It follows that lists can contain nested lists and dictionaries. For instance &ldquo;li2e3:fooe&rdquo; defines a list containing the integer &ldquo;2&rdquo; and the string &ldquo;foo&rdquo;.</p>
+<p>Dictionaries are an arbitrary number of key/value pairs delimited by the letter &ldquo;d&rdquo; at the beginning and the letter &ldquo;e&rdquo; at the end. All keys are bencoded strings while the associated value can be any bencoded element. E.g. &ldquo;d5:monthi4e4:name5:aprile&rdquo; defines a dictionary holding the associations: &ldquo;month&rdquo; =&gt; &ldquo;4&rdquo; and &ldquo;name&rdquo; =&gt; &ldquo;april&rdquo;. All dictionary keys MUST be sorted.</p>
+<h2 id="terminology">Terminology</h2>
+<p>Peer: A peer is a node in a network participating in file sharing. It can simultaneously act both as a server and a client to other nodes on the network.</p>
+<p>Neighboring peers: Peers to which a client has an active point to point TCP connection.</p>
+<p>Client: A client is a user agent (UA) that acts as a peer on behalf of a user.</p>
+<p>Torrent: A torrent is the term for the file (single-file torrent) or group of files (multi-file torrent) the client is downloading.</p>
+<p>Swarm: A network of peers that actively operate on a given torrent.</p>
+<p>Seeder: A peer that has a complete copy of a torrent.</p>
+<p>Tracker: A tracker is a centralized server that holds information about one or more torrents and associated swarms. It functions as a gateway for peers into a swarm.</p>
+<p>Metainfo file: A text file that holds information about the torrent, e.g. the URL of the tracker. It usually has the extension .torrent.</p>
+<p>Peer ID: A 20-byte string that identifies the peer. How the peer ID is obtained is outside the scope of this document, but a peer must make sure that the peer ID it uses has a very high probability of being unique in the swarm.</p>
+<p>Info hash: A SHA1 hash that uniquely identifies the torrent. It is calculated from data in the metainfo file.</p>
+<h2 id="pieces-and-blocks">Pieces and Blocks</h2>
+<pre><code>          ---------------------------------------
+          | Piece #0 | Piece #1 | .. | Piece #N |
+          ---------------------------------------
+                  _-´            `-_
+               _-´                  `-_
+             ----------------------------
+             | Block #0 | .. | Block #M |
+             ----------------------------
+</code></pre>
+<h1 id="the-peer-wire-protocol">The Peer Wire Protocol</h1>
+<p>The PWP facilitates communication between neighboring peers for the purpose of sharing file content.</p>
+<p>PWP describes the steps taken by a peer after it has read in a metainfo file and contacted a tracker to gather information about other peers it may communicate with.</p>
+<p>PWP is layered on top of TCP and handles all its communication using asynchronous messages.</p>
+<h2 id="handshaking">Handshaking</h2>
+<p>The local peer opens a port on which to listen for incoming connections from remote peers.</p>
+<p>This port is then reported to the tracker.</p>
+<p>As BTP/1.0 does not specify any standard port for listening it is the sole responsibility of the implementation to select a port.</p>
+<p>Any remote peer wishing to communicate with the local peer must open a TCP connection to this port and perform a handshake operation.</p>
+<p>The handshake operation MUST be carried out before any other data is sent from the remote peer.</p>
+<p>The local peer MUST NOT send any data back to the remote peer before a well constructed handshake has been recognized according to the rules below.</p>
+<p>If the handshake in any way violates these rules the local peer MUST close the connection with the remote peer.</p>
+<p>A handshake is a string of bytes with the following structure:</p>
+<p>The local peer knows its own protocol name and hence also the length of it. If this length is different than the value of this first byte, then the connection MUST be dropped.</p>
+<p>Protocol Name: This is a character string which MUST contain the exact name of the protocol in ASCII and have the same length as given in the Name Length field. The protocol name is used to identify to the local peer which version of BTP the remote peer uses. In BTP/1.0 the name is &lsquo;BitTorrent protocol&rsquo;.</p>
+<p>If this string is different from the local peers own protocol name, then the connection is to be dropped.</p>
+<p>Presumably, since both the local and the remote peer contacted the tracker as a result of reading in the same .torrent file, the local peer will recognize the info hash value and will be able to serve the remote peer. If this is not the case, then the connection MUST be dropped. This situation can arise if the local peer decides to no longer serve the file in question for some reason.</p>
+<p>At this stage, if the connection has not been dropped, then the local peer MUST send its own handshake back, which includes the last step:</p>
+<p>The local peer must use this name to identify the connection hereafter. Thus, if this name matches the local peers own ID name, the connection MUST be dropped. Also, if any other peer has already identified itself to the local peer using that same peer ID, the connection MUST be dropped.</p>
+<p>In BTP/1.0 the handshake has a total of 68 bytes.</p>
+<h1 id="peer-states">Peer States</h1>
+<p>For each end of a connection, a peer must maintain the following two state flags:</p>
+<p>Choked: When true, this flag means that the choked peer is not allowed to request data.</p>
+<p>Interested: When true, this flag means a peer is interested in requesting data from another peer. This indicates that the peer will start requesting blocks if it is unchoked.</p>
+<p>A choked peer MUST not send any data-oriented messages, but is free to send any other message to the peer that has choked it. If a peer chokes a remote peer, it MUST also discard any unanswered requests for blocks previously received from the remote peer.</p>
+<p>An unchoked peer is allowed to send data-oriented messages to the remote peer. It is left to the implementation how many peers any given peer may choose to choke or unchoke, and in what fashion. This is done deliberately to allow peers to use different heuristics for peer selection.</p>
+<p>An interested peer indicates to the remote peer that it must expect to receive data-oriented messages as soon as it unchokes the interested peer. It must be noted, that a peer must not assume a remote peer is interested solely because it has pieces that the remote peer is lacking. There may be valid reasons why a peer is not interested in another peer other than data-based ones.</p>
+<h2 id="peer-wire-messages">Peer Wire Messages</h2>
+<p>A PWP message has the following structure:</p>
+<hr>
+<h2 id="-message-length--message-id--payload-">| Message Length | Message ID | Payload |</h2>
+<p>Message Length: This is an integer which denotes the length of the message, excluding the length part itself. If a message has no payload, its size is 1. Messages of size 0 MAY be sent periodically as keep-alive messages. Apart from the limit that the four bytes impose on the message length, BTP does not specify a maximum limit on this value. Thus an implementation MAY choose to specify a different limit, and for instance disconnect a remote peer that wishes to communicate using a message length that would put too much strain on the local peer&rsquo;s resources.</p>
+<p>Message ID: This is a one byte value, indicating the type of the message. BTP/1.0 specifies 9 different messages, as can be seen further below.</p>
+<p>Payload: The payload is a variable length stream of bytes.</p>
+<p>If an incoming message in any way violates this structure then the connection SHOULD be dropped. In particular the receiver SHOULD make sure the message ID constitutes a valid message, and the payload matches the the expected payload, as given below.</p>
+<p>For the purpose of compatibility with future protocol extensions the client SHOULD ignore unknown messages. There may arise situations in which a client may choose to drop a connection after receiving an unknown message, either for security reasons, or because discarding large unknown messages may be viewed as excessive waste.</p>
+<h1 id="piece-selection">Piece Selection</h1>
+<p>PWP does not specify a standard algorithm for selecting elements from a clients neighboring peers with whom to share pieces, although the following guidelines are expected to be observed by any such algorithm:</p>
+<p>The algorithm should not be constructed with the goal in mind to reduce the amount of data uploaded compared to downloaded. At the very least a peer should upload the same amount that it has downloaded.</p>
+<p>The algorithm should not use a strict tit-for-tat schema when dealing with remote peers that have just joined the swarm and thus have no pieces to offer.</p>
+<p>The algorithm should make good use of both download and upload bandwidth by putting a cap on the number of simultaneous connection that actively send or receive data. By reducing the number of active connections, TCP congestion can be avoided.</p>
+<p>The algorithm should pipeline data requests in order so saturate active connections.</p>
+<p>The algorithm should be able to cooperate with peers that implement a different algorithm.</p>
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">HyperLogLog</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  
+</p>
+
+<!--
+  HyperLogLog is a probabilistic data structure and algorithm for the count-distinct problem. Given a multiset, we are concerned with approximating the number of distinct elements called the cardinality. While calculating the exact cardinality of a multiset requires an amount of memory proportional to the cardinality, HyperLogLog is able to provide a reasonable estimate 
+
+  HyperLogLog uses significantly less memory than this, at the cost of obtaining only an approximation of the cardinality.
+  
+  The HyperLogLog algorithm is able to estimate cardinalities of > 10^9 with a typical accuracy (standard error) of 2%, using 1.5 kB of memory.
+
+  In this case, the term "cardinality" is used to mean the number of distinct elements in a data stream with repeated elements.
+-->
+
+<!--
+  The main trick:
+
+  If you are observing a stream of random integers then, considering their binary representations, ~50% of the numbers start with `1`, ~25% start with `01`, ~12.5% start with 001 and so on.
+  
+  This means that if you observe a random stream and see a `001` there is a higher chance 
+-->
+
+<!--
+  To ensure that the entries are evenly distributed, we can use a hash function and estimate the cardinality from the hashed values instead of from the entries themselves.
+-->
+
+
+<h3 id="structure">Structure</h3>
+
+<!--
+  The data of the HyperLogLog is stored in an array M of counters called registers with size m that are set to 0 in their initial state.
+-->
+
+<!--
+  The basis of the HyperLogLog algorithm is the observation that the cardinality of a multiset of uniformly distributed random numbers can be estimated by calculating the maximum number of leading zeros in the binary representation of each number in the set.
+
+  If the maximum number of leading zeros observed is n, an estimate for the number of distinct elements in the set is 2^n.
+
+  In the HyperLogLog algorithm, a hash function is applied to each element in the original multiset to obtain a multiset of uniformly distributed random numbers with the same cardinality as the original multiset. The cardinality of this randomly distributed set can then be estimated using the algorithm above.
+
+  The simple estimate of cardinality obtained using the algorithm above has the disadvantage of a large variance. In the HyperLogLog algorithm, the variance is minimised by splitting the multiset into numerous subsets, calculating the maximum number of leading zeros in the numbers in each of these subsets, and using a harmonic mean to combine these estimates for each subset into an estimate of the cardinality of the whole set.
+-->
+
+
+<h3 id="operations">Operations</h3>
+
+<!--
+  The HyperLogLog has three main operations: add to add a new element to the set, count to obtain the cardinality of the set and merge to obtain the union of two sets.
+-->
+
+<h4 id="add">Add</h4>
+
+<!-- 
+  The add operation consists of computing the hash of the input data v with a hash function h, getting the first b bits (where b is log_2(m)) and adding 1 to them to obtain the address of the register to modify. 
+-->
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=ZRCLZ3aIaVU">Insight Data Engineering Project (Kendrick Lo)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=jD2d7jr7z1Q">Know your Data Structures: HyperLogLog (Robin Roth)</a>
+  </li>
+</ul>
+
+<!--
+  https://engineering.fb.com/2018/12/13/data-infrastructure/hyperloglog/
+-->
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>

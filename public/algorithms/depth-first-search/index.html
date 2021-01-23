@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>rei97</title>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <script src="/js/translate.js"></script>
+
+    <script>
+      MathJax = {
+        options: {
+          enableMenu: false,
+        },
+      };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+    
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <div class="header__container">
+    <h1 class="header__title">
+      <a href="/">rei97</a>
+      
+    </h1>
+    <ul class="header__menu">
+      <li class="header__item">
+        <a class="header__link" href="/pdf/resume.pdf">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="header__text">resume</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="https://github.com/dreissenzahn">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span class="header__text">projects</span>
+        </a>
+      </li>
+      <li class="header__item">
+        <a class="header__link" href="mailto:dreissenzahn@protonmail.com">
+          <svg class="header__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="header__text">contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <hr class="header__rule">
+</header>
+
+    
+  <article class="article">
+    <h2 class="article__title">Depth-First Search</h2>
+    <time class="article__date">Sep 29, 2020</time>
+    
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#procedure">Procedure</a>
+  </li>
+  <li>
+    <a href="#example">Example</a>
+  </li>
+  <li>
+    <a href="#complexity">Complexity</a>
+  </li>
+  <li>
+    <a href="#implementation">Implementation</a>
+  </li>
+  <li>
+    <a href="#problems">Problems</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Depth-first search is a graph traversal algorithm which explores a graph to find every vertex reachable from a starting vertex. The algorithm proceeds by repeatedly exploring an unvisited vertex adjacent to the current vertex. This continues until a dead-end is reached at which point the algorithm backtracks until it finds an unvisited vertex to explore. This process is repeated until the algorithm backtracks past the source vertex.
+</p>
+
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+  Given a graph \(G = (V,E)\) and a starting vertex, depth-first search proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Initialize an empty stack.
+  </li>
+  <li>
+    Mark the source vertex as visited and push it onto the stack.
+  </li>
+  <li>
+    Pop a vertex off the stack and consider each of its adjacent vertices.
+  </li>
+  <li>
+    If a vertex adjacent to the popped vertex has not been visited then mark it as visited and push it onto the stack.
+  </li>
+  <li>
+    Repeat steps 3-4 until the stack is empty.
+  </li>
+</ol>
+
+<p>
+  Alternatively, depth-first search lends itself to a recursive implementation:
+</p>
+
+<ol>
+  <li>
+    Mark the current vertex as visited.
+  </li>
+  <li>
+    Consider each of its adjacent vertices.
+  </li>
+  <li>
+    If an adjacent vertex has not been visited then recurse with that vertex.
+  </li>
+</ol>
+
+
+
+<h3 id="example">Example</h3>
+
+<p>
+  In the following example, begin the traversal at the vertex marked \(0\):
+</p>
+
+<figure>
+  <img src="/img/algorithms/depth-first-search/example-0.svg" style="max-width: 350px;">
+  <figcaption>
+    <i>step 1/6</i>
+  </figcaption>
+</figure>
+<figure>
+  <img src="/img/algorithms/depth-first-search/example-1.svg" style="max-width: 350px;">
+  <figcaption>
+    <i>step 2/6</i>
+  </figcaption>
+</figure>
+<figure>
+  <img src="/img/algorithms/depth-first-search/example-2.svg" style="max-width: 350px;">
+  <figcaption>
+    <i>step 3/6</i>
+  </figcaption>
+</figure>
+<figure>
+  <img src="/img/algorithms/depth-first-search/example-3.svg" style="max-width: 350px;">
+  <figcaption>
+    <i>step 4/6</i>
+  </figcaption>
+</figure>
+<figure>
+  <img src="/img/algorithms/depth-first-search/example-4.svg" style="max-width: 350px;">
+  <figcaption>
+    <i>step 5/6</i>
+  </figcaption>
+</figure>
+<figure>
+  <img src="/img/algorithms/depth-first-search/example-5.svg" style="max-width: 350px;">
+  <figcaption>
+    <i>step 6/6</i>
+  </figcaption>
+</figure>
+
+
+
+
+<h3 class="complexity">Complexity</h3>
+
+<p>
+  Depth-first search has worst-case performance of \(O(|V| + |E|)\) and worst-case space complexity of \(O(|V|)\).
+</p>
+
+
+
+<h3 class="implementation">Implementation</h3>
+
+<pre><code class="java">public class DFS {
+
+  public static void iterative(List&lt;List&lt;Integer>> g, int s) {
+    boolean[] visited = new boolean[g.size()];
+    Stack&lt;Integer> stack = new Stack&lt;>();
+
+    System.out.println("visited: " + s);
+    
+    visited[s] = true;
+    stack.push(s);
+
+    int count = 0;
+
+    while (!stack.isEmpty()) {
+      int u = stack.pop();
+      count++;
+
+      System.out.println("visited: " + u);
+
+      for (int v : g.get(u))
+        if (!visited[v]) {
+          visited[v] = true;
+          stack.push(v);
+        }
+    }
+
+    System.out.println("total vertices: " + count);
+  }
+
+  public static void recursive(List&lt;List&lt;Integer>> g, int s) {
+    int count = recursive(g, new boolean[g.size()], s);
+  
+    System.out.println("total vertices: " + count);
+  }
+
+  private static int recursive(List&lt;List&lt;Integer>> g, boolean[] visited, int u) {
+    if (visited[u])
+      return 0;
+
+    System.out.println("visited: " + u);
+
+    visited[u] = true;
+
+    int count = 1;
+
+    for (int v : g.get(u))
+      count += recursive(g, visited, v);
+
+    return count;
+  }
+}</code></pre>
+
+
+
+<h3 class="problems">Problems</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/flood-fill/">733. Flood Fill</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/path-sum/">112. Path Sum</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/binary-tree-paths/">257. Binary Tree Paths</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/minimum-depth-of-binary-tree/">111. Minimum Depth of Binary Tree</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/keys-and-rooms/">841. Keys and Rooms</a>
+  </li>
+</ul>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Depth-first_search">Depth-First Search (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=7fujbpJ0LB4">Depth-First Search (William Fiset)</a>
+  </li>
+</ul>
+
+    <div class="article__back">
+      <a href="/">← back</a>
+    </div>
+  </article>
+
+    <footer class="footer">
+  <p class="footer__copyright">&copy; 2020</p>
+  
+  <div>
+    
+  </div>
+</footer>
+
+    
+  </body>
+</html>
