@@ -265,6 +265,10 @@ a {
 }
 
 @media screen and (max-width: 570px) {
+  body {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
   .header__title a {
     font-size: 2rem;
   }
