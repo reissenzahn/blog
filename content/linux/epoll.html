@@ -74,9 +74,12 @@ struct epoll_event {
   The {{% inline-code %}}events{{% /inline-code %}} member of the {{% inline-code %}}epoll_event{{% /inline-code %}} structure is a bit mask composed by ORing together event types such as {{% inline-code %}}EPOLLIN{{% /inline-code %}} (available for read operations) and {{% inline-code %}}EPOLLOUT{{% /inline-code %}} (available for write operations).
 </p>
 
+<p>
+  The {{% inline-code %}}epoll_wait(){{% /inline-code %}} call waits for events on an epoll instance. The buffer pointed to by  is used to return information from the ready list about file descriptors in the interest list that have some events available. Up to {{% inline-code %}}maxevents{{% /inline-code %}} are returned and the call will block for {{% inline-code %}}timeout{{% /inline-code %}} milliseconds.
+</p>
 
 <!-- 
-  
+
  -->
 
 

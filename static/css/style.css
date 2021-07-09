@@ -122,7 +122,8 @@ a {
 
 .main h2 {
   margin-top: 2rem;
-  font-size: 1.25rem;
+  /* font-size: 1.25rem; */
+  font-size: 1rem;
 }
 
 .main ul {
@@ -175,7 +176,8 @@ a {
 
 
 .article h3 {
-  font-size: 1.25rem;
+  /* font-size: 1.25rem; */
+  font-size: 1rem;
   margin-top: 2rem;
 }
 

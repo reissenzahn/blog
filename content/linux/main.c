@@ -6,7 +6,7 @@
 int main() {
   // create a new epoll instance
   int epfd = epoll_create1(0);
-  if (epoll_fd == -1) {
+  if (epfd == -1) {
     perror("epoll_create1");
     return 1;
   }
@@ -16,16 +16,18 @@ int main() {
   event.data.fd = STDIN_FILENO;  // stdin
 
   // add stdin to the epoll instance
-  if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &event)) {
+  if (epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event)) {
     perror("epoll_ctl");
-    close()
+    close(epfd);
     return 1;
   };
 
-  // 
+  while (go) {
+    
+  }
 
   // close epoll instance
-  if (close(epoll_fd)) {
+  if (close(epfd)) {
     perror("close");
     return 1;
   }
