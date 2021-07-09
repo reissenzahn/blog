@@ -4,4 +4,4 @@ languageCode = "en-us"
 disableKinds = ["RSS", "sitemap", "taxonomyTerm", "taxonomy"]
 
 [params]
-header="rei97"
+header="rei0"

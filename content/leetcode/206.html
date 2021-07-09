@@ -1,0 +1,67 @@
+---
+title: "206. Reverse Linked List"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3 id="question">Question</h3>
+
+<p>
+  Given the head of a singly linked list, reverse the list, and return the reversed list.
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Input:
+head = [1,2,3,4,5]
+
+Output:
+[5,4,3,2,1]
+
+Input:
+head = [1,2]
+
+Output:
+[2,1]
+
+Input:
+head = []
+
+Output:
+[]{{% /code %}}
+
+
+
+<h3 id="solution">Solution</h3>
+
+{{% code java %}}public ListNode reverseList(ListNode head) {
+  // start at the head
+  ListNode curr = head;
+  ListNode prev = null;
+  
+  // continue until the end of the list
+  while (curr != null) {
+    // store the next node
+    ListNode next = curr.next;
+    
+    // reverse the current reference
+    curr.next = prev;
+    
+    // move to the next node
+    prev = curr;
+    curr = next;
+  }
+  
+  return prev;
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/reverse-linked-list/">Original Question</a>
+  </li>
+</ul>

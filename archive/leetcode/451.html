@@ -1,0 +1,102 @@
+---
+title: "451. Sort Characters By Frequency"
+date: 2020-09-29
+draft: false
+---
+
+
+
+<h3 id="question">Question</h3>
+
+<p>
+  Given a string, sort it in decreasing order based on the frequency of characters.
+</p>
+
+
+
+<h3 id="usage">Usage</h3>
+
+<pre><b>Input:</b>
+"tree"
+
+<b>Output:</b>
+"eert"
+
+<b>Explanation:</b>
+'e' appears twice while 'r' and 't' both appear once.
+So 'e' must appear before both 'r' and 't'. Therefore "eetr" is also a valid answer.</pre>
+
+<pre><b>Input:</b>
+"cccaaa"
+
+<b>Output:</b>
+"cccaaa"
+
+<b>Explanation:</b>
+Both 'c' and 'a' appear three times, so "aaaccc" is also a valid answer.
+Note that "cacaca" is incorrect, as the same characters must be together.</pre>
+
+<pre><b>Input:</b>
+"Aabb"
+
+<b>Output:</b>
+"bbAa"
+
+<b>Explanation:</b>
+"bbaA" is also a valid answer, but "Aabb" is incorrect.
+Note that 'A' and 'a' are treated as two different characters.</pre>
+
+
+
+<h3 id="solution">Solution</h3>
+
+<ul>
+  <li>
+    Add the characters to a map with their frequencies as the associated values.
+  </li>
+  <li>
+    Add those entries to a max-heap ordered on their values.
+  </li>
+  <li>
+    
+  </li>
+</ul>
+
+<pre><code class="java">public String frequencySort(String s) {
+  Map<Character, Integer> map = new HashMap&lt;>();
+
+  // add characters and their frequencies to map
+  for (char c : s.toCharArray())
+    map.put(c, map.getOrDefault(c, 0) + 1);
+  
+  // provide comparator to use a max-heap based on frequency
+  PriorityQueue&lt;Map.Entry<Character, Integer>> pq = new PriorityQueue&lt;>((a, b) -> b.getValue() - a.getValue());
+
+  // add map entries to heap
+  pq.addAll(map.entrySet());
+
+  StringBuilder sb = new StringBuilder();
+
+  // build up output from heap contents
+  while (!pq.isEmpty()) {
+    Map.Entry e = pq.poll();
+
+    // use the frequency to determine how many values
+    for (int i = 0; i &lt; (int) e.getValue(); i++) {
+      sb.append(e.getKey());
+    }
+  }
+
+  return sb.toString();
+}</code></pre>
+
+<!-- TODO: alternative solution with bucket sort -->
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/sort-characters-by-frequency/">Original Question</a>
+  </li>
+</ul>

@@ -1,40 +1,9 @@
-# BitTorrent Algorithms
-
-
-## Introduction
-
-
-
-<h3 id="hashing">Hashing</h3>
+# Pipelining
 
 <!-- 
-  In order to keep track of which peers have what, BitTorrent cuts files into pieces of fixed size, typically a quarter megabyte.
-
-  Each downloader reports to all of its peers what pieces it has.
-
-  To verify data integrity, the SHA1 hashes of all the pieces are included in the .torrent file and peers don't report that they have a piece until they've checked the hash.
-
-  Peers continuously download pieces from all peers which they can.
-
-  They of course cannot download from peers they aren’t connected to, and sometimes peers don’t have any pieces they want or won’t currently let them download.
--->
-
-
-
-
-
-<h3 id="pipelining">Pipelining</h3>
-
-<!-- 
-  When transferring data over TCP, it is very important to always have several requests pending at once to avoid a delay between pieces being sent.
-
-  BitTorrent facilitates this by breaking pieces further into sub-pieces over the wire, typically 16 KB in size, and always keeping some number, typically five, requests pipelined at once.
-
   Every time a sub-piece arrives a new request is sent.
 
   The amount of data to pipeline has been selected as a value which can reliably saturate most connections.
-
-
 
   In general peers are advised to keep a few unfullfilled requests on each connection. This is done because otherwise a full round trip is required from the download of one block to begining the download of a new block
 -->
@@ -64,12 +33,6 @@
 <h3 id="choking">Choking</h3>
 
 <!--
-  BitTorrent does no central resource allocation.
-
-  Each peer is responsible for attempting to maximize its own download rate.
-
-  Peers do this by downloading from whoever they can and deciding which peers to upload to via a variant of tit-for-tat.
-
   To cooperate, peers upload and to not cooperate they choke peers.
 
   Choking is a temporary refusal to upload; it stops uploading but downloading can still happen and the connection doesn’t need to be renegotiated when choking stops.
@@ -121,34 +84,6 @@ the exactly one optimistic unchoke rule mentioned
 above), which causes download rates to recover much
 more quickly when they falter.
 -->
-
-
-
-
-
-
-
-
-
-
-
-# BitTorrent Protocol
-
-## Bencoding
-
-Bencoding encodes data in a platform independent way. In BTP/1.0 the metainfo file and all responses from the tracker are encoded in the bencoding format. The format specifies two scalar types (integers and strings) and two compound types (lists and dictionaries).
-
-Integers are encoded by prefixing a string containing the base ten representation of the integer with the letter "i" and postfixing it with the letter "e". E.g. the integer 123 is encoded as i123e.
-
-Strings are encoded by prefixing the string content with the length of the string followed by a colon. E.g. the string "announce" is encoded as "8:announce".
-
-The compound types provides a mean to structure elements of any bencoding type.
-
-Lists are an arbitrary number of bencoded elements prefixed with the letter "l" and postfixed with the letter "e". It follows that lists can contain nested lists and dictionaries. For instance "li2e3:fooe" defines a list containing the integer "2" and the string "foo".
-
-Dictionaries are an arbitrary number of key/value pairs delimited by the letter "d" at the beginning and the letter "e" at the end. All keys are bencoded strings while the associated value can be any bencoded element. E.g. "d5:monthi4e4:name5:aprile" defines a dictionary holding the associations: "month" => "4" and "name" => "april". All dictionary keys MUST be sorted.
-
-
 
 
 

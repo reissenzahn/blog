@@ -1,0 +1,99 @@
+---
+title: "epoll"
+date: 2021-02-22
+draft: false
+---
+
+<ul class="article__contents">
+  <li>
+    <a href="introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="usage">Usage</a>
+  </li>
+  <li>
+    <a href="resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  The {{% inline-code %}}epoll(){{% /inline-code %}} system call is an I/O event notification mechanism that allows for multiple file descriptors to monitored to see whether I/O is possible on any of them. It operates in O(1) time and was introduced to replace the {{% inline-code %}}select(){{% /inline-code %}} and {{% inline-code %}}poll(){{% /inline-code %}} system calls which operate in O(n) time.
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+<p>
+  To use {{% inline-code %}}epoll(){{% /inline-code %}} we start by creating an {{% inline-code %}}epoll{{% /inline-code %}} instance by calling {{% inline-code %}}epoll_create1(){{% /inline-code %}} which will either return a file descriptor to the new {{% inline-code %}}epoll{{% /inline-code %}} instance or -1 on error.
+</p>
+
+{{% code c %}}int epoll_create1(int flags);{{% /code %}}
+
+<p>
+  Next we can start configuring which file descriptors are in the interest list of this {{% inline-code %}}epoll{{% /inline-code %}} instance with calls to {{% inline-code %}}epoll_ctl(){{% /inline-code %}} which returns zero or -1 on error.
+</p>
+
+{{% code c %}}int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);{{% /code %}}
+
+<p>
+  The {{% inline-code %}}op{{% /inline-code %}} argument specifies wether to add, modify or remove entries:
+</p>
+
+<ul>
+  <li>
+    {{% inline-code %}}EPOLL_CTL_ADD{{% /inline-code %}}: Add the file descriptor {{% inline-code %}}fd{{% /inline-code %}} to the interest list with settings specified in {{% inline-code %}}event{{% /inline-code %}}.
+  </li>
+  <li>
+    {{% inline-code %}}EPOLL_CTL_MOD{{% /inline-code %}}: Change settings associated with {{% inline-code %}}fd{{% /inline-code %}} in the interest list to the new settings in {{% inline-code %}}event{{% /inline-code %}}.
+  </li>
+  <li>
+    {{% inline-code %}}EPOLL_CTL_DEL{{% /inline-code %}}: Remove the file descriptor {{% inline-code %}}fd{{% /inline-code %}} from the interest list.
+  </li>
+</ul>
+
+<p>
+  The {{% inline-code %}}event{{% /inline-code %}} argument describes the object linked to {{% inline-code %}}fd{{% /inline-code %}}.
+</p>
+
+{{% code c %}}typedef union epoll_data {
+  void        *ptr;
+  int          fd;
+  uint32_t     u32;
+  uint64_t     u64;
+} epoll_data_t;
+
+struct epoll_event {
+  uint32_t     events;
+  epoll_data_t data;
+};{{% /code %}}
+
+<p>
+  The {{% inline-code %}}events{{% /inline-code %}} member of the {{% inline-code %}}epoll_event{{% /inline-code %}} structure is a bit mask composed by ORing together event types such as {{% inline-code %}}EPOLLIN{{% /inline-code %}} (available for read operations) and {{% inline-code %}}EPOLLOUT{{% /inline-code %}} (available for write operations).
+</p>
+
+
+<!-- 
+
+ -->
+
+
+<h3 id="introduction">Level- and Edge-triggered</h3>
+
+<p>
+  In edge-triggered mode, a call to {{% inline-code %}}epoll_wait(){{% /inline-code %}} will return only when a new event is enqueued with the {{% inline-code %}}epoll{{% /inline-code %}} object while in level-triggered mode, 
+</p>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://idea.popcount.org/2017-02-20-epoll-is-fundamentally-broken-12">epoll is Fundamentally Broken</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=l6XQUciI-Sc">Ubuntu Slaughters Kittens</a>
+  </li>
+</ul>

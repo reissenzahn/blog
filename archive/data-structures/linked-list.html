@@ -24,53 +24,19 @@ draft: false
   A linked list is a linear collection of elements that consists of a set of nodes that collectively form the sequence. Each node contains a reference to the next node in the sequence and a reference to an element of the list. The first node is called the head and the last node is called the tail. The next reference of the tail points to null.
 </p>
 
-<!--
-  Linked lists are some of the most fundamental data structures.
-
-  Linked lists consist of a number of elements grouped, or linked, together in a specific order.
-
-  They are useful in maintaining collections of data, similar to the way that arrays are often used.
-
-  Linked lists offer important advantages over arrays in many cases.
-
-  Linked lists are considerably more efficient in performing insertions and deletions.
-
-  Linked lists also make use of dynamically allocated storage which is storage allocated at runtime.
-
-  Since in many applications the size of the data is not known at compile time this can be a nice attribute as well.
-
-  Singly-linked lists: The simplest linked lists, in which elements are linked by a single pointer. This structure allows the list to be traversed from its first element to its last.
-
-  Doubly-linked lists Linked lists in which elements are linked by two pointers instead of one. This structure allows the list to be traversed both forward and backward.
-
-  Circular lists: Linked lists in which the last element is linked to the first instead of being set to NULL. This structure allows the list to be traversed in a circular fashion.
-
-  Singly-linked list, usually simply called linked lists, are composed of individual elements, each linked by a single pointer.
-  
-  Each element consists of two parts: a data member and a pointer, called the next pointer.
-  
-  Using this two-member structure, a linked list is formed by setting the next pointer of each element to point to the element that follows it (see Figure 5-1).
-  
-  The next pointer of the last element is set to NULL, a convenient sentinel marking the end of the list.
-  
-  The element at the start of the list is its head; the element at the end of the list is its tail.
-
-  To access an element in a linked list, we start at the head of the list and use the next pointers of successive elements to move from element to element until the desired element is reached.
-  
-  With singly-linked lists, the list can be traversed in only one direction—from head to tail—because each element contains no link to its predecessor.
-  
-  Therefore, if we start at the head and move to some element, and then wish to access an element preceding it, we must start over at the head (although sometimes we can anticipate the need to know an element and save a pointer to it).
-  
-  Often this weakness is not a concern. When it is, we use a doubly-linked list or circular list.
--->
-
-
 <figure>
-  <img src="/img/linked-list/linked-list.svg" style="max-width: 380px;">
+  <img src="/img/data-structures/linked-list/linked-list.svg" style="max-width: 380px;">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
 </figure>
+
+
+<h3 id="structure">Structure</h3>
+
+<p>
+  
+</p>
 
 <!-- This structure allows for efficient insertion or removal of elements from any position in the sequence during iteration. A drawback of linked lists is that access time is linear.
 
@@ -79,10 +45,14 @@ The principal benefit of a linked list over a conventional array is that the lis
 On the other hand, since simple linked lists by themselves do not allow random access to the data or any form of efficient indexing, many basic operations—such as obtaining the last node of the list, finding a node that contains a given datum, or locating the place where a new node should be inserted—may require iterating through most or all of the list elements. -->
 
 
-<h3 id="complexity">Add First</h3>
+
+<h3 id="operations">Operations</h3>
+
+
+<h4 id="complexity">Append</h4>
 
 <figure>
-  <img src="/img/linked-list/add-first.svg" style="max-width: 380px;">
+  <img src="/img/linked-list/add-first.svg" style="max-width: 450px;">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
@@ -90,10 +60,10 @@ On the other hand, since simple linked lists by themselves do not allow random a
 
 
 
-<h3 id="complexity">Add Last</h3>
+<h4 id="complexity">Add Last</h4>
 
 <figure>
-  <img src="/img/linked-list/add-last.svg" style="max-width: 380px;">
+  <img src="/img/linked-list/add-last.svg" style="max-width: 450px;">
   <figcaption>
     <i>figure 1</i>
   </figcaption>
@@ -101,7 +71,7 @@ On the other hand, since simple linked lists by themselves do not allow random a
 
 
 
-<h3 id="complexity">Complexity</h3>
+<h4 id="complexity">Complexity</h4>
         worst case
 space	  O(n)
 prepend	O(1)
@@ -113,8 +83,33 @@ delete	O(n)
 <table>
   <tr>
     <td></td>
+    <td>Worst case</td>
+  </tr>
+  <tr>
+    <td>space</td>
+    <td>\(O(n)\)</td>
   </tr>
 </table>
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Linked_list">Linked List (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.cs.cmu.edu/~adamchik/15-121/lectures/Linked%20Lists/linked%20lists.html">Linked List Lecture Notes (Victor Adamchik)</a>
+  </li>
+</ul>
+
+
 
 <!-- 
 A dynamic array is a data structure that allocates all elements contiguously in memory, and keeps a count of the current number of elements. If the space reserved for the dynamic array is exceeded, it is reallocated and (possibly) copied, which is an expensive operation.
@@ -134,21 +129,3 @@ A good example that highlights the pros and cons of using dynamic arrays vs. lin
 The list ranking problem concerns the efficient conversion of a linked list representation into an array. Although trivial for a conventional computer, solving this problem by a parallel algorithm is complicated and has been the subject of much research.
 
 A balanced tree has similar memory access patterns and space overhead to a linked list while permitting much more efficient indexing, taking O(log n) time instead of O(n) for a random access. However, insertion and deletion operations are more expensive due to the overhead of tree manipulations to maintain balance. Schemes exist for trees to automatically maintain themselves in a balanced state: AVL trees or red-black trees. -->
-
-
-<h3 id="implementation">Implementation</h3>
-
-<pre><code class="java"></code></pre>
-
-
-
-<h3 id="resources">Resources</h3>
-
-<ul>
-  <li>
-    <a href="https://en.wikipedia.org/wiki/Linked_list">Linked List (Wikipedia)</a>
-  </li>
-  <li>
-    <a href="https://www.cs.cmu.edu/~adamchik/15-121/lectures/Linked%20Lists/linked%20lists.html">Linked List Lecture Notes (Victor Adamchik)</a>
-  </li>
-</ul>

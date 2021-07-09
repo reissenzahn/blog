@@ -9,6 +9,9 @@ draft: false
     <a href="#introduction">Introduction</a>
   </li>
   <li>
+    <a href="#pieces-and-blocks">Pieces and Blocks</a>
+  </li>
+  <li>
     <a href="#resources">Resources</a>
   </li>
 </ul>
@@ -21,58 +24,61 @@ draft: false
 </p>
 
 
+<h3 id="bencoding">Bencoding</h3>
 
+<p>
+  BitTorrent uses bencoding to encode data in a platform independent way. The format specifies two scalar types (integers and strings) and two compound types (lists and dictionaries). The format is as follows:
+</p>
+
+<ul>
+  <li>
+    Integers are encoded by prefixing a string containing the base ten representation of the integer with the letter "i" and postfixing it with the letter "e".
+  </li>
+  <li>
+    Strings are encoded by prefixing the string with the length of the string followed by a colon.
+  </li>
+  <li>
+    Lists are an arbitrary number of bencoded elements prefixed with the letter "l" and postfixed with the letter "e".
+  </li>
+  <li>
+    Dictionaries are an arbitrary number of key/value pairs prefixed with the letter "d" and postfixed with the letter "e". All keys are bencoded strings and the associated value can be any bencoded element. All dictionary keys must be sorted.
+  </li>
+</ul>
+
+<pre>// the integer 10
+i10e
+
+// the string "red"
+3:red
+
+// the list [10, "red"]
+li10e3:rede
+
+// the dictionary {"red": 10, "blue": 20}
+d3:redi10e4:bluei20ee</pre>
 
 
 <h3 id="pieces-and-blocks">Pieces and Blocks</h3>
 
 <p>
-  A torrent consisting of one or more files is treated as a contiguous sequence of bytes which is divided into a number of fixed-size pieces. Pieces may overlap file boundaries and the last piece may be smaller than the rest. The piece size is constrained by the fact that too large piece sizes result in less efficient transfers while too small piece sizes cause large metainfo files. Typical piece sizes include 256KB, 512Kb and 1MB.
+  A torrent consisting of one or more files is treated as a contiguous sequence of bytes which is divided into a number of fixed-size pieces. Pieces can overlap file boundaries and the last piece may be smaller than the rest. Each piece is assigned a sequential index starting from zero.
 </p>
 
 <p>
-  When distributing pieces between peers, those pieces are further broken into blocks. This allows a peer to download a given piece from multiple peers. Typical client implementations use a block size of 16KB.
+  The SHA-1 hash of the data contained in each piece is computed and these hashes are concatenated together and included in the torrent metainfo file. These hashes will be used keep track of which pieces each peer has and to verify the integrity of each piece a peer obtains. The piece size is thus constrained by the fact that too large piece sizes result in less efficient transfers while too small piece sizes cause large metainfo files. Typical piece sizes include 256KB, 512Kb and 1MB.
 </p>
 
-<!--
-  The complete file is derived by combining all the pieces into one string of bytes.
-
-  Pieces are indexed starting from zero.
-
-  Once a peer has downloaded a complete piece it can immediately begin sharing it with other peers. A peer can only share the complete pieces it has obtained.
-
-  Each piece represents a range of data which it is possible to verify using a piece SHA-1 hash.
-
-  Each piece has a corresponding SHA1 hash of the data contained within that piece. These hashes are concatenated to form the pieces value in the above info dictionary. Note that this is not a list but rather a single string. The length of the string must be a multiple of 20.
--->
+<p>
+  When distributing pieces between peers, those pieces are further broken into blocks. This allows a peer to download a given piece from multiple peers. Typical client implementations use a block size of 16KB. One a peer has downloaded a complete piece and verified its hash it can immediately start sharing it with other peers. The complete files of a torrent are obtained by combining all the pieces into a single string bytes.
+</p>
 
 
 
 <h3 id="metainfo-file">Metainfo File</h3>
 
 <p>
-  To publish a file using BitTorrent, a metainfo file containing information about the torrent must be created. This includes tracker information, the piece length, hashes for each piece and metadata about the torrent. A metainfo file has a .torrent extension.
+  To publish a file using BitTorrent, a metainfo file containing information about the torrent must be created. This includes tracker information, the piece length, hashes for each piece and metadata about the torrent. The metainfo file can then be distributed to peers interested in downloading the file. At least one seeder with access to the complete torrent must be made available to allow for the file to start being distributed. A metainfo has a .torrent extension and the associated media type application/x-bittorrent.
 </p>
-
-<!-- 
-In order for a client to download a torrent the following steps must be carried through:
-
-1. A metainfo file must be retrieved.
-2. Instructions that will allow the client to contact other peers must be periodically requested from the tracker using THP.
-3. The torrent must be downloaded by connecting to peers in the swarm and trading pieces using PWP.
-
-To publish a torrent the following steps must be taken:
-
-1. A tracker must be set up.
-2. A metainfo file pointing to the tracker and containing information on the structure of the torrent must be produced and published.
-3. At least one seeder with access to the complete torrent must be set up
- -->
-
-<!--
-  The metainfo file provides the client with information on the tracker location as well as the torrent to be downloaded. Besides listing which files will result from downloading the torrent, it also lists how the client should split up and verify individual pieces making up the complete torrent.
-
-In order for a client to recognize the metainfo file it SHOULD have the extension .torrent and the associated the media type "application/x-bittorrent". How the client retrieves the metainfo file is beyond the scope of this document, however, the most user-friendly approach is for a client to find the file on a web page, click on it, and start the download immediately. This way, the apparent complexity of BTP as opposed to FTP or HTTP transfer is transparent to the user.
--->
 
 <p>
   The metainfo file contains a bencoded dictionary with the following keys:
@@ -142,24 +148,12 @@ In order for a client to recognize the metainfo file it SHOULD have the extensio
   </li>
 </ul>
 
-<!-- 
-  The decision to use BitTorrent is made by the publisher of a file.
-
-  The metainfo file contains information about the file: its length, name, hashing information and the url of a tracker.
-
-  When someone wants to publish data using the BitTorrent protocol, they must create a metainfo file.
-
-  The content of a metainfo file is a bencoded dictionary containing an info key that describes the 
--->
-
-
-
 
 
 <h3 id="peer-wire-protocol">Peer Wire Protocol</h3>
 
 <p>
-  The peer wire protocol consists of an initial handshake followed by the asynchronous exchange of length-prefixed messages. These messages have the dual purpose of informing peers of changes in the state of neighboring peers as well as transferring blocks between neighboring peers.
+  The peer wire protocol consists of an initial handshake followed by the asynchronous exchange of length-prefixed messages. These messages have the dual purpose of informing peers of changes in the state of neighboring peers as well as transferring blocks between neighboring peers. 
 </p>
 
 <ul>
@@ -168,10 +162,7 @@ In order for a client to recognize the metainfo file it SHOULD have the extensio
   </li>
 </ul>
 
-<!-- 
-
-
-
+<!--
   All integer members are encoded as 4-byte big-endian numbers. Furthermore, all index and offset members are zero-based.
 -->
 
@@ -287,6 +278,10 @@ In order for a client to recognize the metainfo file it SHOULD have the extensio
 -->
 
 
+
+
+
+
 <h3 id="piece-selection">Piece Selection</h3>
 
 <p>
@@ -336,8 +331,27 @@ In order for a client to recognize the metainfo file it SHOULD have the extensio
 
 
 
+<h3 id="choking">Choking</h3>
+
+<p>
+  Each peer is responsible for attempting to maximize its own download rate. Peers achieve this by downloading from whichever peers they can and deciding which peers to upload to via a variant of tit-for-tat. To cooperate, peers 
+</p>
 
 
+<h3 id="endgame-mode">Endgame Mode</h3>
+
+
+
+<h3 id="pipelining">Pipelining</h3>
+
+<p>
+  By breaking pieces into blocks, BitTorrent facilitates always keeping some number (typically five) of requests pipelined at once. This is very important when transferring data over TCP as having several requests pending at once avoids a belay between blocks being sent. Each time a block arrives, a new request is sent.
+</p>
+
+<!-- TODO: IMAGE -->
+
+
+<h3 id="terminology">Terminology</h3>
 
 
 <h3 id="resources">Resources</h3>

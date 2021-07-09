@@ -1,0 +1,99 @@
+---
+title: "703. Kth Largest Element in a Stream"
+date: 2020-09-29
+draft: false
+---
+
+
+<h3 id="question">Question</h3>
+
+<p>
+  Design a class to find the k-th largest element in a stream. Note that it is the k-th largest element in the sorted order, not the k-th distinct element.
+</p>
+
+<p>
+  Implement <code>KthLargest</code> class:
+</p>
+
+<ul>
+  <li>
+    <code>KthLargest(int k, int[] nums)</code> initializes the object with the integer <code>k</code> and the stream of integers <code>nums</code>.
+  </li>
+  <li>
+    <code>int add(int val)</code> returns the element representing the k-th largest element in the stream.
+  </li>
+</ul>
+
+
+
+<h3 id="usage">Usage</h3>
+
+<pre><b>Input</b>
+["KthLargest", "add", "add", "add", "add", "add"]
+[[3, [4, 5, 8, 2]], [3], [5], [10], [9], [4]]
+Output
+[null, 4, 5, 5, 8, 8]
+
+<b>Explanation</b>
+KthLargest kthLargest = new KthLargest(3, [4, 5, 8, 2]);
+kthLargest.add(3);   // return 4
+kthLargest.add(5);   // return 5
+kthLargest.add(10);  // return 5
+kthLargest.add(9);   // return 8
+kthLargest.add(4);   // return 8</pre>
+
+
+
+<h3 id="solution">Solution</h3>
+
+<ul>
+  <li>
+    We use a min-heap that only contains the k largest elements.
+  </li>
+  <li>
+    The k-th largest element is thus always the head of the min-heap.
+  </li>
+  <li>
+    When adding elements we replace the head if it is smaller than the added element.
+  </li>
+</ul>
+
+<pre><code class="java">class KthLargest {
+
+  // PriorityQueue provides a min-heap implementation
+  private PriorityQueue&lt;Integer> queue;
+  private int k;
+
+  public KthLargest(int k, int[] nums) {
+    this.k = k;
+    queue = new PriorityQueue&lt;>(k);
+
+    for (int num : nums)
+      add(num);
+  }
+  
+  public int add(int val) {
+
+    // add the first k elements to the min-heap
+    if (queue.size() &lt; k) {
+      queue.offer(val);
+
+    // after that make sure to only keep the k largest
+    } else if (queue.peek() &lt; val) {
+      queue.poll();
+      queue.offer(val);
+    }
+
+    // the smallest element of the k largest is the k-th largest
+    return queue.peek();
+  }
+}</code></pre>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/kth-largest-element-in-a-stream/">Original Question</a>
+  </li>
+</ul>

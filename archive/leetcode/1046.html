@@ -1,0 +1,83 @@
+---
+title: "1046. Last Stone Weight"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3 id="question">Question</h3>
+
+<p>
+  We have a collection of stones, each stone has a positive integer weight.
+</p>
+
+<p>
+  Each turn, we choose the two heaviest stones and smash them together. Suppose the stones have weights <code>x</code> and <code>y</code> with <code>x &lt;= y</code>. The result of this smash is:
+</p>
+
+<ul>
+  <li>
+    If <code>x == y</code>, both stones are totally destroyed;
+  </li>
+  <li>
+    If <code>x != y</code>, the stone of weight <code>x</code> is totally destroyed, and the stone of weight <code>y</code> has new weight <code>y - x</code>.
+  </li>
+</ul>
+
+<p>
+  At the end, there is at most 1 stone left. Return the weight of this stone (or 0 if there are no stones left.)
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+<pre><b>Input:</b>
+[2,7,4,1,8,1]
+
+<b>Output:</b>
+1
+
+<b>Explanation: </b>
+We combine 7 and 8 to get 1 so the array converts to [2,4,1,1,1] then,
+we combine 2 and 4 to get 2 so the array converts to [2,1,1,1] then,
+we combine 2 and 1 to get 1 so the array converts to [1,1,1] then,
+we combine 1 and 1 to get 0 so the array converts to [1] then that's the value of last stone.</pre>
+
+
+
+<h3 id="solution">Solution</h3>
+
+<pre><code class="java">public int lastStoneWeight(int[] stones) {
+
+  // initialize max-heap
+  PriorityQueue&lt;Integer> pq = new PriorityQueue&lt;>((a, b) -> b - a);
+  
+  // add all weights to the max-heap
+  for (int s : stones)
+      pq.add(s);
+  
+  // while there are two weights to compare
+  while (pq.size() > 1) {
+
+    int big = pq.poll();
+    int small = pq.poll();
+    
+    // if the weights are not equal add the remaining weight
+    if (big > small) {
+      pq.offer(big - small);
+    }
+  }
+  
+  // if there is a weight left then return it
+  return pq.isEmpty() ? 0 : pq.peek();
+}</code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/last-stone-weight/">Original Question</a>
+  </li>
+</ul>

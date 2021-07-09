@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>rei97</title>
+    <title>rei0</title>
   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-    <script src="/js/translate.js"></script>
-
     <script>
       MathJax = {
         options: {
@@ -23,12 +21,9 @@
     <!-- agate gruvbox-dark darcula monokai-sublime atelier-estuary-dark hopscotch lioshi ocean nnfx -->
 
     <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/darcula.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
-    
-    <script>
-      hljs.initHighlightingOnLoad();
-    </script>
+    href="/css/theme.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.1.0/build/highlight.min.js"></script>
+  
 
     <link rel="stylesheet" href="{{ "css/style.css" | relURL }}">
   </head>
@@ -39,5 +34,11 @@
     {{ partial "footer" . }}
 
     <!-- <canvas id="boids"></canvas> -->
+
+    <!-- <script src="/js/translate.js"></script> -->
+    <script>
+      hljs.configure({ cssSelector: 'code' });
+      hljs.highlightAll();
+    </script>
   </body>
 </html>

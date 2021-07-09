@@ -1,10 +1,10 @@
 ---
 title: "C"
-date: 2020-09-29
+date: 2021-07-07
 draft: false
 ---
 
-<ul>
+<ul class="article__contents">
   <li>
     <a href="#hello-world">Hello World</a>
   </li>
@@ -12,22 +12,10 @@ draft: false
     <a href="#primitive-types">Primitive Types</a>
   </li>
   <li>
-    <a href="#variables">Variables</a>
-  </li>
-  <li>
-    <a href="#pointers">Pointers</a>
-  </li>
-  <li>
-    <a href="#pointer-arithmetic">Pointer Arithmetic</a>
-  </li>
-  <li>
-    <a href="#operators">Operators</a>
+    <a href="#control-flow">Control Flow</a>
   </li>
   <li>
     <a href="#arrays">Arrays</a>
-  </li>
-  <li>
-    <a href="#strings">Strings</a>
   </li>
   <li>
     <a href="#functions">Functions</a>
@@ -36,25 +24,37 @@ draft: false
     <a href="#variadic-functions">Variadic Functions</a>
   </li>
   <li>
-    <a href="#conditionals">Conditionals</a>
+    <a href="#pointers">Pointers</a>
   </li>
   <li>
-    <a href="#switch">Switch</a>
+    <a href="#function-pointers">Function Pointers</a>
   </li>
   <li>
-    <a href="#iteration">Iteration</a>
+    <a href="#strings">Strings</a>
   </li>
   <li>
     <a href="#enumerations">Enumerations</a>
   </li>
   <li>
-    <a href="#structures">Structures</a>
-  </li>
-  <li>
     <a href="#unions">Unions</a>
   </li>
   <li>
-    <a href="#preprocessor">Preprocessor</a>
+    <a href="#bitfields">Bitfields</a>
+  </li>
+  <li>
+    <a href="#typedef">Typedef</a>
+  </li>
+  <li>
+    <a href="#bitwise-operators">Bitwise Operators</a>
+  </li>
+  <li>
+    <a href="#sizeof">Sizeof</a>
+  </li>
+  <li>
+    <a href="#constants">Constants</a>
+  </li>
+  <li>
+    <a href="#static">Static</a>
   </li>
   <li>
     <a href="#assertions">Assertions</a>
@@ -63,81 +63,294 @@ draft: false
     <a href="#heap-allocation">Heap Allocation</a>
   </li>
   <li>
-    <a href="#resources">Resources</a>
+    <a href="#makefile">Makefile</a>
   </li>
 </ul>
 
 
-
 <h3 id="hello-world">Hello World</h3>
 
-<pre><code class="c">#include &lt;stdio.h>
+{{% code c %}}#include <stdio.h>
 
-int main() {
-  printf("Hello, C!");
-  return 0;
-}</code></pre>
+int main(int argc, const char* argv[]) {
+  printf("Hello, C!\n");
 
-<pre><code class="c">#include &lt;stdio.h>
-
-int main(int argc, char* argv[]) {
-
-  for (int i = 0; i &lt; argc; i++) {
-    printf("%s\n", argv[i]);`
+  for (int i = 0; i < argc; i++) {
+    printf("%s\n", argv[i]);
   }
 
   return 0;
-}
-</code></pre>
+}{{% /code %}}
 
 
 
 <h3 id="primitive-types">Primitive Types</h3>
 
-<pre><code class="c">#include &lt;stdbool.h>
+{{% code c %}}#include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-// integers
-short s = 1;
-int i = 2;
-long l = 3;
+int main() {
+  // integers
+  char c = 1;
+  short s = 2;
+  int i = 3;
+  long l = 4;
+  printf("%d %d %d %d\n", c, s, i, l);  // 1 2 3 4
 
-// unsigned integers only store positive numbers
-unsigned int u = 42;
+  // unsigned integers only store positive numbers
+  unsigned char uc = 1;
+  unsigned short us = 2;
+  unsigned int ui = 3;
+  unsigned long ul = 4;
+  printf("%u %u %u %u\n", uc, us, ui, ul);  // 1 2 3 4
 
-// floating point
-float f = 3.14159;   // single-precision
-double d = 2.71828;  // double-precision
+  // single and double-precision floating point
+  float f = 3.14159;
+  double d = 2.71828;
+  printf("%f %f\n", f, d);  // 3.141590 2.718280
 
-// character (single byte)
-char c = 'A';
+  // character (single byte)
+  char h = '#';
+  printf("%c\n", h);  // #
 
-// boolean
-bool b = true;</code></pre>
+  // boolean
+  bool t = true;
+  printf("%s", t ? "true" : "false");
+
+  // explicitly sized integer types
+  printf("%ld\n", sizeof(int8_t));   // 1
+  printf("%ld\n", sizeof(int16_t));  // 2
+  printf("%ld\n", sizeof(int32_t));  // 4
+  printf("%ld\n", sizeof(int64_t));  // 8
+  
+  printf("%ld\n", sizeof(uint8_t));   // 1
+  printf("%ld\n", sizeof(uint16_t));  // 2
+  printf("%ld\n", sizeof(uint32_t));  // 4
+  printf("%ld\n", sizeof(uint64_t));  // 8
+
+  // size_t is the result type of the sizeof operator
+  size_t size = sizeof(int);
+  printf("%zu\n", size);
+  
+  // size_t is used to store a size or index in an array
+  const size_t N = 2;
+  int numbers[N];
+  
+  for (size_t i = 0; i < N; i++) {
+    printf("%d\n", numbers[i]);
+  }
+
+  // similarly ssize_t is the sized variant of size_t that is capable of holding -1 to represent an error
+  
+  return 0;
+}{{% /code %}}
+
+<!--
+  https://en.cppreference.com/w/c/types/integer
+-->
 
 
+<h3 id="control-flow">Control Flow</h3>
 
-<h3 id="variables">Variables</h3>
+{{% code c %}}#include <stdio.h>
 
+int main() {
+  // if, else if, else
+  int x = 0;
+  if (!x) {
+    printf("zero\n");  // zero
+  } else if (x > 0) {
+    printf("positive\n");
+  } else {
+    printf("negative\n");
+  }
+
+  // ternary operator
+  int y = 2;
+  y >= 0 ? printf("+\n") : printf("-\n");  // +
+
+  // switch
+  char answer = 'y';
+  switch (answer) {
+    case 'y':
+      printf("Yes!\n");  // Yes!
+      break;
+    case 'n':
+      printf("No!\n");
+      break;
+    default:
+      printf("Huh?\n");
+      break;
+  }
+
+  // looping
+  int i = 0;
+  while (i < 5) {
+    printf("%d\n", i++);
+  }
+
+  for (int i = 0; i < 5; i++) {
+    printf("%d\n", i);
+  }
+
+  // goto causes execution to jump to a specified label
+  goto skip;
+  printf("here\n");
+  
+  // labels have function scope so you can only goto labels that are in the same function
+  skip:
+  printf("there\n");
+
+  // this can be used to bail out of nested loops
+  while (1) {
+    while (1) {
+      goto bail;
+    }
+  }
+  bail:
+  printf("escaped!");
+}{{% /code %}}
+
+
+<h3 id="arrays">Arrays</h3>
+
+{{% code c %}}#include <stdio.h>
+
+// equivalent to int sum(int *arr, int len) 
+int sum(int arr[], int len) {
+  int total = 0;
+
+  for (int i = 0; i < len; i++) {
+    total += arr[i];
+  }
+
+  return total;
+}
+
+int main() {
+  // declaration with initialization
+  char letters[] = {'a', 'b', 'c', 'd', 'e'};
+
+  // if an array is partially initialized then elements that are not initialized receive the zero value of the appropriate type
+  int zeros[1024] = {0};  // {0, ..., 0}
+
+  // declaration without initialization
+  int nums[5];
+  
+  nums[0] = 0;
+  nums[1] = 1;
+  nums[2] = 2;
+  nums[3] = 3;
+  nums[4] = 4;
+  
+  printf("%d\n", nums[0]);  // 0
+  printf("%d\n", nums[1]);  // 1
+  printf("%d\n", nums[2]);  // 2
+  printf("%d\n", nums[3]);  // 3
+  printf("%d\n", nums[4]);  // 4
+
+  // iterate over array
+  for (size_t i = 0; i < sizeof(nums); i++) {
+    nums[i] = nums[i] * 2;
+  }
+  
+  printf("%d\n", nums[0]);  // 0
+  printf("%d\n", nums[1]);  // 2
+  printf("%d\n", nums[2]);  // 4
+  printf("%d\n", nums[3]);  // 6
+  printf("%d\n", nums[4]);  // 8
+
+  // when an array name is passed to a function what is passed is a pointer to the initial element
+  printf("%d\n", sum(nums, 5));  // 20
+}{{% /code %}}
+
+
+<h3 id="functions">Functions</h3>
+
+{{% code c %}}#include <stdio.h>
+
+int max(int x, int y) {
+  if (x > y) {
+    return x;
+  }
+
+  return y;
+}
+
+void inc(int* x) {
+  *x += 1;
+}
+
+// const parameters cannot be modified
+int sum(const int to) {
+  int total = 0;
+
+  for (int i = 0; i < to; i++) {
+    total += i;
+  }
+
+  return total;
+}
+
+// arrays passed to functions are converted to pointers
+float avg(float arr[], int n) {
+  float total = 0;
+  
+  for (int i = 0; i < n; i++) {
+    total += arr[i];
+  }
+
+  return total / n;
+}
+
+int main() {
+  printf("%d\n", max(3, 4));  // 4
+
+  int i = 0;
+  inc(&i);
+  inc(&i);
+  inc(&i);
+  printf("%d\n", i);  // 3
+
+  printf("%d\n", sum(5));  // 10
+
+  float arr[] = {1.0, 2.0, 3.0};
+  printf("%f\n", avg(arr, 3));  // 2.0
+}{{% /code %}}
+
+
+<h3 id="variadic-functions">Variadic Functions</h3>
+
+{{% code c %}}#include <stdio.h>
+#include <stdarg.h>
+  
+int sum(int count, ...) {	
+  int total = 0;
+  va_list args;
+
+  va_start(args, count);
+
+  for (int i = 0; i < count; i++) {
+    int temp = va_arg(args, int);
+    total += temp;
+  }
+
+  va_end(args);
+
+  return total;
+}
+
+int main() {
+  int total = sum(3, 1, 2, 3);
+  printf("%d\n", total);  // 6
+}{{% /code %}}
 
 
 <h3 id="pointers">Pointers</h3>
 
-<pre><code class="c">#include &lt;stdio.h>
-
-int i = 1;
-
-// a pointer is a variable that contains the address of a variable
-int *ptr;
-
-// the & operator gives the address of an object in memory
-ptr = &amp;i;
-printf("%p\n", (void*) ptr);  // 000000000064fe10
-
-// the * operator dereferences a pointer
-*ptr = *ptr + 1;
-printf("%d\n", *ptr);  // 2</code></pre>
-
-<pre><code class="c">#include &lt;stdio.h>
+{{% code c %}}#include <stdio.h>
+#include <stddef.h>
 
 void swap(int *p, int *q) {
   int temp;
@@ -147,14 +360,589 @@ void swap(int *p, int *q) {
   *q = temp;
 }
 
-// ...
+int main() {
+  int i = 1;
 
-int i = 1, j = 2;
+  // a pointer is a variable that contains the address of a variable
+  int *ptr;
 
-swap(&amp;i, &amp;j);
+  // NULL is limited to identifying a null pointer
+  ptr = NULL;
 
-printf("%d\n", i);  // 2
-printf("%d\n", j);  // 1</code></pre>
+  // the & operator gives the address of an object in memory
+  ptr = &i;
+  printf("%p\n", (void *) ptr);  // 0x7ffe38ef4aa8
+
+  // the * operator dereferences a pointer
+  *ptr = *ptr + 1;
+  printf("%d\n", *ptr);  // 2
+
+  int j = 3;
+  
+  // passing variables to functions as pointers allows them to be modified
+  swap(&i, &j);
+  
+  printf("i = %d, j = %d\n", i, j);  // i = 3, j = 2
+}{{% /code %}}
+
+
+<h3 id="function-pointers">Function Pointers</h3>
+
+{{% code c %}}#include <stdio.h>
+
+int sum(int n, int m) {
+  return n + m;
+}
+
+int apply(int (*ptr)(int, int), int n) {
+  return (*ptr)(n, n);
+}
+
+int main() {
+  int (*ptr)(int, int);
+  
+  ptr = &sum;
+
+  printf("%d\n", (*ptr)(1, 2));  // 3
+
+  printf("%d\n", apply(ptr, 2));  // 4
+}{{% /code %}}
+
+
+<h3 id="strings">Strings</h3>
+
+{{% code c %}}#include <stdio.h>
+#include <string.h>
+
+int main() {
+  // a string is a null-terminated array of characters
+
+  // when used to initialize a char[] a string literal provides a shortcut to initialize the elements of the array
+  char arr[] = "hello";
+
+  // this is a shortcut for
+  // char arr[] = {'h', 'e', 'l', 'l', 'o', '\0' };
+
+  // the array can be modified like any other array
+  arr[0] = 'H';
+
+  // everywhere else a string literal generates an unnamed array of characters with static storage that results in undefined behavior if modified
+  char *ptr = "hello";
+
+  // this is roughly similar 
+  // static char __unnamed[] = "hello";
+  // char *ptr = __unnamed;
+
+  // strlen can be used to get the length of a string in both cases
+  printf("%zu\n", sizeof(arr));  // 6
+  printf("%zu\n", sizeof(ptr));  // 8
+
+  printf("%zu\n", strlen(arr));  // 5
+  printf("%zu\n", strlen(ptr));  // 5
+
+  return 0;
+}{{% /code %}}
+
+<!-- 
+  https://stackoverflow.com/questions/1704407/what-is-the-difference-between-char-s-and-char-s
+ -->
+
+
+ <h3 id="enumerations">Enumerations</h3>
+
+{{% code c %}}#include <stdio.h>
+#include <stdlib.h>
+
+enum day {
+  MONDAY,
+  TUESDAY,
+  WEDNESDAY,
+  THURSDAY = 5,
+  FRIDAY = 7,
+  SATURDAY,
+  SUNDAY
+};
+
+int main() {  
+  // enumerations do not introduce new scope
+  enum day d = MONDAY;
+  printf("%d\n", d);  // 0
+  
+  printf("%d\n", MONDAY);     // 0
+  printf("%d\n", TUESDAY);    // 1
+  printf("%d\n", WEDNESDAY);  // 2
+  printf("%d\n", THURSDAY);   // 5
+  printf("%d\n", FRIDAY);     // 7
+  printf("%d\n", SATURDAY);   // 8
+  printf("%d\n", SUNDAY);     // 9
+
+  return 0;
+}{{% /code %}}
+
+
+<h3 id="structures">Structures</h3>
+
+{{% code c %}}#include <stdio.h>
+
+struct point {
+  int x;
+  int y;
+};
+
+int main() {
+  struct point p;
+
+  // initialization with struct literal;
+  // struct point p = {0, 0};
+
+  p.x = 1;
+  (&p)->y = 2;
+
+  printf("(%d, %d)\n", p.x, (&p)->y);  // (1, 2)
+
+  struct point* ptr = &p;
+
+  ptr->x = 3;
+  (*ptr).y = 4;
+
+  printf("(%d, %d)\n", ptr->x, (*ptr).y);  // (3, 4)
+
+  // assignment performs a memory copy
+  struct point q;
+
+  q = p;
+  p.x = 2;
+
+  printf("(%d, %d)\n", p.x, p.y);  // (2, 4)
+  printf("(%d, %d)\n", q.x, q.y);  // (3, 4)
+}{{% /code %}}
+
+
+<h3 id="unions">Unions</h3>
+
+{{% code c %}}#include <stdio.h>
+#include <stdlib.h>
+
+union basket {
+  int i;
+  float f;
+  char c[20];
+};
+
+int main() {
+  union basket b;
+  printf("%d\n", sizeof(b));  // 20
+
+  return 0;
+}{{% /code %}}
+
+
+<h3 id="bitfields">Bitfields</h3>
+
+{{% code c %}}#include <stdio.h>
+#include <stdbool.h>
+
+// adjacent bit field members may be packed to share and straddle the individual bytes
+
+// bit fields can have only one of four types:  unsigned int, signed int and int (for bit fields with implementation-defined signedness) and bool
+struct bitfield {
+  unsigned int i : 3;  // 0..7
+  signed int j : 3;    // -4..3
+  int k : 3;           // 0..7 or -4..3
+};
+
+struct flags {
+  unsigned int i : 1;  // 0..1
+  bool j : 1;          // 0..1
+};
+
+struct packed {
+  unsigned i : 5;  // i (5 bits)
+  unsigned : 11;   // unused (11 bits)
+  unsigned j : 6;  // j (6 bits)
+  unsigned k : 2;  // k (2 bits)
+};
+
+// the special unnamed bit field of width zero specifies that the next bit field begins at the beginning of the next allocation unit
+struct unnamed {
+  unsigned i : 5;   // i (5 bits)
+  unsigned : 0;     // unused (27 bits)
+  unsigned j : 6;   // j (6 bits)
+  unsigned k : 15;  // k (15 bits)
+};
+
+// extract or set bits in a byte
+union converter {
+  unsigned char byte;
+  struct {
+    unsigned i : 1;
+    unsigned j : 4;
+    unsigned k : 3;
+  } bits;
+};
+
+// extract parts of float
+union inspection {
+  float f;
+  struct {
+    unsigned fraction : 23;
+    unsigned exponent : 8;
+    unsigned sign : 1;
+  };
+};
+
+int main() {
+  struct bitfield b;
+  b.i = 7;
+  b.i++;  // unsigned overflow
+  printf("%d\n", b.i);
+
+  printf("%zu\n", sizeof(struct bitfield));  // 4
+  printf("%zu\n", sizeof(struct flags));     // 4
+  printf("%zu\n", sizeof(struct packed));    // 4
+  printf("%zu\n", sizeof(struct unnamed));   // 8
+
+  union converter c;
+  c.byte = 0xB3;  // 10110011
+  printf("%d\n", c.bits.i);  // 1 (1)
+  printf("%d\n", c.bits.j);  // 9 (1001)
+  printf("%d\n", c.bits.k);  // 5 (101)
+
+  union inspection i;
+  i.f = (float) 65.65625;
+  printf("%d\n", i.sign);
+  printf("%d\n", i.exponent);
+  printf("%d\n", i.fraction);
+}{{% /code %}}
+
+<!--   
+  // https://www.utopiamechanicus.com/article/data-splitting-union-and-struct-c/
+  
+  // https://hackaday.com/2018/03/02/unionize-your-variables-an-introduction-to-advanced-data-types-in-c/
+ -->
+
+
+<h3 id="typedef">Typedef</h3>
+
+{{% code c %}}#include <stdio.h>
+
+// typedef creates an alias for an existing type.
+typedef int count;
+
+// this can be used to avoid needing to refer to a struct with the struct keyword
+struct point {
+  int x;
+  int y;
+};
+
+typedef struct point point;
+
+// frequently this is written in one line
+// typedef struct point {
+//   int x;
+//   int y;
+// } point;
+
+// an anonymous structure can also be used
+// typedef struct {
+//   int x;
+//   int y;
+// } point;
+
+int main() {
+  count c = 1;
+  printf("%d\n", c);  // 1
+
+  struct point p = { 1, 2 };
+  printf("%d\n", p.x);  // 1
+
+  point q = { 3, 4 };
+  printf("%d\n", q.y);  // 4
+
+  return 0;
+}{{% /code %}}
+
+<!--
+  https://stackoverflow.com/questions/612328/difference-between-struct-and-typedef-struct-in-c
+ -->
+
+
+<h3 id="bitwise-operators">Bitwise Operators</h3>
+
+{{% code c %}}#include <stdio.h>
+
+int main() {
+  unsigned char x = 5;  // 00000101
+  unsigned char y = 9;  // 00001001
+
+  printf("%d\n", x & y);   // 00000001
+  printf("%d\n", x | y);   // 00001101
+  printf("%d\n", x ^ y);   // 00001100
+  printf("%d\n", ~x);      // 11111010
+  printf("%d\n", y << 1);  // 00010010
+  printf("%d\n", y >> 1);  // 00000100
+}{{% /code %}}
+
+
+<h3 id="sizeof">Sizeof</h3>
+
+{{% code c %}}#include <stdio.h>
+
+int main() {
+  // sizeof yields the size in bytes of the object representation of a type or the type of a expression
+  int i = 42;
+  int *ptr = &i;
+
+  printf("%zu\n", sizeof(i));    // 4
+  printf("%zu\n", sizeof(ptr));  // 8
+
+  struct point {
+    int x;
+    int *y;
+  };
+
+  printf("%zu\n", sizeof(struct point));  // 16
+
+  // sizeof primitive types
+  printf("%zu\n", sizeof(char));    // 1
+  printf("%zu\n", sizeof(short));   // 2
+  printf("%zu\n", sizeof(int));     // 4
+  printf("%zu\n", sizeof(long));    // 8
+  printf("%zu\n", sizeof(float));   // 4
+  printf("%zu\n", sizeof(double));  // 8
+}{{% /code %}}
+ 
+
+<h3 id="constants">Constants</h3>
+
+{{% code c %}}#include <stdio.h>
+
+int main() {
+  // const declares a variable whose value cannot be changed
+  const int i = 1;
+  // i = 2;  // error
+
+  int const j = 1;
+  // j = 2;  // error
+
+  // constants can be modified through pointers
+  int *ptr = &i;
+  *ptr = 2;  // warning
+
+  printf("%d\n", i);  // 2
+
+  // using const before a pointer declaration declare a pointer to a constant
+  const int *cptr = &i;
+
+  // *cptr = 2;  // error
+  cptr = &j;  // ok
+
+  // // using const after the type and asterisk declares a pointer to a constant
+  int * const ptrc = &i;
+
+  *ptrc = 2;  // ok
+  // ptrc = &j  // error
+}{{% /code %}}
+
+
+<h3 id="static">Static</h3>
+
+{{% code c %}}#include <stdio.h>
+
+// static global variables and functions are only visible within their translation unit (the .c file after header file have been included)
+static int i = 0;
+
+static void global() {
+  i++;
+}
+
+// a static local variable is persistent across function calls
+void local() {
+  int i = 0;
+  static int j = 0;
+
+  i++;
+  j++;
+
+  printf("i = %d, j = %d\n", i, j);
+}
+
+int main() {
+  global();
+  global();
+  global();
+  printf("%d\n", i);  // 3
+
+  local();  // i = 1, j = 1
+  local();  // i = 1, j = 2
+  local();  // i = 1, j = 3
+}{{% /code %}}
+
+
+<h3 id="assertions">Assertions</h3>
+
+{{% code c %}}#include <assert.h>
+
+int main() {
+  int x = 1;
+
+  assert (x == 1);  // ok
+  assert (x == 2);  // boom
+}{{% /code %}}
+
+
+<h3 id="heap-allocation">Heap Allocation</h3>
+
+{{% code c %}}#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+  int n = 5;
+  
+  // malloc() allocates a specified number of bytes and returns a void pointer to the allocated memory
+  int* ptr = (int *) malloc(n * sizeof(int));
+
+  // null indicates an error occurred when allocating memory 
+  if (ptr == NULL) {
+    printf("failed to allocate memory!\n");
+    return 1;
+  }
+
+  for (int i = 0; i < n; i++) {
+    *(ptr + i) = i;
+  }
+
+  for (int i = 0; i < n; i++) {
+    printf("%d\n", *(ptr + i));
+  }
+
+  // free() deallocates memory allocated by malloc(), calloc() or realloc()
+  free(ptr);
+
+  return 0;
+}{{% /code %}}
+
+{{% code c %}}#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+  int n = 5;
+
+  // calloc() dynamically allocates zero-initialized memory for a specified number of elements of a specified size
+  int* ptr = (int*) calloc(n, sizeof(int));
+
+  if (ptr == NULL) {
+    printf("failed to allocate memory!\n");
+    return 1;
+  }
+
+  for (int i = 0; i < n; i++) {
+    printf("%d\n", ptr[i]);  // 0 0 0 0 0
+  }
+
+  for (int i = 0; i < n; i++) {
+    ptr[i] = i;
+  }
+
+  for (int i = 0; i < n; i++) {
+    printf("%d\n", ptr[i]);  // 0 1 2 3 4 5
+  }
+
+  free(ptr);
+
+  return 0;
+}{{% /code %}}
+
+{{% code c %}}#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+  int n = 5;
+  int m = 10;
+
+  int* ptr = (int*) malloc(n * sizeof(int));
+
+  for (int i = 0; i < n; i++) {
+    ptr[i] = i;
+  }
+
+  // realloc() resizes a block of memory allocated by malloc or calloc
+  int* new_ptr = (int*) realloc(ptr, m);
+
+  for (int i = n; i < m; i++) {
+    ptr[i] = i;
+  }
+
+  for (int i = 0; i < m; i++) {
+    printf("%d\n", ptr[i]);
+  }
+
+  free(new_ptr);
+
+  return 0;
+}{{% /code %}}
+
+
+<h3 id="makefile">Makefile</h3>
+
+{{% code makefile %}}TARGET   = hello
+
+CC       = gcc
+CFLAGS   = -std=c99 -Wall -I.
+LFLAGS   = -Wall -lm -I.
+
+SRCDIR   = src
+OBJDIR   = obj
+
+SOURCES  := $(wildcard $(SRCDIR)/*.c)
+INCLUDES := $(wildcard $(SRCDIR)/*.h)
+OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+
+$(TARGET): $(OBJECTS)
+  $(CC) $(OBJECTS) $(LFLAGS) -o $@
+
+$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
+  $(CC) $(CFLAGS) -c $< -o $@
+
+.PHONY: clean
+clean:
+  rm -f $(OBJECTS)
+
+.PHONY: remove
+remove: clean
+  rm $(TARGET){{% /code %}}
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://beej.us/guide/bgc/">Beej's Guide to C Programming</a>
+  </li>
+  <li>
+    <a href="https://modernc.gforge.inria.fr/">Modern C</a>
+  </li>
+  <li>
+    <a href="http://c-faq.com/index.html">comp.lang.c FAQ</a>
+  </li>
+  <li>
+    <a href="https://en.cppreference.com/w/">cppreference.com</a>
+  </li>
+</ul>
+
+
+
+
+<!--
+
+<h3 id="variables">Variables</h3>
+
+<pre><code class="c">
+
+</code></pre>
+
+
 
 
 
@@ -214,479 +1002,14 @@ printf("byte 2: addr = %p, val = %d\n", (void*) (ptr + 1), *(ptr + 1));
 printf("byte 3: addr = %p, val = %d\n", (void*) (ptr + 2), *(ptr + 2));
 printf("byte 4: addr = %p, val = %d\n", (void*) (ptr + 3), *(ptr + 3));</code></pre>
 
-<!--
   Rather more surprising, at first sight, is the fact that a reference to a[i] can also be written as *(a+i). In evaluating a[i], C converts it to *(a+i) immediately; the two forms are equivalent. Applying the operator & to both parts of this equivalence, it follows that &a[i] and a+i are also identical: a+i is the address of the i-th element beyond a. As the other side of this coin, if pa is a pointer, expressions might use it with a subscript; pa[i] is identical to *(pa+i). In short, an array-and-index expression is equivalent to one written as a pointer and offset.
 
   https://eli.thegreenplace.net/2009/10/21/are-pointers-and-arrays-equivalent-in-c
 
   https://stackoverflow.com/questions/4622461/difference-between-pointer-index-and-pointer
--->
 
 
-<h3 id="constants">Constants</h3>
 
-<pre><code class="c">  // const declares a variable whose value cannot be changed
-const int i = 1;
-i = 2;  // error
-
-int const j = 1;
-j = 2;  // error
-
-// a constant can be modified through a pointer
-const int i = 1;
-
-int *ptr = &amp;i;
-*ptr = 2;  // warning
-
-printf("%d\n", i);  // 2
-
-// using const before a pointer declaration delcares a pointer to a constant
-const int i = 1;
-const int *ptr = &amp;i;
-
-*ptr = 2;  // error
-
-int j = 2;
-ptr = &amp;j;  // ok
-
-// using const after the type and asterisk declares a pointer to a constant
-int i = 1;
-int * const ptr = &amp;i;
-
-*ptr = 2;  // ok
-
-int j = 2;
-ptr = &j  // error</code></pre>
-
-
-<h3 id="function-pointers">Function Pointers</h3>
-
-<pre><code class="c">#include &lt;stdio.h>
-
-int sum(int n, int m) {
-  return n + m;
-}
-
-int apply(int (*ptr)(int, int), int n) {
-  return (*ptr)(n, n);
-}
-
-int main() {
-  int (*ptr)(int, int);
-  
-  ptr = &amp;sum;
-
-  printf("%d\n", (*ptr)(1, 2));  // 3
-
-  printf("%d\n", apply(ptr, 2));  // 4
-}</code></pre>
-
-
-
-<h3 id="operators">Operators</h3>
-
-<pre><code class="c">unsigned char x = 5;  // 00000101
-unsigned char y = 9;  // 00001001
-
-printf("%d\n", x & y);   // 00000001
-printf("%d\n", x | y);   // 00001101
-printf("%d\n", x ^ y);   // 00001100
-printf("%d\n", ~x);      // 11111010
-printf("%d\n", y &lt;&lt; 1);  // 00010010
-printf("%d\n", y >> 1);  // 00000100</code></pre>
-
-<pre><code class="c">#include &amp;stdio.h>
-
-// sizeof yields the size in bytes of the object representation of a type or the type of a expression
-
-printf("%zu\n", sizeof(char));    // 1
-printf("%zu\n", sizeof(short));   // 2
-printf("%zu\n", sizeof(int));     // 4
-printf("%zu\n", sizeof(long));    // 4
-printf("%zu\n", sizeof(float));   // 4
-printf("%zu\n", sizeof(double));  // 8
-
-printf("%zu\n", sizeof(char *));    // 8
-printf("%zu\n", sizeof(short *));   // 8
-printf("%zu\n", sizeof(int *));     // 8
-printf("%zu\n", sizeof(long *));    // 8
-printf("%zu\n", sizeof(float *));   // 8
-printf("%zu\n", sizeof(double *));  // 8
-
-int i = 42;
-int *ptr = &amp;i;
-
-printf("%zu\n", sizeof(i));    // 4
-printf("%zu\n", sizeof(ptr));  // 8
-
-struct point {
-  int x;
-  int y;
-};
-
-printf("%zu\n", sizeof(struct point));  // 8</code></pre>
-
-<!-- 
-  SIZE_T
-
-  size_t is the result type of the sizeof operator.
-
-Use size_t for variables that model size or index in an array. size_t conveys semantics: you immediately know it represents a size in bytes or an index, rather than just another integer.
-
-Also, using size_t to represent a size in bytes helps making the code portable.
- -->
-
-<h3 id="arrays">Arrays</h3>
-
-<pre><code class="c">// declaration
-int numbers[5];
-
-numbers[0] = 0;
-numbers[1] = 1;
-numbers[2] = 2;
-numbers[3] = 3;
-numbers[4] = 4;
-
-// declaration with initialization
-int numbers[] = {0, 1, 2, 3, 4};
-
-// iterate over array
-for (size_t i = 0; i &lt; sizeof(numbers); i++) {
-  numbers[i] = numbers[i] * 2;
-}
-
-printf("%d\n", numbers[2]);  // 4
-
-// if an array is partially initialized then elements that are not initialized receive the zero value of the appropriate type
-char zeros[1024] = {0};  // {0, ..., 0}</code></pre>
-
-<!--
-  When an array name is passed to a function, what is passed is the location of the initial element. Within the called function, this argument is a local variable, and so an array name parameter is a pointer, that is, a variable containing an address.
-
-  When passing an array as a parameter, this
-
-  void arraytest(int a[])
-
-  means exactly the same as
-
-  void arraytest(int *a)
-
-  so you are modifying the values in main.
-
-  For historical reasons, arrays are not first class citizens and cannot be passed by value.
--->
-
-
-<h3 id="strings">Strings</h3>
-
-<pre><code class="c">#include &amp;stdio.h>
-#include &amp;string.h>
-
-// a string is an array of characters terminated with \0
-
-// when used to initialize a char[] a string literal provides a shortcut to initialize the elements of the array
-char arr[] = "hello";
-
-// shortcut for
-// char arr[] = {'h', 'e', 'l', 'l', 'o', '\0' }
-
-// the array can be modified like any other array
-arr[0] = 'H';
-
-printf("%zu\n", sizeof(arr));  // 6
-
-// everywhere else a string literal generates unamed static array of characters that gives undefined behavior if modified
-char *ptr = "hello";
-
-printf("%zu\n", sizeof(ptr));  // 8 (64-bit)
-
-// the strlen() function can be used in either case
-printf("%zu\n", strlen(arr));  // 5
-printf("%zu\n", strlen(ptr));  // 5</code></pre>
-
-<!-- 
-  https://stackoverflow.com/questions/1704407/what-is-the-difference-between-char-s-and-char-s
--->
-
-
-<h3 id="functions">Functions</h3>
-
-<pre><code class="c">int max(int x, int y) {
-  if (x > y) {
-    return x;
-  }
-
-  return y;
-}
-
-void inc(int* x) {
-  *x += 1;
-}
-
-// const parameters cannot be modified
-void count(const int to) {
-  for (int i = 0; i &lt; to; i++) {
-    printf("%d", i);
-  }
-}
-
-// arrays passed to functions are converted to pointers
-float avg(int n, float arr[]) {
-  float total = 0;
-  
-  for (int i = 0; i &lt; n; i++) {
-    total += arr[i];
-  }
-
-  return total / n;
-}</code></pre>
-
-
-
-<h3 id="variadic-functions">Variadic Functions</h3>
-
-<pre><code class="c">#include &lt;stdio.h>
-#include &lt;stdarg.h>
-  
-int sum(int count, ...) {	
-  int total = 0;
-  va_list args;
-
-  va_start(args, count);
-
-  for (int i = 0; i &lt; count; i++) {
-    int temp = va_arg(args, int);
-    total += temp;
-  }
-
-  va_end(args);
-
-  return total;
-}
-
-// ...
-
-int total = sum(3, 1, 2, 3);
-printf("%d\n", total);  // 6</code></pre>
-
-
-
-<h3 id="static">Static</h3>
-
-<pre><code class="c">#include &lt;stdio.h>
-
-// static global variables and functions are only visible within their translation unit (the .c file after header file have been included)
-static int i = 0;
-
-static void global() {
-  i++;
-}
-
-// a static local variable is persistent across function calls
-void local() {
-  int i = 0;
-  static int j = 0;
-
-  i++;
-  j++;
-
-  printf("i = %d, j = %d\n", i, j);
-}
-
-local();  // i = 1, j = 1
-local();  // i = 1, j = 2
-local();  // i = 1, j = 3</code></pre>
-
-
-<h3 id="conditionals">Conditionals</h3>
-
-<pre><code class="c">int x = 0;
-
-if (!x) {
-  printf("zero\n");
-} else if (x > 0) {
-  printf("positive\n");
-} else {
-  printf("negative\n");
-}
-
-// ternary operator
-x > 0 ? printf("positive\n") : printf("negative\n");</code></pre>
-
-
-
-<h3 id="switch">Switch</h3>
-
-<pre><code class="c">char answer = 'y';
-
-switch (answer) {
-  case 'y':
-    printf("Yes!\n");
-    break;
-  case 'n':
-    printf("No!\n");
-    break;
-  default:
-    printf("Huh?\n");
-    break;
-}</code></pre>
-
-
-
-<h3 id="iteration">Iteration</h3>
-
-<pre><code class="c">int i = 0;
-while (i &lt; 5) {
-  printf("%d\n", i++);
-}
-
-for (int i = 0; i &lt; 5; i++) {
-  printf("%d\n", i);
-}</code></pre>
-
-
-<h3 id="goto">Goto</h3>
-
-<pre><code class="c">// goto causes execution to jump to a specified label
-  goto skip;
-  printf("here\n");
-skip:
-  printf("there\n");
-
-// labels have function scope so you can only goto labels that are in the same function
-again:
-  printf("again!\n");
-  goto again;
-
-// this can be used to bail out of nested loops
-  while (1) {
-    while (1) {
-      goto bail;
-    }
-  }
-bail:
-  printf("escaped!");</code></pre>
-
-<h3 id="enumerations">Enumerations</h3>
-
-<pre><code class="c">enum day {
-  MONDAY,
-  TUESDAY,
-  WEDNESDAY,
-  THURSDAY,
-  FRIDAY,
-  SATURDAY,
-  SUNDAY
-};
-
-// ...
-
-for (int i = MONDAY; i &lt;= SUNDAY; i++) {
-  printf("%d\n", i);
-}</code></pre>
-
-
-
-<h3 id="structures">Structures</h3>
-
-<pre><code class="c">struct point {
-  int x;
-  int y;
-};
-
-// ...
-
-struct point p;
-
-// initialization with struct literal;
-// struct point p = {0, 0};
-
-p.x = 1;
-(&p)->y = 2;
-
-printf("(%d, %d)\n", p.x, (&amp;p)->y);  // (1, 2)
-
-struct point* ptr = &amp;p;
-
-ptr->x = 3;
-(*ptr).y = 4;
-
-printf("(%d, %d)\n", ptr->x, (*ptr).y);  // (3, 4)
-
-// assignment performs a memory copy
-struct point q;
-
-q = p;
-p.x = 2;
-
-printf("(%d, %d)\n", p.x, p.y);  // (2, 4)
-printf("(%d, %d)\n", q.x, q.y);  // (3, 4)</code></pre>
-
-
-
-<h3 id="unions">Unions</h3>
-
-<pre><code class="c">union various {
-  int i;
-  float f;
-  char c[20];
-};
-
-// ...
-
-union various v;
-printf("%d\n", sizeof(v));  // 20</code></pre>
-
-
-
-<h3 id="typedef">Typedef</h3>
-
-<pre><code class="c">// there is a separate namespace for tag identifiers (for struct/union/enum)
-struct Point {
-  int x;
-  int y;
-};
-
-// so you have to refer to those types with a prefix
-struct Point p;
-
-// typedef can be used to avoid this
-typedef struct {
-  int x;
-  int y;
-} Point;</code></pre>
-
-<pre><code class="c">// typedef creates an alias for an existing type.
-typedef int count;
-
-count c = 0;
-
-// this can be used to avoid needing to refer to a struct with the struct keyword
-struct point {
-  int x;
-  int y;
-};
-
-typedef struct point point;
-
-struct point p = { 1, 2 };
-point q = { 3, 4 };
-
-// frequently this is written in one line
-typedef struct point {
-  int x;
-  int y;
-} point;
-
-// an anonymous structure can also be used
-typedef struct {
-  int x;
-  int y;
-} point;</code></pre>
-
-<!-- 
-  https://stackoverflow.com/questions/612328/difference-between-struct-and-typedef-struct-in-c
--->
 
 
 <h3 id="preprocessor">Preprocessor</h3>
@@ -703,161 +1026,13 @@ typedef struct {
 
 #endif</code></pre>
 
-<!--
   A #define line defines a symbolic name or symbolic constant to be a particular string of characters. Thereafter, any occurrence of name (not in quotes and not part of another name) will be replaced by the corresponding replacement text. The name has the same form as a variable name: a sequence of letters and digits that begins with a letter. The replacement text can be any sequence of characters; it is not limited to numbers.
 
   #define LOWER 0
   #define UPPER 300
-  #define STEP  20
--->
+  #define STEP  2
 
 
-
-<h3 id="assertions">Assertions</h3>
-
-<pre><code class="c">#include &lt;assert.h>
-
-int x = 1;
-assert (x == 2);  // boom</code></pre>
-
-
-
-<h3 id="heap-allocation">Heap Allocation</h3>
-
-<pre><code class="c">#include&lt;stdio.h>
-#include&lt;stdlib.h>
-
-// malloc() allocates a specified number of bytes and returns a void pointer to the allocated memory
-int n = 5;
-
-int* ptr = (int*) malloc(n * sizeof(int));
-
-// null indicates an error occurred when allocating memory 
-if (ptr == NULL) {
-  printf("failed to allocate memory!\n");
-} else {
-  for (int i = 0; i &lt; n; i++) {
-    *(ptr + i) = i;
-  }
-
-  for (int i = 0; i &lt; n; i++) {
-    printf("%d\n", *(ptr + i));
-  }
-
-  // free() deallocates memory allocated by malloc(), calloc() or realloc()
-  free(ptr);
-}</code></pre>
-
-<pre><code class="c">#include&lt;stdio.h>
-#include&lt;stdlib.h>
-
-// calloc() dynamically allocates zero-initialized memory for a specified number of elements of a specified size
-
-int n = 5;
-
-int* ptr = (int*) calloc(n, sizeof(int));
-
-if (ptr == NULL) {
-  printf("failed to allocate memory!\n");
-} else {
-  for (int i = 0; i &lt; n; i++) {
-    printf("%d\n", ptr[i]);  // 0 0 0 0 0
-  }
-
-  for (int i = 0; i &lt; n; i++) {
-    ptr[i] = i;
-  }
-
-  for (int i = 0; i &lt; n; i++) {
-    printf("%d\n", ptr[i]);  // 0 1 2 3 4 5
-  }
-
-  free(ptr);
-}</code></pre>
-
-<pre><code class="c">// realloc() resizes a block of memory allocated by malloc or calloc
-
-int n = 5;
-int m = 10;
-
-int* ptr = (int*) malloc(n * sizeof(int));
-
-for (int i = 0; i &lt; n; i++) {
-  ptr[i] = i;
-}
-
-int* new_ptr = (int*) realloc(ptr, m);
-
-for (int i = n; i &lt; m; i++) {
-  ptr[i] = i;
-}
-
-for (int i = 0; i &lt; m; i++) {
-  printf("%d\n", ptr[i]);
-}
-
-free(new_ptr);</code></pre>
-
-
-
-<h3 id="file-io">File IO</h3>
-
-<pre><code class="c">#include &amp;stdio.h>
-
-// writing
-FILE *fp = fopen("./example.txt", "w");
-
-fputc('a', fp);  
-fputc('p', fp);  
-fputc('p', fp);  
-fputc('l', fp);  
-fputc('e', fp);  
-fputc('\n', fp);  
-
-fputs("orange\n", fp);
-
-fprintf(fp, "banana\n");
-
-fclose(fp);
-
-// reading
-FILE *fp = fopen("./example.txt", "r");
-
-char c;
-while ((c = fgetc(fp)) != '\n')
-  printf("%c\n", c);
-
-char buf[32];
-fgets(buf, 32, fp);
-printf("%s", buf);
-
-fscanf(fp, "%s", buf);
-printf("%s", buf);
-
-fclose(fp);</code></pre>
-
-<ul>
-  <li>
-    <code>r</code>: Opens an existing text file for reading.
-  </li>
-  <li>
-    <code>w</code>: Opens a text file for writing. The file will be created if it does not exist.
-  </li>
-  <li>
-    <code>a</code>: Opens a text file for appending. The file will be created if it does not exist.
-  </li>
-  <li>
-    <code>r+</code>: Opens a text file for reading and writing.
-  </li>
-  <li>
-    <code>w+</code>: Opens a text file for both reading and writing. The file will be truncated or created if it does not exist.
-  </li>
-  <li>
-    <code>a+</code>: Opens a text file for both reading and appending. The file will be created if it does not exist.
-  </li>
-</ul>
-
-<!--
 // MMAP
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -900,29 +1075,6 @@ int main() {
 // https://www.youtube.com/watch?v=m7E9piHcfr4
 // https://beej.us/guide/bgipc/html/multi/mmap.html
 
-
-FORMATTED OUTPUT
-
-%d print as decimal integer
-%6d print as decimal integer, at least 6 characters wide
-%f print as floating point
-%6f print as floating point, at least 6 characters wide
-%.2f print as floating point, 2 characters after decimal point
-%6.2f print as floating point, at least 6 wide and 2 after decimal point
-
-Among others, printf also recognizes %o for octal, %x for hexadecimal, %c for character, %s for character string and %% for itself.
-
-
-
-CHARACTER INPUT AND OUTPUT
-
-The model of input and output supported by the standard library is very simple. Text input or output, regardless of where it originates or where it goes to, is dealt with as streams of characters. A text stream is a sequence of characters divided into lines; each line consists of zero or more characters followed by a newline character.
-
-
-
-MAKE
-
-https://stackoverflow.com/questions/30573481/path-include-and-src-directory-makefile
 
 
 
@@ -1076,21 +1228,4 @@ PTHREAD
 //   printf("done!\n");
 // }
 
- -->
-
-
-
-
-<h3 id="resources">Resources</h3>
-
-<ul>
-  <li>
-    <a href="https://modernc.gforge.inria.fr/">Modern C</a>
-  </li>
-  <li>
-    <a href="http://c-faq.com/index.html">comp.lang.c Frequently Asked Questions</a>
-  </li>
-  <li>
-    <a href="https://en.cppreference.com/w/">cppreference.com</a>
-  </li>
-</ul>
+-->
