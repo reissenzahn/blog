@@ -4,24 +4,29 @@
 #include <string.h>
 
 int main() {
-
   // create a new epoll instance
-  int epoll_fd = epoll_create1(0);
+  int epfd = epoll_create1(0);
   if (epoll_fd == -1) {
-    fprintf(stderr, "failed to create epoll fd\n");
+    perror("epoll_create1");
     return 1;
   }
 
-
   struct epoll_event event;
-  event.events = EPOLLIN;
-  event.data.fd = STDIN_FILENO;
+  event.events = EPOLLIN;        // input events
+  event.data.fd = STDIN_FILENO;  // stdin
 
-  
+  // add stdin to the epoll instance
+  if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &event)) {
+    perror("epoll_ctl");
+    close()
+    return 1;
+  };
 
+  // 
 
+  // close epoll instance
   if (close(epoll_fd)) {
-    fprintf(stderr, "failed to close epoll fd\n");
+    perror("close");
     return 1;
   }
 

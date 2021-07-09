@@ -1,9 +1,12 @@
 <footer class="footer">
-  <p class="footer__copyright">&copy; 2020</p>
+  <p class="footer__copyright">&copy; <span id="footer__year"></span></p>
   <!-- <p class="footer__copyright" onclick="startBoids(); this.onclick=null;">&copy; 2020</p> -->
-  <div>
+  <!-- <div> -->
     <!-- <span style="font-family: serif; font-size: 1rem; margin-left: 0.25rem">☼</span>
     <span style="font-family: serif; font-size: 1rem; margin-left: 0.25rem">☼</span>
     <span style="font-family: serif; font-size: 1rem; margin-left: 0.25rem">☼</span> -->
-  </div>
+  <!-- </div> -->
+  <script>
+    document.getElementById("footer__year").innerHTML = new Date().getFullYear();
+  </script>
 </footer>
