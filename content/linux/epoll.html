@@ -1,5 +1,5 @@
 ---
-title: "epoll"
+title: "Epoll"
 date: 2021-02-22
 draft: false
 ---
@@ -75,12 +75,15 @@ struct epoll_event {
 </p>
 
 <p>
-  The {{% inline-code %}}epoll_wait(){{% /inline-code %}} call waits for events on an epoll instance. The buffer pointed to by  is used to return information from the ready list about file descriptors in the interest list that have some events available. Up to {{% inline-code %}}maxevents{{% /inline-code %}} are returned and the call will block for {{% inline-code %}}timeout{{% /inline-code %}} milliseconds.
+  The {{% inline-code %}}epoll_wait(){{% /inline-code %}} call waits for events on an epoll instance. The buffer pointed to by  is used to return information from the ready list about file descriptors in the interest list that have some events available. Up to {{% inline-code %}}maxevents{{% /inline-code %}} are returned and the call will block for {{% inline-code %}}timeout{{% /inline-code %}} milliseconds. The call returns the number of file descriptors ready for the requested I/O or -1 on failure.
 </p>
 
-<!-- 
+{{% code c %}}int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);{{% /code %}}
 
- -->
+
+<h3 id="reading-from-stdin">Reading from Stdin</h3>
+
+{{% code c %}}{{% /code %}}
 
 
 <h3 id="introduction">Level- and Edge-triggered</h3>
@@ -90,11 +93,22 @@ struct epoll_event {
 </p>
 
 
+
+epoll provides both edge-triggered and level-triggered modes. In edge-triggered mode, a call to epoll_wait will return only when a new event is enqueued with the epoll object, while in level-triggered mode, epoll_wait will return as long as the condition holds.
+
+For instance, if a pipe registered with epoll has received data, a call to epoll_wait will return, signaling the presence of data to be read. Suppose, the reader only consumed part of data from the buffer. In level-triggered mode, further calls to epoll_wait will return immediately, as long as the pipe's buffer contains data to be read. In edge-triggered mode, however, epoll_wait will return only once new data is written to the pipe.
+
+
+
+
 <h3 id="resources">Resources</h3>
 
 <ul>
   <li>
-    <a href="https://idea.popcount.org/2017-02-20-epoll-is-fundamentally-broken-12">epoll is Fundamentally Broken</a>
+    <a href="https://www.suchprogramming.com/epoll-in-3-easy-steps/">Epoll in 3 Easy Steps!</a>
+  </li>
+  <li>
+    <a href="https://idea.popcount.org/2017-02-20-epoll-is-fundamentally-broken-12">Epoll is Fundamentally Broken</a>
   </li>
   <li>
     <a href="https://www.youtube.com/watch?v=l6XQUciI-Sc">Ubuntu Slaughters Kittens</a>

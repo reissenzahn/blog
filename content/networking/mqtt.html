@@ -1,0 +1,166 @@
+---
+title: "MQTT"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  MQTT is a lightweight publish/subscribe binary protocol that transports messages between devices. Due to its minimal packet overhead, MQTT performs well when transferring data over the wire. The protocol is also easy to implement on the client side which makes it suited for situations where a small code footprint is required and/or network bandwidth is at a premium.
+</p>
+
+
+<h3 id="publish-subscribe">Publish/Subscribe</h3>
+
+<p>
+  The publish/subscribe model decouples clients that send messages (publishers) from clients that receive messages (subscribers) by means of a broker. Publishers produce messages to the broker which distributes those messages to subscribers. Removing direct communication between senders and receivers allows publishers and subscribers to not have to necessarily know about each other or run at the same time.
+</p>
+
+<p>
+  The broker controls which messages a subscriber receives using a subject-based filtering. Messages are published to named topics while clients subscribe to topics to receive all messages published to them.
+</p>
+
+
+<!--
+  MQTT requires an underlying transport that provides an ordered, lossless and bidirectional byte stream. As such, the protocol typically runs over TCP/IP. TCP ports 8883 and 1883 are registered with IANA for MQTT TLS and non TLS communication respectively.
+-->
+
+<!-- 
+  When we talk about a client, we almost always mean an MQTT client. Both publishers and subscribers are MQTT clients. The publisher and subscriber labels refer to whether the client is currently publishing messages or subscribed to receive messages (publish and subscribe functionality can also be implemented in the same MQTT client). An MQTT client is any device (from a micro controller up to a full-fledged server) that runs an MQTT library and connects to an MQTT broker over a network.
+ -->
+
+
+ <h3 id="connect">CONNECT</h3>
+
+<p>
+  The MQTT protocol consists of exchanging a series of control packets. Each control packet consists of up to three parts: a fixed header, variable header and payload.
+</p>
+
+{{% code text %}}| bit    | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+|--------|---------------|---------------|
+| byte 1 | MQTT type     |  Flags        |
+|--------|-------------------------------|
+| byte 2 |                               |
+|  .     |      Remaining Length         |
+|  .     |                               |
+| byte 5 |                               |{{% /code %}}
+
+
+
+<h3 id="connections">Connections</h3>
+
+<p>
+  After a network connection is established by a client to a broker, the first message sent from to the broker must be a CONNECT message.
+</p>
+
+{{% code text %}}CONNECT{{% /code %}}
+
+<p>
+  The variable header consists of the protocol name "MQTT", a protocol level of 4 for MQTT 3.1.1, connect flags for specifying various parameters for the connection and keep alive time interval in seconds.
+</p>
+
+<p>
+  The connect flags specify various parameters for the MQTT connection and also indicates the presence or absence of fields in the payload.
+</p>
+
+<ul>
+  <li>
+    Clean session: 
+  </li>
+  <li>
+    Will flag: Set to indicate that, if the connection request is accepted, a will message must be stored and published when the connection is closed (unless the will message has been deleted on receipt of a DISCONNECT packet).
+  </li>
+  <li>
+    Will QoS: Specifies the QoS level to use when publishing the will message.
+  </li>
+  <li>
+    Username flag: Set to indicate that a username is present in the payload.
+  </li>
+  <li>
+    Password flag: Set to indicate that a password is present in the payload.
+  </li>
+</ul>
+
+
+
+<p>
+  The broker responds with a CONNACK message and a status code. If the CONNECT message is malformed or too much time passes between opening a network socket and sending the CONNECT message then the broker closes the connection.
+</p>
+
+
+
+
+<h3 id="connack">CONNACK</h3>
+
+<p>
+  The CONNACK packet is the first packet sent by the broker in response to a CONNECT. If the client does not receive a CONNACK packet within a reasonable amount of time then it should close the connection.
+</p>
+
+
+<p>
+  The 
+</p>
+
+
+
+
+<h3 id="subscribing-to-topics">Subscribing to Topics</h3>
+
+<p>
+  The SUBSCRIBE packet is sent from a client to the broker to register its interest in one or more topics.
+</p>
+
+
+
+
+
+
+<h3 id="keep-alive">Keep Alive</h3>
+
+<p>
+  A PINGREQ packet is sent from a client to the broker to either indicate that it is alive, check whether the broker is alive or check whether the network connection is active. It has no variable header or payload.
+</p>
+
+<p>
+
+</p>
+
+
+
+
+
+<h3 id="quality-of-service">Quality of Service</h3>
+
+<p>
+</p>
+
+<ul>
+  <li>
+    At most once delivery (QoS=0): The message arrives at the receiver either once or not at all. The sender must send a PUBLISH packet with QoS=0 and DUP=0 . No response is sent by the receiver and no retry is performed by the sender.
+  </li>
+  <li>
+    At least once delivery (QoS=1): The message arrives at the receiver at least once. The sender must send a PUBLISH packet containing an unused packet identifier with QoS=1 and DUP=0.  The receiver must respond with a PUBACK packet containing the packet identifier.
+  </li>
+</ul>
+
+<!-- 
+    MQTT delivers Application Messages according to the Quality of Service (QoS) levels defined here. The delivery protocol is symmetric, in the description below the Client and Server can each take the role of either Sender or Receiver. The delivery protocol is concerned solely with the delivery of a message from a single sender to a single Receiver.
+ -->
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+</ul>

@@ -9,7 +9,7 @@ draft: false
     <a href="#introduction">Introduction</a>
   </li>
   <li>
-    <a href="#concepts">Concepts</a>
+    <a href="#docker-cli">Docker CLI</a>
   </li>
   <li>
     <a href="#dockerfile">Dockerfile</a>
@@ -71,55 +71,22 @@ other layers were already downloaded previously when running a different contain
 image that also contains the same layers.
 -->
 
-
-<h3 id="concepts">Concepts</h3>
-
-<h4>Image</h4>
-
-<p>
-  An image is a read-only template with instructions for creating a container. It contains the filesystem that will be available to the application and other metadata such as the path to the executable that should be executed when the image is run. Often, an image is based on another image with some additional customization. To build an image you create a Dockerfile which defines the steps needed to create the image and run it. Each instruction creates a layer in the image. When you change the Dockerfile and rebuild the image, only those layers which have changed are rebuilt.
-</p>
-
 <!-- 
- -->
+<ul>
+  <li>
+    An image is a read-only template with instructions for creating a container. It contains the filesystem that will be available to the application and other metadata such as the path to the executable that should be executed when the image is run.
+  </li>
+  <li>
+    To build an image you create a Dockerfile which defines the steps needed to create the image and run it. Each instruction creates a layer in the image. When you change the Dockerfile and rebuild the image, only those layers which have changed are rebuilt.
+  </li>
+  <li>
+    A container is a runnable instance of an image defined by its image as well as any provided configuration. Fundamentally, a container is an isolated running process. Each container interacts with its own private filesystem that is provided by the image.
+  </li>
+  <li>
+    A Docker Registry is a repository that stores your Docker images and facilitates easy sharing of those images between different people and computers.
+  </li>
+</ul> -->
 
-
-<h4>Container</h4>
-
-<p>
-
-</p>
-
-<!--
-  A container is a runnable instance of an image defined by its image as well as any provided configuration. A container runs natively on Linux and shares the kernel of the host machine with other containers. It runs a discrete process, taking no more memory than any other executable, making it lightweight. Fundamentally, a container is an isolated running process. Each container interacts with its own private filesystem that is provided by the image.
-
-  A Docker-based container is a regular Linux container created from a Docker-based container image. A running container is a process running on the host running Docker, but it’s completely isolated from both the host and all other processes running on it. The process is also resource-constrained, meaning it can only access and use the amount of resources (CPU, RAM, and so on) that are allocated to it.
- -->
-
-
-<h4>Registry</h4>
-
-<!-- 
-  IMAGES
-  
-  A Docker-based container image is something you package your application and its environment into. It contains the filesystem that will be available to the application and other metadata, such as the path to the executable that should be executed when the image is run.
-
-  REGISTRY
-
-  A Docker Registry is a repository that stores your Docker images and facilitates easy sharing of those images between different people and computers. When you build your image, you can either run it on the computer you’ve built it on, or you can push (upload) the image to a registry and then pull (download) it on another computer and run it there. Certain registries are public, allowing anyone to pull images from it, while others are private, only accessible to certain people or machines.
-
-
-
-  1. Developer tells Docker to build and push image.
-  2. Docker builds image.
-  3. Docker pushes image to registry.
-  4. Developer tells Docker on production machine to run image.
-  5. Docker pulls image from registry.
-  6. Docker runs container from image.
-
-
-  The developer first builds an image and then pushes it to a registry. The image is thus available to anyone who can access the registry. They can then pull the image to any other machine running Docker and run the image. Docker creates an isolated container based on the image and runs the binary executable specified as part of the image.  
--->
 
 
 <h3 id="docker-cli">Docker CLI</h3>

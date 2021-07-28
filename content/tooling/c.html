@@ -57,10 +57,16 @@ draft: false
     <a href="#static">Static</a>
   </li>
   <li>
-    <a href="#assertions">Assertions</a>
+    <a href="#pointer-arithmetic">Pointer Arithmetic</a>
   </li>
   <li>
     <a href="#heap-allocation">Heap Allocation</a>
+  </li>
+  <li>
+    <a href="#assertions">Assertions</a>
+  </li>
+  <li>
+    <a href="#gcc">GCC</a>
   </li>
   <li>
     <a href="#makefile">Makefile</a>
@@ -689,19 +695,16 @@ int main() {
 {{% code c %}}#include <stdio.h>
 
 int main() {
-  // sizeof yields the size in bytes of the object representation of a type or the type of a expression
-  int i = 42;
-  int *ptr = &i;
-
-  printf("%zu\n", sizeof(i));    // 4
-  printf("%zu\n", sizeof(ptr));  // 8
-
   struct point {
     int x;
     int *y;
   };
 
+  struct point p;
+
+  // sizeof yields the size in bytes of the object representation of a type or the an expression
   printf("%zu\n", sizeof(struct point));  // 16
+  printf("%zu\n", sizeof(p));             // 16
 
   // sizeof primitive types
   printf("%zu\n", sizeof(char));    // 1
@@ -779,16 +782,68 @@ int main() {
 }{{% /code %}}
 
 
-<h3 id="assertions">Assertions</h3>
+<h3 id="pointer-arithmetic">Pointer Arithmetic</h3>
 
-{{% code c %}}#include <assert.h>
+{{% code c %}}// there is a strong relationship between pointers and arrays
+int arr[5];
 
-int main() {
-  int x = 1;
+for (int i = 0; i < 5; i++) {
+  arr[i] = i;
+}
+  
+// any operation that can be achieved by array subscripting can also be done with pointers  
+int *ptr;
 
-  assert (x == 1);  // ok
-  assert (x == 2);  // boom
-}{{% /code %}}
+// set ptr to point to the first element of arr
+ptr = &arr[0];
+
+// the name of an array is a synonym for the location of the initial element
+ptr = arr;
+
+// ptr + i points to the i-th object beyond ptr
+printf("%d\n", *(ptr + 0));  // 0
+printf("%d\n", *(ptr + 1));  // 1
+printf("%d\n", *(ptr + 2));  // 2
+printf("%d\n", *(ptr + 3));  // 3
+printf("%d\n", *(ptr + 4));  // 4{{% /code %}}
+
+{{% code c %}}// pointer arithmetic and array subscripting
+int arr[] = {0, 1, 2, 3, 4, 5};
+int n = 2;
+
+int* ptr = arr;
+
+printf("addr = %p, val = %d\n", (void*) (ptr + n), *(ptr + n));
+printf("addr = %p, val = %d\n", (void*) &ptr[n], ptr[n]);
+printf("addr = %p, val = %d\n", (void*) &n[ptr], n[ptr]);
+
+// array subscripting and pointer arithmetic work on both arrays any pointers
+int arr[] = {0, 1, 2, 3, 4, 5};
+int* ptr = arr;
+
+printf("%d\n", arr[2]);  // 2
+printf("%d\n", ptr[2]);  // 2
+
+printf("%d\n", *(arr + 2));  // 2
+printf("%d\n", *(ptr + 2));  // 2
+
+// we can use a char* to point to the bytes of an int
+int x = 0x04030201;
+char* ptr = &amp;x;
+
+printf("byte 1: addr = %p, val = %d\n", (void*) ptr, *ptr);
+printf("byte 2: addr = %p, val = %d\n", (void*) (ptr + 1), *(ptr + 1));
+printf("byte 3: addr = %p, val = %d\n", (void*) (ptr + 2), *(ptr + 2));
+printf("byte 4: addr = %p, val = %d\n", (void*) (ptr + 3), *(ptr + 3));{{% /code %}}
+
+<!--
+  Rather more surprising, at first sight, is the fact that a reference to a[i] can also be written as *(a+i). In evaluating a[i], C converts it to *(a+i) immediately; the two forms are equivalent. Applying the operator & to both parts of this equivalence, it follows that &a[i] and a+i are also identical: a+i is the address of the i-th element beyond a. As the other side of this coin, if pa is a pointer, expressions might use it with a subscript; pa[i] is identical to *(pa+i). In short, an array-and-index expression is equivalent to one written as a pointer and offset.
+
+  https://eli.thegreenplace.net/2009/10/21/are-pointers-and-arrays-equivalent-in-c
+
+  https://stackoverflow.com/questions/4622461/difference-between-pointer-index-and-pointer
+-->
+
 
 
 <h3 id="heap-allocation">Heap Allocation</h3>
@@ -883,6 +938,63 @@ int main() {
 }{{% /code %}}
 
 
+
+<h3 id="assertions">Assertions</h3>
+
+<!-- 
+  
+  static assertions are checked at compile time
+
+  if the value of the integer constant is equal to 0 then the compiler will produce a diagnostic message
+  
+  a static assertion is a declaration so it can appear at file scpe
+
+  #include <assert.h>
+  
+    struct packed {
+    unsigned int i;
+    char *p;
+  };
+
+  static_assert(sizeof(struct packet) == sizeof(unsigned int) + sizeof(char *), "struct packed must not have any padding")
+
+
+  runtime assertions are checked during program execution
+
+
+-->
+
+{{% code c %}}#include <assert.h>
+
+int main() {
+  int x = 1;
+
+  assert (x == 1);  // ok
+  assert (x == 2);  // boom
+}{{% /code %}}
+
+
+
+<h3 id="gcc">GCC</h3>
+
+{{% code text %}}// compile single file into executable
+$ gcc -o hello hello.c
+$ ./hello
+
+// compile with warnings
+$ gcc -Wall hello.c
+
+// specify include directory
+$ gcc -I../include hello.c
+
+// compile multiple files and link into executable
+$ gcc -c foo.c
+$ gcc -c bar.c
+$ gcc -c main.c
+$ gcc -o foobar foo.o bar.o main.o{{% /code %}}
+
+
+
 <h3 id="makefile">Makefile</h3>
 
 {{% code makefile %}}TARGET   = hello
@@ -945,68 +1057,6 @@ remove: clean
 
 
 
-
-<h3 id="pointer-arithmetic">Pointer Arithmetic</h3>
-
-<pre><code class="c">// there is a strong relationship between pointers and arrays
-
-int arr[5];
-
-for (int i = 0; i &lt; 5; i++) {
-  arr[i] = i;
-}
-  
-// any operation that can be achieved by array subscripting can also be done with pointers  
-int *ptr;
-
-// set ptr to point to the first element of arr
-ptr = &arr[0];
-
-// the name of an array is a synonym for the location of the initial element
-ptr = arr;
-
-// ptr + i points to the i-th object beyond ptr
-printf("%d\n", *(ptr + 0));  // 0
-printf("%d\n", *(ptr + 1));  // 1
-printf("%d\n", *(ptr + 2));  // 2
-printf("%d\n", *(ptr + 3));  // 3
-printf("%d\n", *(ptr + 4));  // 4</code></pre>
-
-<pre><code class="c">
-// pointer arithmetic and array subscripting
-int arr[] = {0, 1, 2, 3, 4, 5};
-int n = 2;
-
-int* ptr = arr;
-
-printf("addr = %p, val = %d\n", (void*) (ptr + n), *(ptr + n));
-printf("addr = %p, val = %d\n", (void*) &ptr[n], ptr[n]);
-printf("addr = %p, val = %d\n", (void*) &n[ptr], n[ptr]);
-
-// array subscripting and pointer arithmetic work on both arrays any pointers
-int arr[] = {0, 1, 2, 3, 4, 5};
-int* ptr = arr;
-
-printf("%d\n", arr[2]);  // 2
-printf("%d\n", ptr[2]);  // 2
-
-printf("%d\n", *(arr + 2));  // 2
-printf("%d\n", *(ptr + 2));  // 2
-
-// we can use a char* to point to the bytes of an int
-int x = 0x04030201;
-char* ptr = &amp;x;
-
-printf("byte 1: addr = %p, val = %d\n", (void*) ptr, *ptr);
-printf("byte 2: addr = %p, val = %d\n", (void*) (ptr + 1), *(ptr + 1));
-printf("byte 3: addr = %p, val = %d\n", (void*) (ptr + 2), *(ptr + 2));
-printf("byte 4: addr = %p, val = %d\n", (void*) (ptr + 3), *(ptr + 3));</code></pre>
-
-  Rather more surprising, at first sight, is the fact that a reference to a[i] can also be written as *(a+i). In evaluating a[i], C converts it to *(a+i) immediately; the two forms are equivalent. Applying the operator & to both parts of this equivalence, it follows that &a[i] and a+i are also identical: a+i is the address of the i-th element beyond a. As the other side of this coin, if pa is a pointer, expressions might use it with a subscript; pa[i] is identical to *(pa+i). In short, an array-and-index expression is equivalent to one written as a pointer and offset.
-
-  https://eli.thegreenplace.net/2009/10/21/are-pointers-and-arrays-equivalent-in-c
-
-  https://stackoverflow.com/questions/4622461/difference-between-pointer-index-and-pointer
 
 
 

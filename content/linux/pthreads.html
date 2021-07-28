@@ -1,0 +1,135 @@
+---
+title: "Pthreads"
+date: 2021-02-22
+draft: false
+---
+
+<ul class="article__contents">
+  <li>
+    <a href="introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="usage">Usage</a>
+  </li>
+  <li>
+    <a href="resources">Resources</a>
+  </li>
+</ul>
+
+<!-- 
+  {{% inline-code %}}{{% /inline-code %}}
+  {{% code c %}}{{% /code %}}
+ -->
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Threads are a mechanism that permits an application to perform multiple tasks concurrently. A single process can contain multiple independently executing threads that all share the same global memory. If one thread is blocked on I/O other threads are still eligible to execute. Sharing information between threads is easy and fast as it just involves copying data into shared variables. Furthermore, thread creation is fast than process creation. Threads are identified by a unique thread identifier.
+</p>
+
+<!-- 
+  When a program is started, the resulting process consists of a single thread called the main thread.
+ -->
+
+
+<h3 id="thread-creation">Thread Creation and Termination</h3>
+
+<p>
+  The {{% inline-code %}}pthread_create(){{% /inline-code %}} function creates a new thread which commences execution by calling the function identified by {{% inline-code %}}start{{% /inline-code %}} with the argument {{% inline-code %}}arg{{% /inline-code %}}. A unique identifier for the created thread is copied into the buffer pointed to by {{% inline-code %}}thread{{% /inline-code %}}. The {{% inline-code %}}attr{{% /inline-code %}} argument is a pointer to an object that specifies various attributes for the new thread.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start)(void *), void *arg);{{% /code %}}
+
+<p>
+  The {{% inline-code %}}pthread_exit(){{% /inline-code %}} function terminates the calling thread and specifies a return value. This is equivalent to returning from start though {{% inline-code %}}pthread_exit(){{% /inline-code %}} can be called from any function that has been called by the start function. The {{% inline-code %}}retval{{% /inline-code %}} argument specifies the return value for the thread.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+void pthread_exit(void *retval);{{% /code %}}
+
+
+
+<h3 id="thread-identifiers">Thread Identifiers</h3>
+
+<p>
+  A thread can call {{% inline-code %}}pthread_self(){{% /inline-code %}} obtain its own unique thread identifier.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+pthread_t pthread_self(void);{{% /code %}}
+
+<p>
+  The {{% inline-code %}}pthread_equal(){{% /inline-code %}} function returns a nonzero value if {{% inline-code %}}t1{{% /inline-code %}} and {{% inline-code %}}t2{{% /inline-code %}} are equal and 0 otherwise.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_equal(pthread_t t1, pthread_t t2);{{% /code %}}
+
+
+<h3 id="joining-threads">Joining and Detaching Threads</h3>
+
+<p>
+  The {{% inline-code %}}pthread_join(){{% /inline-code %}} function waits for the thread identified by {{% inline-code %}}thread{{% /inline-code %}} to terminate. If that thread has already terminated then {{% inline-code %}}pthread_join(){{% /inline-code %}} returns immediately. If {{% inline-code %}}retval{{% /inline-code %}} is a non-null pointer then it receives a copy of the return value of the terminated thread.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_join(pthread_t thread, void **retval);{{% /code %}}
+
+<p>
+  The {{% inline-code %}}pthread_detach(){{% /inline-code %}} function marks the thread specified by the {{% inline-code %}}thread{{% /inline-code %}} argument as detached. Once a thread has been detached it is no longer possible to use {{% inline-code %}}pthread_join(){{% /inline-code %}} to obtain its return value and it cannot be made joinable again.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_detach(pthread_t thread);{{% /code %}}
+
+<p>
+  If a thread is not detached then we must join with it using {{% inline-code %}}pthread_join(){{% /inline-code %}}. If we fail to do this then thread will produce the thread equivalent of a zombie process when it terminates. This wastes resources and if enough zombies accumulate then it will not be possible to create additional threads.
+</p>
+
+
+<h3 id="mutexes">Mutexes</h3>
+
+<p>
+  The {{% inline-code %}}pthread_mutex_init(){{% /inline-code %}} function initializes the mutex identified by {{% inline-code %}}mutex{{% /inline-code %}} with the attributes specified by {{% inline-code %}}attr{{% /inline-code %}}. If {{% inline-code %}}attr{{% /inline-code %}} is specified as {{% inline-code %}}NULL{{% /inline-code %}} then the mutex is assigned various default attributes.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);{{% /code %}}
+
+<p>
+  When the mutex is not longer require it should be destroyed using {{% inline-code %}}pthread_mutex_destroy(){{% /inline-code %}}. 
+</p>
+
+<p>
+  If the mutex is neither dynamically allocated nor an automatic variable allocated on the stack and we do not need to initialize the mutex with attributes other than the defaults then the static initializer value PTHREAD_MUTEX_INITIALIZER can be used.
+</p>
+
+
+
+
+
+<h3 id="threads-and-errno">Error Handling and errno</h3>
+
+<p>
+  All Pthreads functions return 0 on success or a positive value on failure which is one of the same values that can be placed in errno by traditional system calls.
+</p>
+
+<p>
+  To prevent race conditions occurring each thread has its own errno value and the errno mechanism has been adapted in such a way that leaves error reporting unchanged from the traditional UNIX API.
+</p>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+
+</ul>

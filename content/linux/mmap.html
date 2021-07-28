@@ -1,0 +1,75 @@
+---
+title: "Pthreads"
+date: 2021-02-22
+draft: false
+---
+
+<ul class="article__contents">
+  <li>
+    <a href="introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="resources">Resources</a>
+  </li>
+</ul>
+
+<!-- 
+  {{% inline-code %}}{{% /inline-code %}}
+  {{% code c %}}{{% /code %}}
+ -->
+
+
+<h3 id="introduction">Introduction</h3>
+
+
+<p>
+  A memory-mapped file is a segment 
+</p>
+
+<p>
+  The {{% inline-code %}}mmap(){{% /inline-code %}} system call creates a new memory mapping in the virtual address space of the calling process.
+
+  - A file mapping maps a region of a file into the virtual memory of the calling process. Once a file is mapped its contents can be accessed by operations on the bytes in the corresponding memory region. The pages of the mapping are automatically loaded from the file as required.
+
+  - With an anonymous mapping the pages of the mapping are initialized to 0.
+
+  The memory in the mapping of one process may be shared with mappings in other processes.
+
+  - When two processes map the same region of a file, they share the same pages of physical memory.
+
+  - A child process created by fork() inherits copies of its parent's mappings and these mappings refer to the same pages of physical memory as the corresponding mappings in the parent.
+
+  When two or more 
+</p>
+
+
+
+
+<h3 id="creating-a-mapping">Creating a Mapping</h3>
+
+<p>
+  The {{% inline-code %}}mmap(){{% /inline-code %}} system call creates a new memory mapping in the virtual address space of the calling process. The call returns the starting address of the new mapping or {{% inline-code %}}MAP_FAILED{{% /inline-code %}} on error.
+</p>
+
+{{% code c %}}#include <sys/mman.h>
+
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);{{% /code %}}
+
+<p>
+  The {{% inline-code %}}addr{{% /inline-code %}} argument indicates the virtual address at which the mapping is to be located and can be specified as {{% inline-code %}}NULL{{% /inline-code %}} to let the kernel choose a suitable address. The size of the mapping in bytes is specified by {{% inline-code %}}length{{% /inline-code %}} and this will be rounded up to the next multiple of the page size.
+</p>
+
+<p>
+
+</p>
+
+
+<h3 id="unmapping">Unmapping</h3>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+
+</ul>

@@ -1,0 +1,133 @@
+---
+title: "Binary Search"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#procedure">Procedure</a>
+  </li>
+  <li>
+    <a href="#example">Example</a>
+  </li>
+  <li>
+    <a href="#complexity">Complexity</a>
+  </li>
+  <li>
+    <a href="#implementation">Implementation</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Binary search finds the position of a target value in a sorted array. The algorithm begins by comparing the target value to the element in the middle of the array. If the target value matches the element, we are done. If the target value is less than the element, then search continues in the lower half of the array. Otherwise, the search continues in the upper half of the array.
+</p>
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+  Let {{% inline-code %}}arr{{% /inline-code %}} be an array of {{% inline-code %}}n{{% /inline-code %}} sorted values. To search for a target value {{% inline-code %}}t{{% /inline-code %}}, we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Set {{% inline-code %}}l = 0{{% /inline-code %}} and {{% inline-code %}}r = n - 1{{% /inline-code %}}.
+  </li>
+  <li>
+    If {{% inline-code %}}l < r{{% /inline-code %}} terminate unsuccessfully.
+  </li>
+  <li>
+    Set {{% inline-code %}}m = floor((L+R)/2)){{% /inline-code %}}.
+  </li>
+  <li>
+    If {{% inline-code %}}arr[m] < t{{% /inline-code %}} set {{% inline-code %}}l = m + 1{{% /inline-code %}} and go to step 2.
+  </li>
+  <li>
+    If {{% inline-code %}}arr[m] > t{{% /inline-code %}} set {{% inline-code %}}r = m - 1{{% /inline-code %}} and go to step 2.
+  </li>
+  <li>
+    Otherwise we have {{% inline-code %}}arr[m] == t{{% /inline-code %}} so return {{% inline-code %}}m{{% /inline-code %}}.
+  </li>
+</ol>
+
+
+
+<h3 id="example">Example</h3>
+
+<p>
+  In the following example, we search for 56:
+</p>
+
+{{% code text %}}l=0                                         r=9
+[7] [14] [19] [27] [31] [38] [45] [56] [63] [72]    (31 < 45)
+                   m=4
+
+                        l=5                 r=9
+[7] [14] [19] [27] [31] [38] [45] [56] [63] [72]    (56 > 45)
+                                  m=7
+
+                        l=5  r=6
+[7] [14] [19] [27] [31] [38] [45] [56] [63] [72]    (38 < 45)
+                        m=5
+
+                             l=r=6
+[7] [14] [19] [27] [31] [38] [45] [56] [63] [72]    Done!
+                             m=6{{% /code %}}
+
+
+<h3 id="complexity">Complexity</h3>
+
+<p>
+  The time complexity of binary search is \(O(1)\) in the best case and \(O(\log n)\) in the average and worst-case. The worst-case space complexity is \(O(1)\).
+</p>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+{{% code java %}}public class BinarySearch {
+
+  public static int binarySearch(int[] arr, int t) {
+    int l = 0;
+    int r = arr.length - 1;
+
+    while (l <= r) {
+      int m = (l + r) / 2;  // integer division truncates towards 0
+
+      if (arr[m] < t) {
+        l = m + 1;
+      } else if (arr[m] > t) {
+        r = m - 1;
+      } else {
+        return m;
+      }
+    }
+
+    return -1; 
+  }
+}{{% /code %}}
+
+
+
+<h3 id="problems">Problems</h3>
+
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Binary_search_algorithm">Binary Search (Wikipedia)</a>
+  </li>
+</ul>

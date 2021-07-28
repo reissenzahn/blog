@@ -1,0 +1,96 @@
+---
+title: "283. Move Zeroes"
+date: 2021-02-22
+draft: false
+---
+
+<!-- 
+  {{% inline-code %}}nums{{% /inline-code %}}
+ -->
+
+<h3 id="question">Question</h3>
+
+<p>
+  Given an integer array {{% inline-code %}}nums{{% /inline-code %}}, move all zeros to the end of it while maintaining the relative order of the non-zero elements.
+</p>
+
+<p>
+  Note that you must do this in-place without making a copy of the array.
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Input:
+nums = [0,1,0,3,12]
+
+Output:
+[1,3,12,0,0]
+
+Input:
+nums = [0]
+
+Output:
+[0]{{% /code %}}
+
+
+
+<h3 id="solution">Solution</h3>
+
+<p>
+  We traverse {{% inline-code %}}nums{{% /inline-code %}} and increment the {{% inline-code %}}snowballSize{{% /inline-code %}} each time we find a zero. For each non-zero number {{% inline-code %}}nums[i]{{% /inline-code %}} we encounter we swap it with the value at {{% inline-code %}}nums[i - snowballSize]{{% /inline-code %}} (i.e. the left-most zero in the snowball).
+</p>
+
+{{% code text %}}// snowballSize = 0
+[0, 1, 0, 3, 12]
+^
+
+// snowballSize = 1
+[0, 1, 0, 3, 12]
+ ^
+
+// swap
+[0, 1, 0, 3, 12]
+    ^
+
+// snowballSize = 2
+[1, 0, 0, 3, 12]
+       ^
+
+// swap
+[1, 0, 0, 3, 12]
+          ^
+
+// swap
+[1, 3, 0, 0, 12]
+             ^
+
+// done!
+[1, 3, 12, 0, 0]
+               ^{{% /code %}}
+
+{{% code java %}}class Solution {
+  public void moveZeroes(int[] nums) {
+    int snowBallSize = 0; 
+    
+    for (int i = 0; i < nums.length; i++) {
+      if (nums[i] == 0){
+        snowBallSize++; 
+      } else if (snowBallSize > 0) {
+        // swapping can be replace by nums[i] = 0 provided we check that snowBallSize > 0
+        nums[i - snowBallSize] = nums[i];
+        nums[i] = 0;
+      }
+    }
+  }
+}{{% /code %}}
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/move-zeroes/">Original Question</a>
+  </li>
+</ul>

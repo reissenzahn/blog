@@ -1,0 +1,136 @@
+---
+title: "Memory Allocation"
+date: 2021-02-22
+draft: false
+---
+
+<ul class="article__contents">
+  <li>
+    <a href="introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  Dynamic memory allocation is necessary when the amount of memory required is only known at run time. A process can allocate memory by increasing the size of the heap which provides a variable-size segment of contiguous virtual memory that grows and shrinks as memory is allocated and freed. The current limit of the heap is referred to as the program break.
+</p>
+
+
+<h3 id="program-break">Adjusting the Program Break</h3>
+
+<p>
+  Initially the program break lies just past the end of the uninitialized data segment. The heap can be resized by manipulating the program break using the {{% inline-code %}}brk(){{% /inline-code %}} and {{% inline-code %}}sbrk(){{% /inline-code %}} system calls.
+</p>
+
+{{% code c %}}#include <unistd.h>
+
+int brk(void *end_data_segment);
+
+void *sbrk(intptr_t increment);{{% /code %}}
+
+<p>
+  The {{% inline-code %}}brk(){{% /inline-code %}} system call sets the program break to the location specified by {{% inline-code %}}end_data_segment{{% /inline-code %}}. Since virtual memory is allocated in units of pages {{% inline-code %}}end_data_segment{{% /inline-code %}} is effectively rounded up to the next page boundary. The call returns 0 on success or -1 on error.
+</p>
+
+<p>
+  A call to {{% inline-code %}}sbrk(){{% /inline-code %}} adjusts the program break by adding {{% inline-code %}}increment{{% /inline-code %}} to it. The previous program break is returned on success or {{% inline-code %}}(void *) -1{{% /inline-code %}} on error. That is, the return value is a pointer to the start of the newly allocated block of memory. A call to {{% inline-code %}}sbrk(0){{% /inline-code %}} can be used to return the current program break.
+</p>
+
+
+
+<h3 id="malloc">Malloc and Free</h3>
+
+<p>
+  It is generally preferable to use the malloc family of functions to allocate and deallocate memory on the heap. This provides a simpler standardized interface while also allowing us to arbitrarily deallocate blocks of memory which are maintained on a free list and recycled in future calls to allocate memory.
+</p>
+
+{{% code c %}}#include <stdlib.h>
+
+void *malloc(size_t size);
+
+void free(void *ptr);{{% /code %}}
+
+<p>
+  The {{% inline-code %}}malloc(){{% /inline-code %}} function allocates {{% inline-code %}}size{{% /inline-code %}} bytes from the heap and returns a pointer to the start of the newly allocated block of memory or {{% inline-code %}}NULL{{% /inline-code %}} on error. The allocated memory is not initialized.
+</p>
+
+<p>
+  The {{% inline-code %}}free(){{% /inline-code %}} function deallocates the block of memory pointed to by {{% inline-code %}}ptr{{% /inline-code %}}. If {{% inline-code %}}ptr{{% /inline-code %}} is NULL then the call does nothing though calling {{% inline-code %}}free(){{% /inline-code %}} multiple times on the same {{% inline-code %}}ptr{{% /inline-code %}} is an error.
+</p>
+
+{{% code c %}}#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+  int n = 5;
+  
+  // malloc() allocates a specified number of bytes and returns a void pointer to the allocated memory
+  int* ptr = (int *) malloc(n * sizeof(int));
+
+  // null indicates an error occurred when allocating memory 
+  if (ptr == NULL) {
+    printf("failed to allocate memory!\n");
+    return 1;
+  }
+
+  for (int i = 0; i < n; i++) {
+    *(ptr + i) = i;
+  }
+
+  for (int i = 0; i < n; i++) {
+    printf("%d\n", *(ptr + i));
+  }
+
+  // free() deallocates memory allocated by malloc(), calloc() or realloc()
+  free(ptr);
+
+  return 0;
+}{{% /code %}}
+
+
+<h3 id="malloc-friends">Malloc Friends</h3>
+
+
+
+
+<h3 id="custom-malloc">Custom Malloc</h3>
+
+<!-- 
+  In order to allow allocated memory to later be freed it is necessary to store the size of the allocated block just below the pointer that is returned.
+
+  A common trick to work around this is to store meta-information about a memory region in some space that we squirrel away just below the pointer that we return. Say the top of the heap is currently at 0x1000 and we ask for 0x400 bytes. Our current malloc will request 0x400 bytes from sbrk and return a pointer to 0x1000. If we instead save, say, 0x10 bytes to store information about the block, our malloc would request 0x410 bytes from sbrk and return a pointer to 0x1010, hiding our 0x10 byte block of meta-information from the code that's calling malloc.
+
+  That lets us free a block, but then what? The heap region we get from the OS has to be contiguous, so we can't return a block of memory in the middle to the OS. Even if we were willing to copy everything above the newly freed region down to fill the hole, so we could return space at the end, there's no way to notify all of the code with pointers to the heap that those pointers need to be adjusted.
+
+  Instead, we can mark that the block has been freed without returning it to the OS, so that future calls to malloc can use re-use the block. But to do that we'll need be able to access the meta information for each block. There are a lot of possible solutions to that. We'll arbitrarily choose to use a single linked list for simplicity.
+
+  For our malloc, we'll want to re-use free space if possible, allocating space when we can't re-use existing space. Given that we have this linked list structure, checking if we have a free block and returning it is straightforward. When we get a request of some size, we iterate through our linked list to see if there's a free block that's large enough.
+
+  If we don't find a free block, we'll have to request space from the OS using sbrk and add our new block to the end of the linked list.
+
+  As with our original implementation, we request space using sbrk. But we add a bit of extra space to store our struct, and then set the fields of the struct appropriately.
+
+  Now that we have helper functions to check if we have existing free space and to request space, our malloc is simple. If our global base pointer is NULL, we need to request space and set the base pointer to our new block. If it's not NULL, we check to see if we can re-use any existing space. If we can, then we do; if we can't, then we request space and use the new space.
+
+  Now that we've got malloc and free, we can write programs using our custom memory allocator! But before we can drop our allocator into existing code, we'll need to implement a couple more common functions, realloc and calloc. Calloc is just malloc that initializes the memory to 0, so let's look at realloc first. Realloc is supposed to adjust the size of a block of memory that we've gotten from malloc, calloc, or realloc.
+
+  If we pass realloc a NULL pointer, it's supposed to act just like malloc. If we pass it a previously malloced pointer, it should free up space if the size is smaller than the previous size, and allocate more space and copy the existing data over if the size is larger than the previous size.
+
+  Everything will still work if we don't resize when the size is decreased and we don't free anything, but we absolutely have to allocate more space if the size is increased, so let's start with that.
+
+
+-->
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://danluu.com/malloc-tutorial/">Malloc Tutorial</a>
+  </li>
+</ul>

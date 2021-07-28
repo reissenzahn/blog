@@ -1,0 +1,54 @@
+---
+title: "83. Remove Duplicates from Sorted List"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3 id="question">Question</h3>
+
+<p>
+  Given the head of a sorted linked list, delete all duplicates such that each element appears only once. Return the linked list sorted as well.
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Input:
+head = [1,1,2]
+
+Output:
+[1,2]
+
+Input:
+head = [1,1,2,3,3]
+
+Output:
+[1,2,3]{{% /code %}}
+
+
+<h3 id="solution">Solution</h3>
+
+{{% code java %}}public ListNode deleteDuplicates(ListNode head) {
+  ListNode curr = head;
+  
+  while (curr != null) {
+    if (curr.next != null && curr.val == curr.next.val) {
+      curr.next = curr.next.next;
+    } else {
+      curr = curr.next;
+    }
+
+  }
+  
+  return head;
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/remove-duplicates-from-sorted-list/">Original Question</a>
+  </li>
+</ul>

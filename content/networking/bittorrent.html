@@ -1,0 +1,501 @@
+---
+title: "BitTorrent"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#introduction">Introduction</a>
+  </li>
+  <li>
+    <a href="#bencoding">Bencoding</a>
+  </li>
+  <li>
+    <a href="#pieces-and-blocks">Pieces and Blocks</a>
+  </li>
+  <li>
+    <a href="#trackers">Trackers</a>
+  </li>
+  <li>
+    <a href="#metainfo-file">Metainfo File</a>
+  </li>
+  <li>
+    <a href="#peer-state">Peer State</a>
+  </li>
+  <li>
+    <a href="#tracker-protocol">Tracker Protocol</a>
+  </li>
+  <li>
+    <a href="#peer-wire-protocol">Peer Wire Protocol</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="introduction">Introduction</h3>
+
+<p>
+  BitTorrent is a peer-to-peer file sharing protocol designed to facilitate file transfers among a swarm of peers across unreliable networks. While a traditional client-server architecture places all upload cost on the file host, BitTorrent redistributes this cost among downloaders by having them upload pieces of the file to each other. This offers scalability and affordability advantages.
+</p>
+
+<!-- 
+  TODO:
+
+  peer v/s client: In this document, a peer is any BitTorrent client participating in a download. The client is also a peer, however it is the BitTorrent client that is running on the local machine. Readers of this specification may choose to think of themselves as the client which connects to numerous peers.
+ -->
+
+
+<h3 id="bencoding">Bencoding</h3>
+
+<p>
+  Bencoding is used to encode data in a platform independent way. The format specifies two scalar types (integers and strings) and two compound types (lists and dictionaries). The format is as follows:
+</p>
+
+<ul>
+  <li>
+    Strings are prefixed with their length followed by a colon.
+  </li>
+  <li>
+    Integers are represented in base 10 by strings prefixed with "i" and postfixed with "e".
+  </li>
+  <li>
+    Lists are an arbitrary number of bencoded elements prefixed with "l" and postfixed with "e".
+  </li>
+  <li>
+    Dictionaries are an arbitrary number of key/value pairs prefixed with "d" and postfixed with "e". All keys are bencoded strings and must be sorted.
+  </li>
+</ul>
+
+{{% code text %}}// "hello"
+5:hello
+
+// 10
+i10e
+
+
+// [10, "hello"]
+l
+  i10e
+  5:hello
+e
+
+// {"hello": 10, "bye": 20}
+d
+  5:helloi10e
+  3:byei20e
+e{{% /code %}}
+
+
+<h3 id="pieces-and-blocks">Pieces and Blocks</h3>
+
+<p>
+  A torrent consisting of one or more files is treated as a contiguous sequence of bytes which is divided into a number of fixed-size pieces. Pieces can overlap file boundaries and the last piece may be smaller than the rest. Each piece is assigned a sequential index starting from zero.
+</p>
+
+<p>
+  The SHA-1 hash of the data contained in each piece is computed and these hashes are concatenated together and included in the torrent metainfo file. These hashes will be used keep track of which pieces each peer has and to verify the integrity of each piece a peer obtains. The piece size is thus constrained by the fact that too large piece sizes result in less efficient transfers while too small piece sizes cause large metainfo files. Typical piece sizes include 256KB, 512Kb and 1MB.
+</p>
+
+<p>
+  A peer can only share the complete pieces it has obtained. When distributing pieces between peers, those pieces are further broken into blocks so as to allow a peer to download a given piece from multiple peers. Typical client implementations use a block size of 16KB. Once a peer has downloaded a complete piece and verified its hash it can immediately start sharing it with other peers. The complete files of a torrent are obtained by combining all the pieces into a single string of bytes.
+</p>
+
+{{% code text %}}----------------------------------------
+| Piece #0 | Piece #1 | ... | Piece #N |
+----------------------------------------
+        _-'            `-_
+     _-'                  `-_
+   -----------------------------
+   | Block #0 | ... | Block #M |
+   -----------------------------{{% /code %}}
+
+<p>
+  By breaking pieces into blocks, BitTorrent facilitates always keeping some number (typically five) of requests pipelined at once. This is very important when transferring data over TCP as having several requests pending at once avoids a belay between blocks being sent. Each time a block arrives, a new request is sent.
+</p>
+
+
+<h3 id="trackers">Trackers</h3>
+
+<p>
+  A client needs to be able to determine which other clients in the swarm it can connect to in order to start download pieces. Such clients are called peers; those peers that have all the pieces for a torrent are called seeders while the rest are called leechers. To this end, a client will request peer information from centralized trackers and use that information to connect to appropriate peers.
+</p>
+
+<p>
+  A tracker is an HTTP service which receives GET requests that include metrics from clients and responds with a peer list that allows a peer to participate in the torrent. The URL for the tracker corresponding to a particular torrent is specified as the announce URL in the metainfo file of the torrent.
+</p>
+
+
+<h3 id="metainfo-file">Metainfo File</h3>
+
+<p>
+  To publish a file using BitTorrent, a metainfo file containing information about the torrent must be created. This includes tracker information, the piece length, hashes for each piece and metadata about the torrent. The metainfo file can then be distributed to peers interested in downloading the file. At least one seeder with access to the complete torrent must be made available to allow for the file to start being distributed.
+</p>
+
+<p>
+  The metainfo file contains a bencoded dictionary with the following keys:
+</p>
+
+<ul>
+  <li>
+    {{% inline-code %}}announce{{% /inline-code %}}: A string containing the URL of the tracker.
+  </li>
+  <li>
+    {{% inline-code %}}info{{% /inline-code %}}: A dictionary containing information about the files in the torrent.
+  </li>
+  <li>
+    {{% inline-code %}}comment{{% /inline-code %}} (optional): A string containing comments from the torrent author.
+  </li>
+  <li>
+    {{% inline-code %}}created by{{% /inline-code %}} (optional): A string containing the name and version of the program used to create the metainfo file (optional).
+  </li>
+  <li>
+    {{% inline-code %}}creation date{{% /inline-code %}} (optional): A string containing the creation time of the torrent in UNIX epoch format.
+  </li>
+</ul>
+
+<p>
+  If the torrent contains a single file then the info dictionary must have the following keys:
+</p>
+
+<ul>
+  <li>
+    {{% inline-code %}}name{{% /inline-code %}}: A string containing the name of the file.
+  </li>
+  <li>
+    {{% inline-code %}}length{{% /inline-code %}}: An integer indicating the length of the file in bytes.
+  </li>
+  <li>
+    {{% inline-code %}}piece length{{% /inline-code %}}: An integer indicating the number of bytes in each piece.
+  </li>
+  <li>
+    {{% inline-code %}}pieces{{% /inline-code %}}: A string containing the concatenation of the SHA-1 hash for each piece in the torrent.
+  </li>
+</ul>
+
+<p>
+  If the torrent contains multiple files then the info dictionary must have the following keys:
+</p>
+
+<ul>
+  <li>
+    {{% inline-code %}}name{{% /inline-code %}}: A string containing the name of the topmost directory in the file structure.
+  </li>
+  <li>
+    {{% inline-code %}}files{{% /inline-code %}}: A list containing a dictionary for each file in the torrent. Each dictionary has a {{% inline-code %}}path{{% /inline-code %}} key mapping to a list of strings that specifies the path to the file relative to the topmost directory and a {{% inline-code %}}length{{% /inline-code %}} key indicating the total length of the file in bytes.
+  </li>
+  <li>
+    {{% inline-code %}}piece length{{% /inline-code %}}: An integer indicating the number of bytes in each piece.
+  </li>
+  <li>
+    {{% inline-code %}}pieces{{% /inline-code %}}: A string containing the concatenation of the SHA-1 hash for each piece in the torrent.
+  </li>
+</ul>
+
+<p>
+  A metainfo has a .torrent extension and the associated media type {{% inline-code %}}application/x-bittorrent{{% /inline-code %}}.
+</p>
+
+
+<h3 id="piece-selection">Piece Selection</h3>
+
+<p>
+  The method used to select which pieces to begin downloading is very important for ensuring high performance. This is achieved by means of three policies:
+</p>
+
+<ul>
+  <li>
+    <i>Strict priority</i>: Once a block for a particular piece has been requested, the remaining blocks for that piece are requested before blocks from any other piece. This ensures that complete pieces are obtained as quickly as possible so the peer has something to upload.
+  </li>
+  <li>
+    <i>Rarest first</i>: When selecting which piece to start downloading next, peers generally download pieces which the fewest of their own peers have first. This replicates the rarest pieces as quickly as possible so as to reduce the risk of them being lost if peers stop uploading.
+  </li>
+  <li>
+    <i>Random first piece</i>: When downloading starts, pieces to download are selected at random until a complete piece is obtained. This looks to ensure that peers get a piece to upload as quickly as possible rather than attempting to obtain rare pieces which will generally download slower.
+  </li>
+</ul>
+
+<p>
+  Sometimes a piece will be requested from a peer with very slow transfer rates. This is not a problem in the middle of a download but could delay a download that is just about to finish. To prevent this, end game mode involves a peer sending requests for all of its missing blocks to all of its peers. Cancels are sent for blocks which arrive to prevent redundant sends.
+</p>
+
+
+
+<h3 id="choking">Choking</h3>
+
+<p>
+  Each peer is responsible for attempting to maximize its own download rate. Peers achieve this by downloading from whichever peers they can and deciding which peers to upload to via a variant of tit-for-tat. A peer either uploads to cooperate or chokes to not cooperate. Choking consists of a temporary refusal to upload though downloading can still happen.
+</p>
+
+<p>
+  A peer always unchokes a fixed number of other peers (default is four) and the decision as to which peers to unchoke is strictly based on current download rate. These download rates might be measured using a 20-second rolling average. Peers calculate who they want to choke only once every rechoke period (10 seconds) to avoid wasting resources by rapidly choking and unchoking peers.
+</p>
+
+<p>
+  In order to discover if currently unused connections might provide better download rates than the ones currently being used, a peer also has a single optimistic unchoke which is unchoked regardless of the current download rate. The peer that is the optimistic unchoke is rotated every third rechoke period (30 seconds).
+</p>
+
+<p>
+  If a peer is choked by all peers which it was formerly downloading from it will usually get poor download rates until the optimistic unchoke finds better peers. To address this, if a minute passes without a peer receiving a piece from a given peer then it will  assume it has been snubbed and stop uploading to that peer (except if it becomes optimistic unchoke). The peer will then increase the number of optimistic unchokes in order to find better peers faster.
+</p>
+
+
+
+<h3 id="peer-state">Peer State</h3>
+
+<!-- 
+  TODO: peer states
+  A client must maintain state information for each connection that it has with a remote peer:
+
+choked: Whether or not the remote peer has choked this client. When a peer chokes the client, it is a notification that no requests will be answered until the client is unchoked. The client should not attempt to send requests for blocks, and it should consider all pending (unanswered) requests to be discarded by the remote peer.
+interested: Whether or not the remote peer is interested in something this client has to offer. This is a notification that the remote peer will begin requesting blocks when the client unchokes them.
+Note that this also implies that the client will also need to keep track of whether or not it is interested in the remote peer, and if it has the remote peer choked or unchoked. So, the real list looks something like this:
+
+am_choking: this client is choking the peer
+am_interested: this client is interested in the peer
+peer_choking: peer is choking this client
+peer_interested: peer is interested in this client
+Client connections start out as "choked" and "not interested". In other words:
+
+am_choking = 1
+am_interested = 0
+peer_choking = 1
+peer_interested = 0
+A block is downloaded by the client when the client is interested in a peer, and that peer is not choking the client. A block is uploaded by a client when the client is not choking a peer, and that peer is interested in the client.
+
+It is important for the client to keep its peers informed as to whether or not it is interested in them. This state information should be kept up-to-date with each peer even when the client is choked. This will allow peers to know if the client will begin downloading when it is unchoked (and vice-versa).
+ -->
+
+<p>
+  To facilitate choking, a peer must then maintain the following state for each connection:
+</p>
+
+<ul>
+  <li>
+    
+  </li>
+</ul>
+
+<p>
+  Whether or not the remote peer has choked this client. When a peer chokes the client, it is a notification that no requests will be answered until the client is unchoked. The client should not attempt to send requests for blocks, and it should consider all pending (unanswered) requests to be discarded by the remote peer.
+</p>
+
+
+
+<h3 id="tracker-protocol">Tracker Protocol</h3>
+
+<!-- 
+  TODO: define "announce"
+ -->
+
+<p>
+  Client requests are sent to the announce URL specified in the metainfo file and various parameters are specified in the query string. Binary data like the {{% inline-code %}}info_hash{{% /inline-code %}} and {{% inline-code %}}peer_id{{% /inline-code %}} must be escaped using URL encoding. The parameters are as follows:
+</p>
+
+<ul>
+  <li>
+    {{% inline-code %}}info_hash{{% /inline-code %}}: url-encoded 20-byte SHA-1 hash of the value of the {{% inline-code %}}info{{% /inline-code %}} key from the metainfo file.
+  </li>
+  <li>
+    {{% inline-code %}}peer_id{{% /inline-code %}}: url-encoded 20-byte unique identifier generated by the client at startup.
+  </li>
+  <li>
+    {{% inline-code %}}port{{% /inline-code %}}: the port number the client is listening on (typically 6881-6889).
+  </li>
+  <li>
+    {{% inline-code %}}uploaded{{% /inline-code %}}: total number of bytes uploaded since the client sent the 'started' event to the tracker in base 10 ASCII.
+  </li>
+  <li>
+    {{% inline-code %}}downloaded{{% /inline-code %}}: total number of bytes downloaded since the client sent the 'started' event to the tracker in base 10 ASCII.
+  </li>
+  <li>
+    {{% inline-code %}}left{{% /inline-code %}}: The number of bytes this client still has to download to have downloaded all the files in the torrent in base ten ASCII.
+  </li>
+  <li>
+    {{% inline-code %}}compact{{% /inline-code %}}: Setting this to 1 indicates that the client accepts a compact response.
+  </li>
+  <li>
+    {{% inline-code %}}no_peer_id{{% /inline-code %}}: Indicates that the tracker can omit peer id field in peers dictionary. Ignored if compact is enabled.
+  </li>
+  <li>
+    {{% inline-code %}}event{{% /inline-code %}}: Must be one of started, completed or stopped if specified. The first request to the tracker must specify started. A request specifying completed must be sent whe the download completes while stopped must be specified if the client is shutting down gracefully.
+  </li>
+  <li>
+    {{% inline-code %}}ip{{% /inline-code %}} (optional): The IP address of the client machine in dotted IPv4 format or hexed IPv6 format.
+  </li>
+  <li>
+    {{% inline-code %}}numwant{{% /inline-code %}} (optional): Number of peers that the client would like to receive from the tracker. Typically defaults to 50.
+  </li>
+  <li>
+    {{% inline-code %}}key{{% /inline-code %}} (optional): Additional identification that is not shared with any other peers. Allows a client to prove its identity should its IP address change.
+  </li>
+  <li>
+    {{% inline-code %}}trackerid{{% /inline-code %}} (optional): If a previous announce contained a tracker id then it should be specified here.
+  </li>
+</ul>
+
+<p>
+  The tracker responds with a {{% inline-code %}}text/plain{{% /inline-code %}} document consisting of a bencoded dictionary with the following keys:
+</p>
+
+<ul>
+  <li>
+    {{% inline-code %}}tracker id{{% /inline-code %}}: A string that the client should send back on its next announcements.
+  </li>
+  <li>
+    {{% inline-code %}}interval{{% /inline-code %}}: Number of seconds that the client should wait between sending regular requests to the tracker.
+  </li>
+  <li>
+    {{% inline-code %}}min interval{{% /inline-code %}} (optional): Minimum number of seconds the client should wait before reannouncing.
+  </li>
+  <li>
+    {{% inline-code %}}complete{{% /inline-code %}}: Number of peers with the entire file (seeders).
+  </li>
+  <li>
+    {{% inline-code %}}incomplete{{% /inline-code %}}: Number of peers that do not have the entire file (leechers).
+  </li>
+  <li>
+    {{% inline-code %}}peers{{% /inline-code %}}: Either a list of dictionaries or a string of bytes specifying peers.
+  </li>
+  <li>
+    {{% inline-code %}}failure reason{{% /inline-code %}}: A human-readable error message as to why the request failed. If present then no other keys may be present.
+  </li>
+</ul>
+
+<p>
+  By default, {{% inline-code %}}peers{{% /inline-code %}} is a list of dictionaries with the following keys:
+</p>
+
+<ul>
+  <li>
+    {{% inline-code %}}peer id{{% /inline-code %}}: The unique identifier of the peer.
+  </li>
+  <li>
+    {{% inline-code %}}ip{{% /inline-code %}}: IP address (in dotted IPv4/hexed IPv6 format) or a DNS name of peer.
+  </li>
+  <li>
+    {{% inline-code %}}port{{% /inline-code %}}: Port number of peer.
+  </li>
+</ul>
+
+<p>
+  If compact response is enabled then {{% inline-code %}}peers{{% /inline-code %}} is a byte string consisting of 6 bytes per peer. The first four bytes are the host (in network byte order), the last two bytes are the port (in network byte order).
+</p>
+
+
+
+<h3 id="peer-wire-protocol">Peer Wire Protocol</h3>
+
+<p>
+  The peer wire protocol consists of the asynchronous exchange of length-prefixed message.  State-oriented messages inform peers of state changes and must be sent whenever a change occurs in the state of a peer while data-oriented messages handle transferring blocks between peers. All integers are encoded as four byte big-endian values.
+</p>
+
+<p>
+  Should a given peer want to communicate with another peer, it must start by opening a TCP connection and perform a symmetric handshake operation. This consists of an exchange of handshake messages.
+</p>
+
+{{% code text %}}handshake: <pstrlen><pstr><reserved><info_hash><peer_id>{{% /code %}}
+
+<p>
+  The {{% inline-code %}}pstrlen{{% /inline-code %}} is a byte indicating the length of the character string specified by {{% inline-code %}}pstrlen{{% /inline-code %}}. The value of {{% inline-code %}}pstrlen{{% /inline-code %}} is the protocol name "BitTorrent protocol" which has a length of 19. Eight reserved bytes in {{% inline-code %}}reserved{{% /inline-code %}} are typically all set to zero. The {{% inline-code %}}info_hash{{% /inline-code %}} is the 20 byte SHA-1 hash of the {{% inline-code %}}info{{% /inline-code %}} key in the metainfo file. Finally, {{% inline-code %}}peer_id{{% /inline-code %}} is a 20 byte self-designated unique identifier of the peer.
+</p>
+
+<p>
+  If a peer receives a handshake with an {{% inline-code %}}info_hash{{% /inline-code %}} that it is not current serving then it must drop the connection. Also, if the initiating peer receives a handshake in which the {{% inline-code %}}peer_id{{% /inline-code %}} does not match the expected {{% inline-code %}}peer_id{{% /inline-code %}} (as received from the tracker) then it is expected to drop the connection.
+</p>
+
+<p>
+  All of the remaining messages in the protocol take the form of {{% inline-code %}}<length prefix><message ID><payload>{{% /inline-code %}}. The length prefix is a four byte big-endian value while the message ID is a single decimal byte. The messages are as follows:
+</p>
+
+{{% code text %}}choke: <len=0001><id=0>{{% /code %}}
+
+<p>
+  A peer sends a choke message to a peer to inform it that it is being choked.
+</p>
+
+{{% code text %}}unchoke: <len=0001><id=1>{{% /code %}}
+
+<p>
+  A peer sends an unchoke message to a peer to inform it that it is no longer being choked.
+</p>
+
+{{% code text %}}interested: <len=0001><id=2>{{% /code %}}
+
+<p>
+  A peer sends an interested message to a peer to inform it of its desire to request blocks.
+</p>
+
+{{% code text %}}not interested: <len=0001><id=3>{{% /code %}}
+
+<p>
+  A peer sends an uninterested message to inform it that it is not interested in any of its pieces.
+</p>
+
+{{% code text %}}have: <len=0005><id=4><piece index>{{% /code %}}
+
+<p>
+  Once a peer has downloaded and validated a given piece it sends have messages to its peers with the index of that piece. A peer receiving this message must validate the index and drop the connection if this index is not within the expected bounds. Otherwise, it must send an interested message to the sender if it lacks the specified piece and may also send a request for that piece.
+</p>
+
+{{% code text %}}bitfield: <len=0001+X><id=5><bitfield>{{% /code %}}
+
+<p>
+  The bitfield message may only be sent immediately after the handshake is performed and before any other messages are sent. It is optional and need not be sent if a client has no pieces. The payload is a bitfield representing the pieces that have been successfully downloaded. The high bit in the first byte corresponds to piece index 0 and bits that are set indicate that the peer has successfully downloaded the corresponding piece. Spare bits at the end are cleared. Peers should drop the connection if they receive bitfields that are not of the correct size or if the bitfield has any of the spare bits set.
+</p>
+
+{{% code text %}}request: <len=0013><id=6><piece index><block offset><block length>{{% /code %}}
+
+<p>
+  A request message is used to request a block identified by the piece index along with the byte offset within the piece and the requested block length. The recipient must only send piece messages to a sender that has already requested it.
+</p>
+
+{{% code text %}}piece: <len=0009+X><id=7><piece index><block offset><block data>{{% /code %}}
+
+<p>
+  The piece message is used to send a block of length X between peers. The payload specifies the piece index, the block offset and the block data itself. The length is implicit and can be calculated by subtracting 9 from the total message length.
+</p>
+
+{{% code text %}}cancel: <len=0013><id=8><piece index><block offset><block length>{{% /code %}}
+
+<p>
+  During the end game, a peer may need to cancel block requests. The payload is the same as the request message and indicates the block within a piece that the peer has requested but is no longer interested in.
+</p>
+
+{{% code text %}}keep-alive: <len=0000>{{% /code %}}
+
+<p>
+  Peers may close a connection if they receive no messages for a certain period of time. A keep-alive message is then used to maintain a connection if no other messages have recently been sent.
+</p>
+
+
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.bittorrent.org/bittorrentecon.pdf">Incentives Build Robustness in BitTorrent (Bram Cohen)</a>
+  </li>
+  <li>
+    <a href="https://www.bittorrent.org/beps/bep_0003.html">Official BitTorrent Specification</a>
+  </li>
+  <li>
+    <a href="https://wiki.theory.org/BitTorrentSpecification">UnofficialBitTorrent Specification</a>
+  </li>
+  <li>
+    <a href="https://web.archive.org/web/20070222025501/jonas.nitro.dk/bittorrent/bittorrent-rfc.txt">BitTorrent Protocol Revision 1.33</a>
+  </li>
+  <li>
+    <a href="http://web.cs.ucla.edu/classes/cs217/05BitTorrent.pdf">Peer-to-Peer Networking with BitTorrent</a>
+  </li>
+  <li>
+    <a href="https://mandreyel.github.io/posts/rust-bittorrent-engine/">Writing a Bittorrent engine in Rust</a>
+  </li>
+  <li>
+    <a href="https://github.com/eduard-permyakov/BitFiend">BitFiend Client</a>
+  </li>
+</ul>
