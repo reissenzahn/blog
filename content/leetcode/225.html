@@ -1,0 +1,78 @@
+---
+title: "225. Implement Stack using Queues"
+date: 2021-02-22
+draft: false
+---
+
+<!-- 
+  {{% inline-code %}}{{% /inline-code %}}
+ -->
+
+<h3 id="question">Question</h3>
+
+<p>
+  Implement a last-in-first-out (LIFO) stack using only two queues. The implemented stack should support all the functions of a normal stack (push, top, pop, and empty).
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Example 1:
+MyStack myStack = new MyStack();
+myStack.push(1);
+myStack.push(2);
+myStack.top(); // return 2
+myStack.pop(); // return 2
+myStack.empty(); // return False{{% /code %}}
+
+
+<h3 id="solution">Solution</h3>
+
+<p>
+  Popping an element is achieved by simply dequeueing and enqueuing all the elements in the queue except the last one which is dequeued and returned. There is no way implement the pop operation in less than O(n) time.
+</p>
+
+{{% code java %}}class MyStack {
+
+  private Queue<Integer> queue;
+
+
+  public MyStack() {
+    this.queue = new LinkedList<>();
+  }
+
+  public void push(int x) {
+    this.queue.offer(x);
+  }
+
+  public int pop() {    
+    for (int i = 0; i < this.queue.size() - 1; i++) {
+      int val = this.queue.poll();
+      this.queue.offer(val);
+    }
+    
+    return queue.poll();
+  }
+
+  public int top() {
+    int result = this.pop();
+    this.push(result);
+    return result;
+  }
+
+  public boolean empty() {
+    return this.queue.isEmpty();
+  }
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/implement-stack-using-queues/">Original Problem</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=rW4vm0-DLYc">NeetCode</a>
+  </li>
+</ul>

@@ -1,0 +1,23 @@
+---
+title: "Khan's Algorithm"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  Khan's algorithm finds a topological ordering of a directed acyclic graph. This refers to an ordering of the vertices of the graph such that for every directed edge from u to v we have that u comes before v in the ordering. A topological ordering is possible if and only if the graph is acyclic. Any DAG has at least one topological ordering and there may be multiple valid topological orderings.
+</p>
+
+<p>
+  We start by counting the incoming degree of each node as this will be used as a measure of the number of dependencies of a node. Then, we initialize a queue to store the nodes that have no incoming edges and add any such nodes.
+</p>
+
+<p>
+  We proceed by repeatedly removing nodes without any dependencies from the graph and add them to the topological ordering. As nodes are removed (and their outgoing edges), new nodes without dependencies become available. This is repeated until all nodes are processed or a cycle is discovered.
+</p>
+
+<p>
+  The running time is O(n + m) where n is the number of vertices and m is the number of edges.
+</p>
+
+

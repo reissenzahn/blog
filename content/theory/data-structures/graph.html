@@ -1,0 +1,41 @@
+---
+title: "Graph"
+date: 2021-11-24
+draft: false
+---
+
+
+<p>
+  A graph consists of a set of vertices together with a set of edges. An edge consists of a pair of vertices and this pair is unordered for an undirected graph and ordered for a directed graph. Each edge may also have an associated weight value.
+</p>
+
+<figure>
+  <img src="/img/data-structures/graph.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+
+<h3>Adjacency Matrix</h3>
+
+<p>
+  An adjacency matrix is a square matrix used to represent a graph. The elements of the matrix indicate whether pairs of vertices are adjacent or not in the graph. Specifically, the element at (i,j) is set to one when there is an edge from vertex i to vertex j and set zero when there is no edge. If the graph is undirected then the adjacency matrix is symmetric.
+</p>
+
+<figure>
+  <img src="/img/data-structures/graph-adjacency-matrix.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+
+
+<h3>Adjacency List</h3>
+
+<p>
+  Alternatively, an adjacency list consists of an array with entries for each of the vertices of the graph. The value of each element is a linked list of the vertices for which there exists an edge to from the vertex corresponding to the index of the element.
+</p>
+
+<figure>
+  <img src="/img/data-structures/graph-adjacency-list.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+
+<h3>Resources</h3>
+

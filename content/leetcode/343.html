@@ -1,0 +1,133 @@
+---
+title: "343. Integer Break"
+date: 2021-02-22
+draft: false
+---
+
+<!-- 
+  {{% inline-code %}}{{% /inline-code %}}
+ -->
+
+<h3 id="question">Question</h3>
+
+<p>
+  Given an integer n, break it into the sum of k positive integers, where k >= 2, and maximize the product of those integers. Return the maximum product you can get.
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Example 1:
+Input: n = 2
+Output: 1
+Explanation: 2 = 1 + 1, 1 × 1 = 1.
+
+Example 2:
+Input: n = 10
+Output: 36
+Explanation: 10 = 3 + 3 + 4, 3 × 3 × 4 = 36.{{% /code %}}
+
+
+
+<h3 id="solution">Solution</h3>
+
+<p>
+  We start with a few examples to get an intuition for the problem:
+</p>
+
+<pre>2 = 1 + 1
+3 = 1 + 2 = 2 + 1
+4 = 1 + 3 = 2 + 2 = 3 + 1
+5 = 1 + 4 = 2 + 3 = 3 + 2 = 4 + 1
+6 = 1 + 5 = 2 + 4 = 3 + 3 = 4 + 2 = 5 + 1
+7 = 1 + 6 = 2 + 5 = 3 + 4 = 4 + 3 = 5 + 2 = 6 + 1
+8 = 1 + 7 = 2 + 6 = 3 + 5 = 4 + 4 = 5 + 3 = 6 + 2 = 7 + 1
+
+(1)(1) = 1
+(1)(2) = 2, ...
+(1)(3) = 3, (2)(2) = 4, ...
+(1)(4) = 4, (2)(3) = 6, ...
+(1)(5) = 5, (2)(4) = 8, (3)(3) = 9, ...
+(1)(6) = 6, (2)(5) = 10, (3)(4) = 12, ...
+(1)(7) = 7, (2)(6) = 12, (3)(5) = 15, (4)(4) = 16, ...</pre>
+
+<p>
+  We make the following observations:
+</p>
+
+<ul>
+  <li>
+    As k is non-zero, the number 1 cannot be broken down any further.
+  </li>
+  <li>
+    Whenever, say, 5 = 2 + 3, we also have that 5 = 3 + 2 but (2)(3) = (3)(2) so we don't need to consider the second case.
+  </li>
+  <li>
+    For, say, n = 8 we need to consider the product (2)(6). But we ought to already have these maximum products from calculating n = 2 and n = 6.
+  </li>
+</ul>
+
+<p>
+   This provides the intuition for a recursive solution:
+</p>
+
+
+{{% code java %}}class Solution {
+  public int integerBreak(int n) {
+    return this.recurse(n, n);
+  }
+  
+  public int recurse(int n, int m) {
+    // one cannot be broken down any further and its product is 1
+    if (m == 1) {
+      return 1;
+    }
+    
+    // only n itself HAS to be broken down (otherwise, the break down has to have greater product than the number itself)
+    int result = (m == n) ? 0 : m;
+    
+    // consider all 1 + (m - 1), 2 + (m - 2), ...
+    for (int i = 1; i <= m / 2; i++) {
+      int product = this.recurse(n, i) * this.recurse(n, m - i);
+      result = Math.max(result, product);
+    }
+    
+    return result;
+  }
+}{{% /code %}}
+
+<p>
+  We now optimise this by looking for a dynamic programming approach. To start, we notice what what we'd typically want is an array [0, 1, 1, 2, 4, 6, 9, 12, 18, ...] with solutions for integerBreak(1), integerBreak(2), and so on. Hence: 
+</p>
+
+{{% code java %}}class Solution {
+  public int integerBreak(int n) {
+    int[] arr = new int[n + 1];
+    
+    arr[0] = 0;
+    arr[1] = 1;  // base case as before
+    
+    // consider all those cases from 2 to n
+    for (int i = 2; i <= n; i++) {
+      
+      // consider all 1 + (i - 1), 2 + (i - 2), ...
+      for (int j = 1; j <= i / 2; j++) {
+        arr[i] = Math.max(arr[i], Math.max(j, arr[j]) * Math.max(i - j, arr[i - j]));
+      }
+    }
+    
+    return arr[n];
+  }
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/integer-break/submissions/">Original Problem</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=m0OFK5LeEyw">Jason Chang</a>
+  </li>
+</ul>

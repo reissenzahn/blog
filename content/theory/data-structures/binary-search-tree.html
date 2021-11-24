@@ -1,0 +1,101 @@
+---
+title: "Binary Search Tree"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A binary search tree is a binary tree that satisfies the binary search property: each node has a key that is greater than the keys in its left subtree and less than the keys in its right subtree.
+</p>
+
+<figure>
+  <img src="/img/data-structures/binary-search-tree.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+<p>
+  To search for a certain target key we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Starting at the root node, inspect the key of the current node.
+  </li>
+  <li>
+    If the target key is equal to the key then return successfully.
+  </li>
+  <li>
+    If the target key is less than the key then search the left subtree.
+  </li>
+  <li>
+    If the target key is greater than the key then move into the right subtree.
+  </li>
+  <li>
+    Repeat this process until either the target key is found or a leaf node is reached.
+  </li>
+</ol>
+
+<p>
+  To insert a key we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Starting at the root node, inspect the key of the current node.
+  </li>
+  <li>
+    If the target key is less than the key then search the left subtree.
+  </li>
+  <li>
+    If the target key is greater than the key then move into the right subtree.
+  </li>
+  <li>
+    This process continues until a leaf node is reached at which point the key is inserted as the its right or left child as appropriate.
+  </li>
+</ol>
+
+
+<p>
+  When deleting a node, there are three scenarios to consider:
+</p>
+
+<ul>
+  <li>
+    If the node is a leaf then simply remove it.
+  </li>
+  <li>
+    If the node has one child then replace it with its child.
+  </li>
+  <li>
+    If the node has two children then swap it with its in-order predecessor (or in-order successor) and attempt to delete it again.
+  </li>
+</ul>
+
+<p>
+  Consistently using the in-order successor or the in-order predecessor for every instance of the two-child case can lead to an unbalanced tree, so some implementations select one or the other at different times.
+</p>
+
+<p>
+  To find the minimum key, go to the left child of the root; then go to the left child of that child, and so on, until you come to a node that has no left child. This node has the minimum key. Similarly, to find the maximum key, go to the right child of the root; then go to the right child of that child, and so on, until you come to a node that has no right child. This node has the maximum key.
+</p>
+
+<p>
+  To determine wether a binary tree is a binary search tree, we need to check that each node as follows:
+</p>
+
+<ul>
+  <li>
+    If the node is the left child of its parent, then it must be smaller than the parent and it must pass down the value from its parent to its right subtree to make sure none of the nodes in that subtree is greater than the parent.
+  </li>
+  <li>
+    If the node is the right child of its parent, then it must be larger than the parent and it must pass down the value from its parent to its left subtree to make sure none of the nodes in that subtree is lesser than the parent.
+  </li>
+</ul>
+
+<!-- 
+          Average case  Worst case
+  Search  O(log n)      O(n)
+  Insert  O(log n)      O(n)
+  Delete  O(log n)      O(n)
+  Space   O(log n)      O(n)
+ -->
+

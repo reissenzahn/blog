@@ -1,0 +1,28 @@
+---
+title: "Kruskal's Algorithm"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  Kruskal's algorithm is a greedy algorithm that finds a minimum spanning forest of an undirected edge-weighted graph. If the graph is connected it finds a minimum spanning tree. This minimum spanning tree consists of a subset of the edges of the graph that connects all the vertices together without any cycles and with the minimum possible total edge weight.
+</p>
+
+<p>We initialize a union-find of the set of vertices and proceed as follows:</p>
+
+<ol>
+  <li>
+    Sort edges by ascending edge weight.
+  </li>
+  <li>
+    Step over each of the sorted edges and inspect the incident vertices. If the vertices have been unified then do not include this edge; otherwise, include the edge and unify the vertices.
+  </li>
+  <li>
+    Repeat this until either every edge has been processed or all the vertices have been unified.
+  </li>
+</ol>
+
+<!-- 
+  https://www.youtube.com/watch?v=JZBQLXgSGfs
+  https://en.wikipedia.org/wiki/Kruskal's_algorithm
+-->

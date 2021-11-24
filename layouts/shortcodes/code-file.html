@@ -1,0 +1,4 @@
+{{ $file := .Get "file" | readFile }}
+{{ $lang := .Get "lang" }}
+
+<pre><code class="{{ $lang }}">{{ $file | htmlEscape | safeHTML }}</code></pre>

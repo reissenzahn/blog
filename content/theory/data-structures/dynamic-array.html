@@ -1,0 +1,105 @@
+---
+title: "Merkle Tree"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A dynamic array is an variable-size array that expands as additional elements are added. Dynamic arrays overcome the fixed-size limitation of static arrays that requires their size to be specified ahead of time. This is useful when the maximum logical size of the array is unknown before the array is allocated. Just like static arrays, dynamic arrays store elements contiguously in memory which allows efficient use of caching.
+</p>
+
+<p>
+  A dynamic array can be constructed by allocating an underlying fixed-size array that is typically larger than the number of elements immediately required. The elements of the dynamic array are stored contiguously at the start of the underlying array with the remaining positions towards the end of the array being unused. Additional elements can be added at the end of the array in constant time using the unused space.
+</p>
+
+<p>
+  Once all the unused space is consumed and an additional element is added, the underlying fixed-size array is resized. This involves allocating a new underlying array and copy each element from the current array into this new array. To avoid frequently incurring the cost of resizing, dynamic arrays typically resize by a reasonably large amount such as doubling in size.
+</p>
+
+<p>
+  When an append operation require us to create a new double-size underlying array, the append operation takes \(O(n)\) time. The cost of this expensive append doubles each time it is performed. However, the number of \(O(1)\) appends until the next doubling append is required also doubles. These two factors essentially cancel out and so we say that each append has an amortized cost of \(O(1)\).
+</p>
+
+<!-- <table>
+  <tr>
+    <th>
+    </th>
+    <th>
+      Average
+    </th>
+    <th>
+      Worst
+    </th>
+  </tr>
+  <tr>
+    <td>
+      Lookup
+    </td>
+    <td>
+      \(O(1)\)
+    </td>
+    <td>
+      \(O(1)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Append
+    </td>
+    <td>
+      \(O(1)\)
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Insert
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Delete
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Space
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+    <td>
+      \(O(n)\)
+    </td>
+  </tr>
+</table> -->
+
+<!-- 
+Strengths:
+
+- Fast lookups. Just like arrays, retrieving the element at a given index takes O(1) time.
+- Variable size. You can add as many items as you want, and the dynamic array will expand to hold them.
+- Cache-friendly. Just like arrays, dynamic arrays place items right next to each other in memory, making efficient use of caches.
+
+
+Weaknesses:
+
+- Slow worst-case appends. Usually, adding a new element at the end of the dynamic array takes O(1) time. But if the dynamic array doesn't have any room for the new item, it'll need to expand, which takes O(n) time.
+- Costly inserts and deletes. Just like arrays, elements are stored adjacent to each other. So adding or removing an item in the middle of the array requires "scooting over" other elements, which takes O(n) time.
+-->
+
+

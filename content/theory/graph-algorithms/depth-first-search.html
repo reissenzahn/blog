@@ -1,0 +1,76 @@
+---
+title: "Depth First Search"
+date: 2021-11-24
+draft: false
+---
+
+
+<p>
+  Depth-first search is a graph traversal algorithm which explores a graph to find every vertex reachable from a starting vertex. The algorithm proceeds by repeatedly exploring an unvisited vertex adjacent to the current vertex. This continues until a dead-end is reached at which point the algorithm backtracks until it finds an unvisited vertex to explore. This process is repeated until the algorithm backtracks past the source vertex.
+</p>
+
+<p>
+  Given a graph \(G = (V,E)\) and a starting vertex, depth-first search proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Initialize an empty stack.
+  </li>
+  <li>
+    Mark the source vertex as visited and push it onto the stack.
+  </li>
+  <li>
+    Pop a vertex off the stack and consider each of its adjacent vertices.
+  </li>
+  <li>
+    If a vertex adjacent to the popped vertex has not been visited then mark it as visited and push it onto the stack.
+  </li>
+  <li>
+    Repeat steps 3-4 until the stack is empty.
+  </li>
+</ol>
+
+<p>
+  Alternatively, depth-first search lends itself to a recursive implementation:
+</p>
+
+<ol>
+  <li>
+    Mark the current vertex as visited.
+  </li>
+  <li>
+    Consider each of its adjacent vertices.
+  </li>
+  <li>
+    If an adjacent vertex has not been visited then recurse with that vertex.
+  </li>
+</ol>
+
+<p>
+  Depth-first search has worst-case performance of \(O(|V| + |E|)\) and worst-case space complexity of \(O(|V|)\).
+</p>
+
+<p>This has time complexity O(n + m) where the graph has n vertices and m edges.</p>
+
+<!--
+  https://www.youtube.com/watch?v=qH-mHxkoK0Q
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/flood-fill/">733. Flood Fill</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/path-sum/">112. Path Sum</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/binary-tree-paths/">257. Binary Tree Paths</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/minimum-depth-of-binary-tree/">111. Minimum Depth of Binary Tree</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/keys-and-rooms/">841. Keys and Rooms</a>
+  </li>
+</ul>
+-->

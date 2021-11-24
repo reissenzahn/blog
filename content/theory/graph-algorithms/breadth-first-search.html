@@ -1,0 +1,41 @@
+---
+title: "Breath-First Search"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  Breadth-first search (BFS) explores the vertices of a graph from a particular starting vertex. It proceeds by exploring vertices in order of how many links they are away from the starting vertex. That is, we explore the starting vertex, then all the vertices 1 away, then all the vertices 2 away, and so on until all vertices reachable from the starting vertex have been explored.
+</p>
+
+<p>
+  Given a graph G(V, E), we proceed as follows:
+</p>
+
+{{% code %}}function bfs(graph, start):
+  let Q be a queue
+
+  Q.enqueue(start)
+  label start as visited
+
+  while Q is not empty do
+    v := Q.dequeue
+    for v in G.adjacent(u) do
+      if v is not labeled as visited:
+        Q.enqueue(v)
+        label v as visited
+        set predecessor of v to u{{% /code %}} 
+
+<p>
+  Now a simple algorithm enables us to find shortest paths from the starting vertex to any reachable vertex:
+</p>
+
+{{% code %}}function find-path(startVertex, v):
+if (v == startVertex):
+  return new List()
+{{% /code %}}
+
+<!-- 
+  https://www.youtube.com/watch?v=ls4cHglfc0g
+-->
+

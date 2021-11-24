@@ -1,0 +1,103 @@
+---
+title: "Merge Sort"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  Merge sort is an efficient, general-purpose, comparison-based sorting algorithm. Most implementations produce a stable sort, which means that the order of equal elements is the same in the input and output.
+</p>
+
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+  Merge sort proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Recursively split the array in half to get two sub-arrays. Then, split each of the sub-arrays into two sub-arrays.
+  </li>
+  <li>
+    Continue this process until the sub-arrays contain only one element.
+  </li>
+  <li>
+    Repeatedly merge sub-arrays to produce sorted sub-arrays until there is only one sorted array remaining.
+  </li>
+</ol>
+
+
+<h3 class="merge">Merge</h3>
+
+<p>
+  The merge algorithm maintains three pointers, one for each of the two arrays and one for maintaining the current index of the final sorted array. The algorithm proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Compare current elements of both arrays.
+  </li>
+  <li>
+    Copy the smaller element into the sorted array.
+  </li>
+  <li>
+    Move the pointer of element containing smaller element to the next element.
+  </li>
+  <li>
+    Repeat this until the end of one of the arrays is reached and copy all remaining elements of non-empty array.
+  </li>
+</ol>
+
+<figure>
+  <img src="/img/merge-sort/merge-step.svg" style="max-width: 500px">
+  <figcaption>
+    <i>figure 2</i>
+  </figcaption>
+</figure>
+
+
+
+<h3 id="complexity">Complexity</h3>
+
+<table>
+  <tr>
+    <td>Worst case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Best case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Average case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Worst case space</td>
+    <td>\(O(n)\)</td>
+  </tr>
+</table>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Merge_sort">Merge sort (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.interviewcake.com/concept/java/merge-sort">Merge Sort Algorithm (Interview Cake)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=kiyRJ7GVWro">Merge Sort (Tim Roughgarden)</a>
+  </li>
+</ul>

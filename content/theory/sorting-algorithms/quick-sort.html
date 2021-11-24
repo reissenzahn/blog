@@ -1,0 +1,106 @@
+---
+title: "Quick Sort"
+date: 2020-11-24
+draft: false
+---
+
+<p>
+  Quick sort is an efficient in-place sorting algorithm that operates by selecting a pivot element from the array and partitioning the other elements into two sub-arrays according to whether they are less than or greater than the pivot. After the partitioning, the pivot is in its final position and the sub-arrays are sorted recursively.
+</p>
+
+
+<h3 id="procedure">Procedure</h3>
+
+<p>
+  Given an array of comparable elements, quicksort proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Choose an element to be the pivot (say, the leftmost element).
+  </li>
+  <li>
+    Partition the array so that elements less than the pivot come before it and elements larger than the pivot come after it.
+  </li>
+  <li>
+    Recursively apply the above steps to the sub-array of smaller elements and separately to the sub-array of larger elements.
+  </li>
+  <li>
+    Proceed until a sub-array of length one or zero is encountered.
+  </li>
+</ol>
+
+
+<h3 id="hoare-partitioning">Hoare Partitioning</h3>
+
+<p>
+  To partition the array using the Hoare partition scheme we proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Move the pivot to the leftmost array position if necessary.
+  </li>
+  <li>
+    Place a left pointer at the leftmost index of the array after the pivot and a right pointer at the rightmost index of the array.
+  </li>
+  <li>
+    Move the left pointer to the right until it reaches an element greater than (or equal to) the pivot.
+  </li>
+  <li>
+    Move the right pointer to the left until it reaches an element les than (or equal to) the pivot.
+  </li>
+  <li>
+    Swap the element at the left pointer with the element at the right pointer.
+  </li>
+  <li>
+    Repeat steps 2-4 until the pointers cross each other.
+  </li>
+  <li>
+    Move the pivot to its correct position by swapping it with the element at the right pointer.
+  </li>
+</ol>
+
+
+<h3 id="choice-of-pivot">Choice of Pivot</h3>
+
+<p>
+  Choosing the leftmost element of the partition as the pivot causes worst-case behavior on already sorted arrays. This can be addressed by choosing a random index for the pivot or by choosing the middle index of the partition. Furthermore, an estimate of the optimal pivot (the true median) can be chosen by choosing the median of the first, middle and last element of the partition for the pivot.
+</p>
+
+
+<h3 id="complexity">Complexity</h3>
+
+<table>
+  <tr>
+    <td>Worst case time</td>
+    <td>\(O(n^2)\)</td>
+  </tr>
+  <tr>
+    <td>Best case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Average case time</td>
+    <td>\(O(n \log n)\)</td>
+  </tr>
+  <tr>
+    <td>Space</td>
+    <td>\(O(n)\)</td>
+  </tr>
+</table>
+
+
+
+<h3 id="implementation">Implementation</h3>
+
+<pre><code class="java"></code></pre>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=ETo1cpLN7kk">Quicksort Overview (Roughgarden)</a>
+  </li>
+</ul>

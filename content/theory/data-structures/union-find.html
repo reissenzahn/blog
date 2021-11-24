@@ -1,0 +1,81 @@
+---
+title: "Union-Find"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  The union-find stores a partition of a set into disjoint subsets. A partition of a set is a set of pair-wise disjoint subsets whose union is the set itself. It provides operations for adding new sets, merging sets by replacing them with their union (union) and finding a representative member of a set (find).
+</p>
+
+
+<h3>Structure</h3>
+
+<p>
+  We represent the partition as a forest in which each connected component corresponds to a set in the partition. Suppose we have some items labelled with the integers [0, n). We represent the forest as an array of length n where the value of an array element is the parent of the item identified by the array index.
+</p>
+
+<figure>
+  <img src="/img/data-structures/union-find.svg" height="100%" width="100%" style="max-width: 300px;">
+</figure>
+
+
+<h3>Find and Unify</h3>
+
+<p>
+  To find which block a particular element belongs to we simply find the root of the component containing that element. This is done by following the parent nodes from the element until the root is reached (i.e. arr[i] = i).
+</p>
+
+<p>
+  To unify two elements we start by finding their roots. If the roots match then the elements are already unified; otherwise, we set the parent of the root of the smaller tree to the root of the larger tree.
+</p>
+
+<figure>
+  <img src="/img/data-structures/union-find-unify.svg" height="100%" width="100%" style="max-width: 300px;">
+</figure>
+
+
+<h3>Path Compression</h3>
+
+<p>
+  Path compression is an optimization that is performed during a find operation. After following parents up to the root, we perform a second pass where we set the parent of each of those nodes encountered along the path to the root to the newly found root. This makes every node between the query node and the root point to the root.
+</p>
+
+
+<h3>Complexity</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th></th><th>Average case</th><th>Worst case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Union</td><td>O(α(n))</td><td>O(α(n))</td>
+    </tr>
+    <tr>
+      <td>Find</td><td>O(α(n))</td><td>O(α(n))</td>
+    </tr>
+    <tr>
+      <td>Space</td><td>O(n)</td><td>O(n)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/data-structures/UnionFind.java" lang="java" %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=0jNmHPfA_yE">Union-Find (William Fiset)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=VHRhJWacxis">Path Compression (William Fiset)</a>
+  </li>
+</ul>

@@ -1,0 +1,88 @@
+---
+title: "LRU Cache"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  An LRU cache is an efficient cache data structure that stores elements consisting of key-value pairs in order of use. If the cache is full, adding a new element will be performed by first evicting the element that has not been used for the longest time.
+</p>
+
+
+<h3>Structure</h3>
+
+<p>
+  A doubly linked list is used to store the elements in the cache in order of use. The head of the list corresponds to the most-recently used item and the tail corresponds to the least-recently used item. Additionally, a hash table is used to map keys to elements of the doubly-linked list.
+</p>
+
+<figure>
+  <img src="/img/data-structures/lru-cache.svg" height="100%" width="100%" style="max-width: 600px;">
+</figure>
+
+
+<h3>Get and Put</h3>
+
+<p>
+  To get the value associated with a key, we lookup the key in the hash table, make the corresponding node the head of the list and return the value stored in that node. If the key is not in the hash table then we return null.
+</p>
+
+<p>
+  To add an element to the cache, we first check if the key is already in the cache by performing a lookup in the hash table. If it is, then we update the value of the corresponding node (if necessary) and move the node to the head of the list.
+</p>
+
+<p>
+  If the key is not in the list, then we need to create a new node with the given key-value pair, insert the suitable key-node mapping in the hash table before prepending the node to the list. If this operation exceeds the capacity of the cache, we need to evict the least-recently used element by removing the tail and its corresponding hash table entry.
+</p>
+
+
+<h3>Cache Hits and Misses</h3>
+
+<p>
+  With the get and put operations we can describe the typical steps for accessing an element by key:
+</p>
+
+<ol>
+  <li>
+    Look up the element in the hash table.
+  </li>
+  <li>
+    If the lookup is successful then a cache hit has occurred and we can move the corresponding node to the head of the list.
+  </li>
+  <li>
+    If the element is not in the hash table then a cache miss has occurred and we need to load the item into the cache.
+  </li>
+  <li>
+    If the cache if full we evict the least-recently used element at the tail of the list and insert a new node at the head of the linked list and add it to the hash table.
+  </li>
+</ol>
+
+
+<h3>Complexity</h3>
+
+<table>
+  <thead>
+    <tr><th></th><th>Worst case</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>get</td><td>O(1)</td></tr>
+    <tr><td>put</td><td>O(1)</td></tr>
+    <tr><td>space</td><td>O(n)</td></tr>
+  </tbody>
+</table>
+
+
+<h3>Implementation</h3>
+
+{{% code java %}}{{% /code %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.interviewcake.com/concept/java/lru-cache">LRU Cache (Interview Cake)</a>
+  </li>
+  <li>
+    <a href="https://leetcode.com/problems/lru-cache/">146. LRU Cache</a>
+  </li>
+</ul>

@@ -14,66 +14,6 @@ draft: false
 </ul>
 
 
-<h3 id="introduction">Introduction</h3>
-
-
-<h3 id="linked-list">Linked List</h3>
-
-<p>
-  A linked list is a data structure that consists of a set of nodes that collectively form a sequence. Each node contains a reference to an element of the list and one or more other nodes in the sequence. The first node is called the head and the last node is called the tail.
-</p>
-
-<h4 id="singly-linked-list">Singly Linked List</h4>
-
-<p>
-  In a singly linked list, each node contains a reference to the next node in the sequence and a reference to an element of the list. The next reference of the tail points to null.
-</p>
-
-<figure>
-  <img src="/img/data-structures/singly-linked-list.svg" style="max-width: 380px;">
-  <figcaption>
-    <i>figure 1</i>
-  </figcaption>
-</figure>
-
-
-<h4 id="doubly-linked-list">Doubly Linked List</h4>
-
-<p>
-  In a doubly linked list, each node contains a reference to the previous node in the sequence, a reference to the next node in the sequence and a reference to an element of the list. The previous reference of the head node and the next reference of the tail point to null.
-</p>
-
-<figure>
-  <img src="/img/data-structures/doubly-linked-list.svg" style="max-width: 550px;">
-  <figcaption>
-    <i>figure 1</i>
-  </figcaption>
-</figure>
-
-
-<h4 id="circularly-linked-list">Circularly Linked List</h4>
-
-<p>
-  In a circularly linked list, each node contains a reference to the next node in the sequence and a reference to an element of the list. The next reference of the tail points to the head.
-</p>
-
-<figure>
-  <img src="/img/data-structures/circularly-linked-list.svg" style="max-width: 330px;">
-  <figcaption>
-    <i>figure 1</i>
-  </figcaption>
-</figure>
-
-
-<h4 id="complexity-analysis">Complexity Analysis</h4>
-
-<p>
-  Unlike an array, a linked list does not provide constant time access to a particular "index" within the list. If you'd like to find the K-th element in the list, you will need to iterate through K elements. The benefit of a linked list is that you can add and remove items from the beginning of the list in constant time.
-</p>
-
-
-<h3 id="stack">Stack</h3>
-
 <p>
   A stack is a collection of elements that allows values to be inserted and removed on a last in, first out (LIFO) basis. The push operation adds an element at the top of the stack the pop operation removes an element from the top of the stack. Both these operations have \(O(1)\) time complexity as they do not depend on how many elements are in the stack.
 </p>

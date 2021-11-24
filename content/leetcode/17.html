@@ -1,0 +1,88 @@
+---
+title: "17. Letter Combinations of a Phone Number"
+date: 2021-02-22
+draft: false
+---
+
+<!-- 
+  {{% inline-code %}}{{% /inline-code %}}
+ -->
+
+<h3 id="question">Question</h3>
+
+<p>Given a string containing digits from 2-9 inclusive, return all possible letter combinations that the number could represent. Return the answer in any order.
+
+A mapping of digit to letters (just like on the telephone buttons) is given below. Note that 1 does not map to any letters.</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Example 1:
+Input: digits = "23"
+Output: ["ad","ae","af","bd","be","bf","cd","ce","cf"]
+
+Example 2:
+Input: digits = ""
+Output: []
+
+Example 3:
+Input: digits = "2"
+Output: ["a","b","c"]{{% /code %}}
+
+
+
+<h3 id="solution">Solution</h3>
+
+{{% code java %}}class Solution {
+  private static final char[][] map = {
+    null,
+    null,
+    {'a', 'b', 'c'},
+    {'d', 'e', 'f'},
+    {'g', 'h', 'i'},
+    {'j', 'k', 'l'},
+    {'m', 'n', 'o'},
+    {'p', 'q', 'r', 's'},
+    {'t', 'u', 'v'},
+    {'w', 'x', 'y', 'z'}
+  };
+  
+  public List<String> letterCombinations(String digits) {
+    LinkedList<String> queue = new LinkedList<String>();
+    
+    if (digits.isEmpty()) {
+      return queue;
+    }
+    
+    queue.add("");
+    
+    // go through the entire queue once for each digit
+    for (int i = 0; i < digits.length(); i++) {
+      int index = digits.charAt(i) - '0';
+      
+      // go through the entire queue
+      while (queue.peek().length() == i) {
+        String s = queue.remove();
+        
+        // add each possible character
+        for (char c : map[index]) {
+          queue.addLast(s + c);
+        }
+      }
+    }
+    
+    return queue;
+  }
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/letter-combinations-of-a-phone-number/">Original Question</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=imD5XeNaJXA">LeetCode Letter Combinations of a Phone Number Solution Explained</a>
+  </li>
+</ul>

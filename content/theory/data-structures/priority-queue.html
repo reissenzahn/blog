@@ -1,0 +1,52 @@
+---
+title: "Priority Queue"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A priority queue is a queue-like data structure in which elements are enqueued with an associated priority. The dequeue operation removes and returns the element from the queue that has the highest priority. A min-priority queue considers lower values to have higher priority, while a max-priority queue considers higher values to have higher priority. For performance reasons, priority queues are frequently implemented using a heap.
+</p>
+
+<p>
+  For a min-priority queue implemented with a min-heap, the enqueue operation can be achieved by inserting the element into the heap using its priority. Further, the dequeue operation can be achieved by removing the minimum element in the heap.
+</p>
+
+<p>
+  A priority queue implemented with a binary heap has the following time complexities:
+</p>
+
+<table>
+  <tr>
+    <th>
+      Operation
+    </th>
+    <th>
+      Worst-case Complexity
+    </th>
+  </tr>
+  <tr>
+    <td>
+      Peek
+    </td>
+    <td>
+      \(O(1)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Enqueue
+    </td>
+    <td>
+      \(O(\log n)\)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Dequeue
+    </td>
+    <td>
+      \(O(\log n)\)
+    </td>
+  </tr>
+</table>

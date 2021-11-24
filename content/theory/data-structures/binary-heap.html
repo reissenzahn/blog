@@ -1,0 +1,86 @@
+---
+title: "Binary Heap"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A binary heap is binary tree where each node stores a key with two additional constraints:
+</p>
+
+<ul>
+  <li>
+    Shape property: It is always complete (all levels except possible the last one are fully filled and the last level is filled from left to right).
+  </li>
+  <li>
+    Heap property: The key stored in each node is either greater than or equal to or less than or equal to the keys in the children of that node.
+  </li>
+</ul>
+
+<p>
+  Heaps where the parent key is greater than or equal to the child keys are called max-heaps; those where it is less than or equal to are called min-heaps. We will consider the case of a max-heap.
+</p>
+
+<figure>
+  <img src="/img/data-structures/binary-heap.svg" height="100%" width="100%" style="max-width: 500px;">
+</figure>
+
+<p>
+  Since a binary heap is complete, we can represent it implicitly using an array. Then, given a node at index i, we can find the indices of its children and parent as follows:
+</p>
+
+<ul>
+  <li>
+    Left child: 2i + 1
+  </li>
+  <li>
+    Right child: 2i + 2
+  </li>
+  <li>
+    Parent: ⌊(i - 1)/2⌋
+  </li>
+</ul>
+
+<p>
+  Finding the maximum is as simple as returning the root located in the first position in the array.
+</p>
+
+<p>
+  To insert a key into the heap, we start by inserting it as a leaf in the next available position and then "heapify up". This consists of comparing the inserted node to its parent. If the parent is greater than or equal to the node we are finished; otherwise, we swap the node with its parent and repeat the process up the tree.
+</p>
+
+<figure>
+  <img src="/img/data-structures/binary-heap-insert.svg" height="100%" width="100%" style="max-width: 500px;">
+</figure>
+
+<p>
+  Deleting the root is performed by swapping the root node with the rightmost left node and then deleting that rightmost leaf node. Finally, we need to "heapify down". This consists of comparing the root to its children. If the root is greater than or equal to both children we are done; otherwise, we swap the root with the larger child and repeat the process down the tree.
+</p>
+
+<figure>
+  <img src="/img/data-structures/binary-heap-delete.svg" height="100%" width="100%" style="max-width: 500px;">
+</figure>
+
+<p>
+  Finally, BuildHeap provides an efficient way to construct a heap in worst-case linear time. We start by initializing our array pf length n with the key we plan to store in the heap. Then we run the heapify down operation on each of the non-left nodes starting from the bottom rightmost node. That is, on the first ⌊n/2⌋ array elements in reverse order.
+</p>
+
+
+<!--
+Given that the height of a binary heap with n nodes is O(log n) we have the following time complexities:
+
+Algorithm		Average	  Worst case
+Insert		  O(1)	    O(log n)
+Find-min		O(1)	    O(1)
+Delete-min	O(log n)	O(log n)
+Space		    O(n)	    O(n)
+-->
+
+
+<!-- 
+  https://www.youtube.com/watch?v=WCm3TqScBM8
+  https://en.wikipedia.org/wiki/Binary_heap
+
+  https://leetcode.com/problems/kth-largest-element-in-a-stream/
+-->
+

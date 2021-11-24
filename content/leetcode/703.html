@@ -1,0 +1,81 @@
+---
+title: "703. Kth Largest Element in a Stream"
+date: 2021-02-22
+draft: false
+---
+
+<!-- 
+  {{% inline-code %}}{{% /inline-code %}}
+ -->
+
+<h3 id="question">Question</h3>
+
+<p>Design a class to find the k-th largest element in a stream. Note that it is the k-th largest element in the sorted order, not the kth distinct element.</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Example 1:
+Input
+["KthLargest", "add", "add", "add", "add", "add"]
+[[3, [4, 5, 8, 2]], [3], [5], [10], [9], [4]]
+Output
+[null, 4, 5, 5, 8, 8]
+
+Explanation
+KthLargest kthLargest = new KthLargest(3, [4, 5, 8, 2]);
+kthLargest.add(3);   // return 4
+kthLargest.add(5);   // return 5
+kthLargest.add(10);  // return 5
+kthLargest.add(9);   // return 8
+kthLargest.add(4);   // return 8{{% /code %}}
+
+
+
+<h3 id="solution">Solution</h3>
+
+{{% code java %}}/**
+* Your KthLargest object will be instantiated and called as such:
+* KthLargest obj = new KthLargest(k, nums);
+* int param_1 = obj.add(val);
+*/
+class KthLargest {
+ 
+ PriorityQueue<Integer> minHeap;
+ int k;
+
+ public KthLargest(int k, int[] nums) {
+   this.minHeap = new PriorityQueue<Integer>();
+   this.k = k;
+   
+   for (int i = 0; i < nums.length; i++) {
+     this.minHeap.offer(nums[i]);
+   }
+   
+   while (this.minHeap.size() > k) {
+     this.minHeap.poll();
+   }
+ }
+
+ public int add(int val) {
+   this.minHeap.offer(val);
+   
+   if (this.minHeap.size() > this.k) {
+     this.minHeap.poll();
+   }
+   
+   return this.minHeap.peek();
+ }
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/kth-largest-element-in-a-stream/">Original Question</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=hOjcdrqMoQ8">NeetCode</a>
+  </li>
+</ul>

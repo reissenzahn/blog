@@ -1,0 +1,65 @@
+---
+title: "NAT"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+
+</ul>
+
+<p>
+  WebRTC is a set of standards that allow for web application to share data in a peer-to-peer manner. 
+</p>
+
+
+<h4 id="NAT">NAT</h4>
+
+<p>
+  Network Address Translation (NAT) is a method of mapping one IP address space into another by modifying the IP address information in the IP header of packets passing through a router. In the majority of cases, network address translators map multiple private hosts to one publicly exposed IP address. This is particularly relevant due to IPv4 address exhaustion.
+</p>
+
+
+<figure>
+  <img src="/img/networking/webrtc/nat.png" style="max-width: 600px;">
+</figure>
+
+<p>
+  Specifically, a router will have a private address of the local network while also being connected to the Internet with a public address. Packets passing from the private network to the public network will have their source address modified, while packets passing from the public network back to the private network will have their destination address modified. For protocols like TCP or UDP, the port numbers are also changed.
+</p>
+
+<p>
+  The translation process is achieved using a NAT translation table. When a host on the private network sends an IP packet to the public network, the internal source IP address is replaced with the external IP address. Additionally, the connection may be assigned a port number which is inserted in the source port field. The NAT device then makes an entry in a translation table containing the internal IP address, original source port, and the translated source port.  Subsequent packets from the same internal IP address and port number are translated to the same external source IP address and port.
+</p>
+
+<p>
+  Upon receiving a packet from the external network, the NAT device searches the translation table based on the destination port. If a match is found, the destination IP address and port number is replaced with the value found in the table and the packet is forwarded to the private network.
+</p>
+
+<!--
+  https://en.wikipedia.org/wiki/Network_address_translation
+-->
+
+
+<h4 id="STUN">STUN</h4>
+
+<p>
+  Session Traversal Utilities for NAT (STUN) is a protocol used for traversing NAT gateways which allows hosts to discover the mapped public IP address and port numbers that the NAT has allocated for UDP flows to remote hosts. The protocol requires the use of a third-party STUN server located on the public side of the NAT.
+</p>
+
+<p>
+  The basic operation of the protocol starts with a client running inside a private network sending a binding request to a STUN server on the public Internet. The server then responds with a success response that contains the IP address and port number of the client as seen from the perspective of the server.
+</p>
+
+
+<!-- 
+  https://en.wikipedia.org/wiki/STUN
+-->
+
+
+<h4 id="TURN">TURN</h4>
+
+<p>
+  Traversal Using Relays around NAT (TURN) 
+</p>
+
