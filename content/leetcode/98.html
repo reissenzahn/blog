@@ -1,0 +1,45 @@
+---
+title: "98. Validate Binary Search Tree"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}/**
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left,  TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+ public boolean isValidBST(TreeNode root) {
+   return recurse(root, Long.MIN_VALUE, Long.MAX_VALUE);
+ }
+ 
+ private boolean recurse(TreeNode node, long min, long max) {
+   if (node == null) return true;
+   
+   if (node.val <= min || node.val >= max) return false;
+   
+   return this.recurse(node.left, min, node.val) && this.recurse(node.right, node.val, max);
+ }
+}{{% /code %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/validate-binary-search-tree/">Original Problem</a>
+  </li>
+</ul>

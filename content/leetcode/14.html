@@ -1,0 +1,57 @@
+---
+title: "14. Longest Common Prefix"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3 id="question">Question</h3>
+
+<p>Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string "".
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Example 1:
+Input: strs = ["flower","flow","flight"]
+Output: "fl"
+
+Example 2:
+Input: strs = ["dog","racecar","car"]
+Output: ""{{% /code %}}
+
+
+
+<h3 id="solution">Solution</h3>
+
+{{% code java %}}class Solution {
+  public String longestCommonPrefix(String[] strs) {
+    
+    // step over each character for the first string
+    for (int i = 0; i < strs[0].length(); i++) {
+      char ch = strs[0].charAt(i);
+      
+      // check next character for all the other strings
+      for (int j = 1; j < strs.length; j++) {
+
+        // check string is long enough and character matches
+        if (i >= strs[j].length() || ch != strs[j].charAt(i)) return strs[0].substring(0, i);
+      }
+    }
+    
+    return strs[0];
+  }
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/longest-common-prefix/submissions/">Original Problem</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=0sWShKIJoo4">NeetCode</a>
+  </li>
+</ul>

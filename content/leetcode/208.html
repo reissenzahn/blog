@@ -1,0 +1,123 @@
+---
+title: "208. Implement Trie"
+date: 2021-02-22
+draft: false
+---
+
+<!-- 
+  {{% inline-code %}}{{% /inline-code %}}
+ -->
+
+<h3 id="question">Question</h3>
+
+<p>
+  A trie is a tree data structure used to efficiently store and retrieve keys in a dataset of strings. There are various applications of this data structure, such as autocomplete and spellchecker.
+</p>
+
+<p>
+  Implement the Trie class:
+</p>
+
+<ul>
+  <li>
+    Trie() Initializes the trie object.
+  </li>
+  <li>
+    void insert(String word) Inserts the string word into the trie.
+  </li>
+  <li>
+    boolean search(String word) Returns true if the string word is in the trie (i.e., was inserted before), and false otherwise.
+  </li>
+  <li>
+    boolean startsWith(String prefix) Returns true if there is a previously inserted string word that has the prefix prefix, and false otherwise.
+  </li>
+</ul>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Example 1:
+Trie trie = new Trie();
+trie.insert("apple");
+trie.search("apple");   // return True
+trie.search("app");     // return False
+trie.startsWith("app"); // return True
+trie.insert("app");
+trie.search("app");     // return True{{% /code %}}
+
+
+
+<h3 id="solution">Solution</h3>
+
+{{% code java %}}class Trie {
+  
+  private Node root;
+  
+  public Trie() {
+    this.root = new Node();
+  }
+
+  public void insert(String word) {
+    Node node = root;
+    
+    for (char c: word.toCharArray()) {
+      if (node.children[c - 'a'] == null) {
+        node.children[c - 'a'] = new Node();
+      }
+
+      node = node.children[c - 'a'];
+    }
+
+    node.isWordEnding = true;
+  }
+
+  public boolean search(String word) {
+    Node node = root;
+    
+    for (char c: word.toCharArray()) {
+      if (node.children[c - 'a'] == null) {
+        return false;
+      }
+      
+      node = node.children[c - 'a'];
+    }
+    
+    return node.isWordEnding;
+  }
+
+  public boolean startsWith(String prefix) {
+    Node node = root;
+    
+    for (char c: prefix.toCharArray()) {
+      if (node.children[c - 'a'] == null) {
+        return false;
+      }
+      
+      node = node.children[c - 'a'];
+    }
+    
+    return true;
+  }
+  
+  private static class Node {
+    
+    private boolean isWordEnding; 
+    public Node[] children;
+    
+    public Node() {
+      this.children = new Node[26]; 
+    }
+  }
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="">Original Problem</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=oobqoCJlHA0">NeetCode</a>
+  </li>
+</ul>

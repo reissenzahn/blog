@@ -1,0 +1,66 @@
+---
+title: "Binary Search"
+date: 2021-11-26
+draft: false
+---
+
+<p>
+  Binary search finds the position of a target value in a sorted array. The algorithm begins by comparing the target value to the element in the middle of the array. If the target value matches the element, we are done. If the target value is less than the element, then search continues in the lower half of the array. Otherwise, the search continues in the upper half of the array.
+</p>
+
+
+<h3>Searching for Exact Match</h3>
+
+<p>
+  We proceed using two pointers called lo and hi. Initially, lo is set to the first element of the array and hi is set to the last element. At each iteration, mid is calculated as ⌊(hi + lo) / 2⌋ and the element at that element is compared to the target. If a match occurs, we are done and mid can be returned. Otherwise, if the element is greater than the target we know to continue the search in the lower half as so set hi to mid - 1. Similarly, if the element is less than the target we set lo to mid + 1.
+</p>
+
+<figure>
+  <img src="/img/search-algorithms/binary-search.svg" height="100%" width="100%" style="max-width: 450px;">
+  <caption>target = 45</caption>
+</figure>
+
+
+<h3>Searching for Closest Match</h3>
+
+<p>
+  Suppose we have some condition to check and are after the closest matching element in the array. For instance, we might want to find the greatest element less than or equal to the target. Now, instead of iterating until the pointers cross, we stop only it no longer holds that lo is strictly less than hi. Also, one pointer, say lo, will be advanced to mid rather than to mid + 1. This way, our lo pointer always points to the closest match and so we return lo after finishing the iterations.
+</p>
+
+<figure>
+  <img src="/img/search-algorithms/binary-search-closest.svg" height="100%" width="100%" style="max-width: 450px;">
+  <caption>target = 45</caption>
+</figure>
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/search-algorithms/BinarySearch.java" lang="java" %}}
+
+
+<h3>Complexity</h3>
+
+<p>
+  The time complexity of binary search is \(O(1)\) in the best case and \(O(\log n)\) in the average and worst-case. The worst-case space complexity is \(O(1)\).
+</p>
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Binary_search_algorithm">Binary Search (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="http://www.cs.toronto.edu/~reid/search/bincode.html">Binary Search Implementation</a>
+  </li>
+</ul>
+
+
+<h3>Problems</h3>
+
+<ul>
+  <li>
+    <a href="/leetcode/704/">704</a>
+  </li>
+</ul>

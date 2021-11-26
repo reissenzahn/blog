@@ -1,0 +1,58 @@
+---
+title: "875. Koko Eating Bananas"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  
+  public int minEatingSpeed(int[] piles, int h) {
+    int lo = 1;
+    int hi = this.maxPile(piles);
+    
+    while (lo < hi) {
+      int mid = (lo + hi) / 2;
+      
+      if (this.canEatAll(piles, h, mid)) {
+        hi = mid;
+      } else {
+        lo = mid + 1;
+      }
+    }
+    
+    return lo;
+  }
+  
+  private boolean canEatAll(int[] piles, int h, int k) {
+    int time = 0;
+    
+    for (int i = 0; i < piles.length; i++) {
+      time += piles[i] / k;
+      if (piles[i] % k != 0) time++;
+    }
+    
+    return time <= h;
+  }
+  
+  private int maxPile(int[] piles) {
+    int max = piles[0];
+    
+    for (int i = 0; i < piles.length; i++) {
+      max = Math.max(max, piles[i]);
+    }
+    
+    return max;
+  }
+}{{% /code %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="">Original Problem</a>
+  </li>
+</ul>

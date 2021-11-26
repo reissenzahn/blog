@@ -1,0 +1,66 @@
+---
+title: "Binary Tree"
+date: 2021-11-24
+draft: false
+---
+
+
+
+<h3>Height and Size</h3>
+
+<p>
+  The height of a node is the number of nodes along the longest path from the node down to the farthest leaf node. The height of a tree is the height of its root. This can be determined recursively starting from the root and returning the maximum height of the two sub-trees + 1. The height of a null node is 0 though we instead return -1 in the base case as otherwise our result will be one greater than the height of the tree.
+</p>
+
+<!-- O(n) -->
+
+<p>
+  The size of a binary tree is simply the number of nodes in the tree. This can be calculated recursively starting at the root node. Each call returns (size of the left subtree) + (size of right subtree) + 1. The base case occurs when the current node becomes null at which point 0 is returned.
+</p>
+
+
+<h3>Comparing Binary Trees for Equality</h3>
+
+<p>
+  To check if two binary trees are in fact the same tree we start at the root and recursively check if both the left child of the root equals the left child of the other root and likewise for the right children. This recursion will terminate when the nodes being compared are both null. An implementation will need to account for the case in which one child is defined and the corresponding child in the other tree is null in which case false should be returned.
+</p>
+
+<!-- O(n) -->
+
+
+<h3>Tree Traversals</h3>
+
+<figure>
+  <img src="/img/data-structures/binary-tree.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+<ul>
+  <li>
+    Pre-order (VLR): visit the node then its left child and finally its right child (i.e. 4, 3, 8, 2, 5, 7, 6, 9, 1).
+  </li>
+  <li>
+    In-order (LVR): visit the left child then the node and finally its right child (i.e. 2, 8, 3, 5, 4, 7, 9, 6, 1).
+  </li>
+  <li>
+    Post-order (LRV): visit the left child then the right child and finally the node (i.e. 2, 8, 5, 3, 9, 1, 6, 7, 4).
+  </li>
+</ul>
+
+
+<h3>Resources</h3>
+
+<ul>
+  <a href="https://www.youtube.com/watch?v=ZM-sV9zQPEs&list=PLrmLmBdmIlpv_jNDXtJGYTPNQ2L1gdHxu&index=2">Binary Tree Playlist (Tushar Roy)</a>
+</ul>
+
+
+<h3>Problems</h3>
+
+<ul>
+  <li>
+    <a href="/leetcode/100">100. Same Tree</a>
+  </li>
+  <li>
+    <a href="/leetcode/104">104. Maximum Depth of Binary Tree</a>
+  </li>
+</ul>

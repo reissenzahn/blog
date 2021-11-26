@@ -1,0 +1,89 @@
+---
+title: "Circular Buffer"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A circular buffer is a first-in, first-out (FIFO) data structure that uses a single fixed-size buffer as if it is connected end-to-end. That is, the last position is connected to the first position to form a conceptual circle. This can be used for implementing a queue with a maximum capacity.
+</p>
+
+
+<h3>Enqueue and Dequeue</h3>
+
+<p>
+  Elements of a circular buffer are stored in an array and two indices are used to keep track of where to read and write elements. Initially, both indices are set to 0. When an element is enqueued, the new element is inserted at the write index and the index is incremented. Similarly, when an element is dequeued, the element at the read index is returned and that index is incremented.
+</p>
+
+<figure>
+  <img src="/img/data-structures/circular-buffer.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+<p>
+  When incrementing the indices, it is necessary to perform this operation modulo the capacity to allow for the pointers to loop from the end of the array back to the beginning.
+</p>
+
+
+<h3>Overwriting Elements</h3>
+
+<p>
+  If too few elements are dequeued between elements being enqueued then the write index may catch-up to the read index. When this occurs we start overwriting elements in the queue. When this occurs, the read and write indices will be equal and so it is necessary to increment the read index along with the write index when enqueuing an element. This is in order to avoid reading elements that have just been inserted
+</p>
+
+<figure>
+  <img src="/img/data-structures/circular-buffer-overwriting.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/data-structures/CircularBuffer.java" lang="java" %}}
+
+
+<h3>Complexity</h3>
+
+<table>
+  <tr>
+    <th></th>
+    <th>Worst case</th>
+  </tr>
+  <tr>
+    <td>
+      Enqueue
+    </td>
+    <td>
+      O(1)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Dequeue
+    </td>
+    <td>
+      O(1)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Space
+    </td>
+    <td>
+      O(n)
+    </td>
+  </tr>
+</table>
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Circular_buffer">Circular Buffer</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=8sjFA-IX-Ww">Circular Queue (Blue Tree Code)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=39HHWATPcwY">Circular Buffer (Jeff Zhang)</a>
+  </li>
+</ul>

@@ -1,0 +1,36 @@
+---
+title: "58. Length of Last Word"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  
+  public int lengthOfLastWord(String s) {
+    int len = 0;
+        
+    for (int i = s.length() - 1; i >= 0; i--) {
+      if (s.charAt(i) == ' ') {
+
+        // account for trailing spaces
+        if (len != 0) break;
+      } else {
+        len++;
+      }
+    }
+    
+    return len;
+  }
+}{{% /code %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="">Original Problem</a>
+  </li>
+</ul>

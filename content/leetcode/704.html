@@ -1,0 +1,36 @@
+---
+title: "704. Binary Search"
+date: 2021-02-22
+draft: false
+---
+
+{{% code java %}}class Solution {
+
+  public int search(int[] nums, int target) {
+    int lo = 0;
+    int hi = nums.length - 1;
+    
+    while (hi >= lo) {
+      int mid = (lo + hi) / 2;
+      
+      if (nums[mid] == target) {
+        return mid;
+      } else if (nums[mid] < target) {
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    
+    return -1;
+  }
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/binary-search/">Original Problem</a>
+  </li>
+</ul>

@@ -1,0 +1,88 @@
+---
+title: "55. Jump Game"
+date: 2021-02-22
+draft: false
+---
+
+<!-- 
+  {{% inline-code %}}{{% /inline-code %}}
+ -->
+
+<h3 id="question">Question</h3>
+
+<p>
+  You are given an integer array nums. You are initially positioned at the array's first index, and each element in the array represents your maximum jump length at that position. Return true if you can reach the last index, or false otherwise.
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Example 1:
+Input: nums = [2,3,1,1,4]
+Output: true
+Explanation: Jump 1 step from index 0 to 1, then 3 steps to the last index.
+
+Example 2:
+Input: nums = [3,2,1,0,4]
+Output: false
+Explanation: You will always arrive at index 3 no matter what. Its maximum jump length is 0, which makes it impossible to reach the last index.{{% /code %}}
+
+
+
+<h3 id="solution">Solution</h3>
+
+<p>
+  There is certainly a recursive solution that proceeds forwards through the sequence looking for a valid sequence of jumps.
+</p>
+
+{{% code java %}}class Solution {
+
+  public boolean canJump(int[] nums) {
+    return recurse(nums, 0);
+  }
+  
+  private boolean recurse(int[] nums, int pos) {
+    if (pos == nums.length - 1) return true;
+    
+    if (pos >= nums.length) return false;
+    
+    boolean result = false;
+    
+    for (int i = nums[pos]; i > 0; i--) {
+      if (recurse(nums, pos + i)) return true;
+    }
+  
+    return false;  
+  }
+}{{% /code %}}
+
+<p>
+  While this can be optimized into a bottom-up dynamic programming approach, that result is still not optimal.
+</p>
+
+<p>
+  Instead, we consider the problem in the reverse direction. We can call the last position the goal and then determine whether it is possible to move that goal towards the start. Particularly, we can look backwards and check whether any of the previous position can jump to (or over) the current goal and then move the goal backwards to that position.
+</p>
+
+<pre>             v
+[2, 3, 1, 1, 4]
+
+          v
+[2, 3, 1, 1, 4]
+       v
+[2, 3, 1, 1, 4]
+
+[2, ]
+</pre>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/jump-game/">Original Problem</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=Yan0cv2cLy8">NeetCode</a>
+  </li>
+</ul>

@@ -1,0 +1,67 @@
+---
+title: "605. Can Place Flowers"
+date: 2021-11-25
+draft: false
+---
+
+<h3 id="question">Question</h3>
+
+<p>
+  You have a long flowerbed in which some of the plots are planted, and some are not. However, flowers cannot be planted in adjacent plots.
+</p>
+
+<p>
+  Given an integer array flowerbed containing 0's and 1's, where 0 means empty and 1 means not empty, and an integer n, return if n new flowers can be planted in the flowerbed without violating the no-adjacent-flowers rule.
+</p>
+
+
+<h3 id="usage">Usage</h3>
+
+{{% code makefile %}}Example 1:
+Input: flowerbed = [1,0,0,0,1], n = 1
+Output: true
+
+Example 2:
+Input: flowerbed = [1,0,0,0,1], n = 2
+Output: false{{% /code %}}
+
+
+<h3 id="solution">Solution</h3>
+
+<p>
+  We advance through the array and place a flower each time the previous, current and next elements are all zero (or off the edge of the array). If these conditions hold we place a flower in the current position and advance two spaces as the next position cannot be used to hold a flower; otherwise, we simple advance one position.
+</p>
+
+{{% code java %}}class Solution {
+  public boolean canPlaceFlowers(int[] flowerbed, int n) {
+
+    // we can trivially plant 0 flowers
+    if (n == 0) return true;
+
+    for (int i = 0; i < flowerbed.length; i++) {
+      if (flowerbed[i] == 0 && (i - 1 < 0 || flowerbed[i - 1] == 0) && (i + 1 >= flowerbed.length || flowerbed[i + 1] == 0)) {
+        flowerbed[i] = 1;
+        n--;
+
+        // next position cannot hold a flower
+        i++;
+
+        if (n == 0) return true;
+      }
+    }
+
+    return false;
+  }
+}{{% /code %}}
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/can-place-flowers/">Original Problem</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=ZGxqqjljpUI">NeetCode</a>
+  </li>
+</ul>

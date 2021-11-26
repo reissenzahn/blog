@@ -2,88 +2,67 @@ import java.util.*;
 
 public class Trie {
 
-  private static String ROOT_CHAR = '\0';
+  private Node root;
 
-  private Node root = new Node(ROOT_CHAR);
-
-  private static class Node {
-    char c;
-    int count = 0;
-    boolean isWordEnding = false;
-    Map<Character, Node> children = new HashMap<>();
-
-    public Node(char c) {
-      this.c = c;
-    }
-
-    public Node getChild(char c) {
-      return children.get(c);
-    }
-
-    public void addChild(char c, Node node) {
-      children.put(c, node);
-    }
+  public Trie() {
+    this.root = new Node('\0');
   }
 
   public void insert(String key) {
-    Node currNode = root;
+    Node curr = this.root;
 
+    // step over each character in key
     for (int i = 0; i < key.length(); i++) {
-      char c = key.charAt(i);
+      char ch = key.charAt(i);
+      Node next = curr.children.get(ch);
 
-      Node nextNode = currNode.children.get(c);
-
-      if (nextNode == null) {
-        nextNode = new Node(c);
-        currNode.addChild(c, nextNode);
+      // character does not exist so add it
+      if (next == null) {
+        next = new Node(ch);
+        curr.children.put(ch, next);
       }
 
-      currNode = nextNode;
-      currNode.count += 1;
+      next.count += 1;
+      curr = next;
     }
 
-    if (currNode != root) {
-      currNode.isWordEnding = true;
+    // once we get to the final character we mark it as a word ending
+    if (curr != root) {
+      curr.isWordEnding = true;
     }
   }
 
   public void delete(String key) {
-    if (!this.contains(key)) {
-      return;
-    }
-
-    Node currNode = root;
+    Node curr = root;
 
     for (int i = 0; i < key.length(); i++) {
-      char c = key.charAt(i);
+      char ch = key.charAt(i);
+      Node next = curr.children.get(ch);
+      next.count -= 1;
 
-      Node nextNode = currNode.children.get(c);
-
-      nextNode.count -= 1;
-
-      if (nextNode.count <= 0) {
-        currNode.children.remove(c);
+      if (next.count <= 0) {
+        curr.children.remove(ch);
         return;
       }
 
-      currNode = nextNode;
+      curr = next;
     }
   }
-  
+
   public int count(String key) {
-    Node currNode = root;
+    Node curr = root;
 
     for (int i = 0; i < key.length(); i++) {
-      if (currNode == null) {
+      char ch = key.charAt(i);
+
+      if (curr == null) {
         return 0;
       }
-      
-      char c = key.charAt(i);
 
-      currNode = currNode.children.get(c);
+      curr = curr.children.get(ch);
     }
 
-    if (currNode != null) {
+    if (curr != null) {
       return node.count;
     }
 
@@ -97,8 +76,23 @@ public class Trie {
   public void clear() {
     this.root = new Node('\0');
   }
-  
+
+  private static class Node {
+
+    private char ch;
+    private int count;
+    private boolean isWordEnding;
+    private Map<Character, Node> children;
+
+    public Node(char ch) {
+      this.ch = ch;
+      this.count = 0;
+      this.isWordEnding = false;
+      this.children = new HashMap<>();
+    }
+  }
+
   public static void main(String[] args) {
-    Trie trie = new Trie();
+
   }
 }

@@ -1,0 +1,48 @@
+---
+title: "441. Arranging Coins"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+<p>
+  Suppose we have n coins and the answer is k. Then completed rows contain 1 + 2 + ... + k = k(k+1)/2 coins.
+</p>
+
+<p>
+  We can then reformulate the problem as finding the maximum k such that k(k+1)/2 ≤ n. This can be solved using binary search on the array [0, ..., n].
+</p>
+
+{{% code java %}}class Solution {
+  public int arrangeCoins(int n) {
+    long lo = 0;
+    long hi = n;
+
+    while (lo <= hi) {
+      long k = (lo + hi) / 2;
+
+      long numCoins = k * (k + 1) / 2;
+
+      if (numCoins == n) {
+        return (int) k;
+      } else if (numCoins < n) {
+        lo = k + 1;
+      } else {
+        hi = k - 1;
+      }
+    }
+    
+    return (int) hi;
+  }
+}{{% /code %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/arranging-coins/">Original Problem</a>
+  </li>
+</ul>

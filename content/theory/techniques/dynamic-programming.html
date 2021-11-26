@@ -51,7 +51,7 @@ draft: false
   Calculating the n-th member of the Fibonacci sequence is a typical case where dynamic programming can be applied. Indeed, for the typical recursive approach, notice that if we call, say, fib(5), we produce a call tree that calls the function on the same value many different times.
 </p>
 
-{{% code-file file="/static/code/algorithms/other/Fibonacci.java" lang="java" %}}
+{{% code-file file="/static/code/techniques/Fibonacci.java" lang="java" %}}
 
 <p>
   In both the top-down and bottom-up cases, we only calculate, say, fib(2) one time, and then use it to calculate both fib(4) and fib(3), instead of computing it every time either of them is evaluated. Further, given that its fine to forget solutions to sub-problems that will not be used again, the second version of the bottom-up case uses this to only require constant space.

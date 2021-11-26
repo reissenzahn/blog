@@ -26,6 +26,19 @@ public class BinarySearchTree<T extends Comparable<T>> {
 
   }
 
+  public boolean validate() {
+    return this.validateRange(this.root, Integer.MIN_VALUE, Integer.MAX_VALUE);
+  }
+
+  private boolean validateRange(Node node, int min, int max) {
+    if (node == null) return true;
+
+    // 
+    if (node.value < min || node.value >= max) return false;
+
+    return this.validateRange(root.left, min, node.value) && this.validateRange(root.right, node.value, max);
+  }
+
   public int size() {
     return size;
   }

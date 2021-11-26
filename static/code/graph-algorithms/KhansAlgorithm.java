@@ -1,5 +1,3 @@
-// status: WIP
-// source: https://github.com/williamfiset/Algorithms/blob/master/src/main/java/com/williamfiset/algorithms/graphtheory/Kahns.java
 import java.util.*;
 
 public class Khans {

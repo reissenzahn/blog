@@ -12,6 +12,9 @@ draft: false
   <img src="/img/data-structures/binary-search-tree.svg" height="100%" width="100%" style="max-width: 400px;">
 </figure>
 
+
+<h3>Searching for Keys</h3>
+
 <p>
   To search for a certain target key we proceed as follows:
 </p>
@@ -34,6 +37,9 @@ draft: false
   </li>
 </ol>
 
+
+<h3>Inserting Keys</h3>
+
 <p>
   To insert a key we proceed as follows:
 </p>
@@ -53,6 +59,8 @@ draft: false
   </li>
 </ol>
 
+
+<h3>Deleting Keys</h3>
 
 <p>
   When deleting a node, there are three scenarios to consider:
@@ -74,12 +82,21 @@ draft: false
   Consistently using the in-order successor or the in-order predecessor for every instance of the two-child case can lead to an unbalanced tree, so some implementations select one or the other at different times.
 </p>
 
+
+<h3>Maximums and Minimums</h3>
+
 <p>
   To find the minimum key, go to the left child of the root; then go to the left child of that child, and so on, until you come to a node that has no left child. This node has the minimum key. Similarly, to find the maximum key, go to the right child of the root; then go to the right child of that child, and so on, until you come to a node that has no right child. This node has the maximum key.
 </p>
 
+
+
+
+
+<h3>Validate Binary Search Property</h3>
+
 <p>
-  To determine wether a binary tree is a binary search tree, we need to check that each node as follows:
+  To check if a binary tree is a binary search tree, we cannot simply check if each node the binary search tree for each node and its children. Instead, we need to check that each node as follows:
 </p>
 
 <ul>
@@ -91,11 +108,50 @@ draft: false
   </li>
 </ul>
 
-<!-- 
-          Average case  Worst case
-  Search  O(log n)      O(n)
-  Insert  O(log n)      O(n)
-  Delete  O(log n)      O(n)
-  Space   O(log n)      O(n)
- -->
+<figure>
+  <img src="/img/data-structures/binary-search-tree-validate.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
 
+<p>
+  This can be performed by passing ranges down the tree. At the root, the key can be in (-∞, ∞). Now, say the root has key 10. Then its left child must be in (-∞, 10). If the left child has value 0 then it is valid and so its left child must be in (-∞, 0) and so on. Similarly, if the right child of the root must be in (10, ∞). Say the right child is 25, then its right child must be in (25, ∞) and so on. By checking all the nodes in the tree this way we can validate whether the binary search property does indeed hold.
+</p>
+
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/data-structures/BinarySearchTree.java" lang="java" %}}
+
+
+<h3>Complexity</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th></th><th>Average case</th><th>Worst case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Search</td><td>O(log(n))</td><td>O(log(n))</td>
+    </tr>
+    <tr>
+      <td>Insert</td><td>O(log(n))</td><td>O(log(n))</td>
+    </tr>
+    <tr>
+      <td>Delete</td><td>O(log(n))</td><td>O(log(n))</td>
+    </tr>
+    <tr>
+      <td>Space</td><td>O(log(n))</td><td>O(log(n))</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h3>Problems</h3>
+
+<ul>
+  <li>
+    <a href="/leetcode/98">98. Validate Binary Search Tree    </a>
+  </li>
+</ul>
