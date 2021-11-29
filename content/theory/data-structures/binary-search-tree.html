@@ -59,6 +59,10 @@ draft: false
   </li>
 </ol>
 
+<p>
+  To handle duplicate values, we can move into the right subtree when the key is greater than or equal to the current key.
+</p>
+
 
 <h3>Deleting Keys</h3>
 
@@ -66,7 +70,7 @@ draft: false
   When deleting a node, there are three scenarios to consider:
 </p>
 
-<ul>
+<ol>
   <li>
     If the node is a leaf then simply remove it.
   </li>
@@ -74,12 +78,16 @@ draft: false
     If the node has one child then replace it with its child.
   </li>
   <li>
-    If the node has two children then swap it with its in-order predecessor (or in-order successor) and attempt to delete it again.
+    If the node has two children then swap it with its in-order successor and attempt to delete it again.
   </li>
-</ul>
+</ol>
 
 <p>
-  Consistently using the in-order successor or the in-order predecessor for every instance of the two-child case can lead to an unbalanced tree, so some implementations select one or the other at different times.
+  To find the in-order successor of a node, we move to its right child (to find a node larger than the node) and then move to the left child repeatedly until we reach a leaf. As the successor cannot have a left sub-child we are guaranteed that deleting the node after it has been swapped will fall into one of the first two cases.
+</p>
+
+<p>
+  Consistently using the in-order successor for every instance of the two-child case can lead to an unbalanced tree, so some implementations use either the in-order successor or the in-order predecessor at different times.
 </p>
 
 
@@ -125,6 +133,10 @@ draft: false
 
 <h3>Complexity</h3>
 
+<p>
+  In the worst case, a binary search tree will become very unbalanced and start to resemble a linked list.
+</p>
+
 <table>
   <thead>
     <tr>
@@ -133,25 +145,34 @@ draft: false
   </thead>
   <tbody>
     <tr>
-      <td>Search</td><td>O(log(n))</td><td>O(log(n))</td>
+      <td>Search</td><td>O(log(n))</td><td>O(n)</td>
     </tr>
     <tr>
-      <td>Insert</td><td>O(log(n))</td><td>O(log(n))</td>
+      <td>Insert</td><td>O(log(n))</td><td>O(n)</td>
     </tr>
     <tr>
-      <td>Delete</td><td>O(log(n))</td><td>O(log(n))</td>
+      <td>Delete</td><td>O(log(n))</td><td>O(n)</td>
     </tr>
     <tr>
-      <td>Space</td><td>O(log(n))</td><td>O(log(n))</td>
+      <td>Space</td><td>O(log(n))</td><td>O(n)</td>
     </tr>
   </tbody>
 </table>
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=x6At0nzX92o&list=PLA5Lqm4uh9Bbq-E0ZnqTIa8LRaL77ica6&index=1">Binary Search Tree (David Taylor)</a>
+  </li>
+</ul>
 
 
 <h3>Problems</h3>
 
 <ul>
   <li>
-    <a href="/leetcode/98">98. Validate Binary Search Tree    </a>
+    <a href="/leetcode/98">98. Validate Binary Search Tree</a>
   </li>
 </ul>

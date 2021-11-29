@@ -1,0 +1,138 @@
+---
+title: "Hash Tables"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A hash table is an associative data structure that maps keys to values. Hash tables can allow for lookups that are independent of the number of elements stored in the sable. Further, many hash table designs allow for insertions and deletions of key-value pairs in amortized constant average time.
+</p>
+
+
+<h3>Hash Functions</h3>
+
+<p>
+  A hash function maps a key to a whole number in some fixed range. Hash functions must be deterministic and so the hash of a given key must always be the same. Further, if the hash function returns the same value for two keys then the keys may be equal; if different values are returned then the keys are certainly not equal. A hash function will preferably be uniform to minimize hash collisions.
+</p>
+
+
+<h3>Insertion and Lookup</h3>
+
+<p>
+  When a key-value pair is inserted, a hash function is used to compute an index from the key and the value is stored at that index in an array. During lookup, the key is hashed using the hash function and the resulting index indicates where the value can be found in the array.
+</p>
+
+<figure>
+  <img src="/img/data-structures/hash-table.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+
+<h3>Load Factor</h3>
+
+<p>
+  The load factor α = k/n where n is the capacity of the underlying array and k is the number of currently occupied entries. The performance of a hash table worsens as α increases and so it is essential to resize the hash table when the load factor exceeds a certain value. This involves creating a new array with a larger capacity and rehashing all items inside the old array to disperse them throughout the new array. Typical load factor thresholds are 0.6 and 0.75.
+</p>
+
+
+<h3>Hash Collisions</h3>
+
+<p>
+  A hash collision occurs when the hash function returns the same values for two different keys. When this occurs, a hash collision resolution technique must be used. The most popular of these techniques are:
+</p>
+
+<ul>
+  <li>
+    Separate chaining: Values whose keys are hashed to a particular array index are stored in a data structure (such as a linked list) which stores key-value pairs. Lookups require scanning the linked list for the desired pair.
+  </li>
+  <li>
+    Open addressing: Hash collisions are dealt with by finding another vacant position in the array. More specifically, we try another position by offsetting the current position according to a probing sequence P(x) modulo the table size until an unoccupied slot is found.
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/data-structures/hash-table-separate-chaining.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+
+<h3>Probing Sequences</h3>
+
+<p>
+  Some common probing sequences for open addressing include:
+</p>
+
+<ul>
+  <li>
+    Linear probing: P(x) = ax + b
+  </li>
+  <li>
+    Quadratic probing: P(x) = ax^2 + bx + c
+  </li>
+  <li>
+    Double hashing: P(k, x) = x * H(k)  (where H is a secondary hash function)
+  </li>
+</ul>
+
+<p>
+  Notice that most randomly selected probing sequence modulo the table size will produce a cycle shorter than the table size. This can result in an infinite loop if all the entries on the cycle are occupied. To avoid this, we can choose to only use probing functions which produce cycles of the length of the hash table.
+</p>
+
+<figure>
+  <img src="/img/data-structures/hash-table-linear-probing.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
+
+<h3>Deletion with Open Addressing</h3>
+
+<p>
+  If 
+</p>
+
+
+<!-- 
+  https://www.youtube.com/watch?v=7eLDTtbzX4M
+ -->
+
+
+<h3>Implementation</h3>
+
+
+<h3>Complexity</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th></th><th>average case</th><th>worst case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>lookup</td><td>O(1)</td><td>O(n)</td>
+    </tr>
+    <tr>
+      <td>insert</td><td>O(1)</td><td>O(n)</td>
+    </tr>
+    <tr>
+      <td>delete</td><td>O(1)</td><td>O(n)</td>
+    </tr>
+    <tr>
+      <td>space</td><td>O(n)</td><td>O(n)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=2E54GqF0H4s&list=PLDV1Zeh2NRsDH5Wq-Vk5tDb8gH03cULZS">Hash Table Playlist (William Fiset)</a>
+  </li>
+</ul>
+
+
+<!-- 
+  // If j != -1 this means we previously encountered a deleted cell.
+  // We can perform an optimization by swapping the entries in cells
+  // i and j so that the next time we search for this key it will be
+  // found faster. This is called lazy deletion/relocation.
+-->

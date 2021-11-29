@@ -1,6 +1,3 @@
-// Status: WIP
-// Source: https://www.youtube.com/watch?v=14g1YBvx8Co&list=PLSVu1-lON6LwnTOLZxw3zSn3wPdjO_e_R&index=2
-
 public class DoublyLinkedList<T> {
 
   private int size;          // number of elements in list
@@ -119,4 +116,3 @@ public class DoublyLinkedList<T> {
     System.out.println(l);  // [ A B C D E F ]
   }
 }
-

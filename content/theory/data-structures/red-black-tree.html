@@ -1,0 +1,92 @@
+---
+title: "Binary Heap"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A red-black tree is a self-balancing binary search tree. Each node stores an extra bit indicating whether it is red or black and uses these colors to ensure that the tree remains. During insertions and deletions, the new tree is rearranged and repainted to restore the coloring properties that constrain how unbalanced the tree can become in the worst case.
+</p>
+
+
+<h3>Properties</h3>
+
+<p>
+  A red-black tree is a binary-search tree that satisfies the following additional properties:
+</p>
+
+<ol>
+  <li>
+    Each node is either red or black.
+  </li>
+  <li>
+    The root is black.
+  </li>
+  <li>
+    All leaf nodes are considered black.
+  </li>
+  <li>
+    A red node does not have a red child.
+  </li>
+  <li>
+    Every root to leaf path contains the same number of black nodes.
+  </li>
+</ol>
+
+<p>
+  These requirement enforce that the path from the root to the farthest leaf is no more than twice as long as the path from the root to the nearest leaf.
+</p>
+
+<!-- 
+  4. New insertions are always red
+  5. Root is always black
+
+  leaf nodes do not contain keys
+
+  introduction of a violation of requirement 3, called a red-violation, or of requirement 4, called a black-violation.
+ -->
+
+
+
+<h3>Tree Rotations</h3>
+
+<p>
+
+</p>
+
+
+
+<h3>Insertion</h3>
+
+<p>
+  To insert a node, we perform the insertion as in a regular binary search tree and color the new node red. We then fix any violations of the properties. Firstly, if the root is red then we color it black. Secondly, if both the new node and its parent are red then we consider the following cases:
+</p>
+
+
+
+
+
+
+<h3>Complexity</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th></th><th>Average</th><th>Worst case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Search</th><th>O(log(n))</th><th>O(log(n))</th>
+    </tr>
+    <tr>
+      <th>Insert</th><th>O(1) (amortized)</th><th>O(log(n))</th>
+    </tr>
+    <tr>
+      <th>Delete</th><th>O(1) (amortized)</th><th>O(log(n))</th>
+    </tr>
+    <tr>
+      <th>Space</th><th>O(n)</th><th>O(n)</th>
+    </tr>
+  </tbody>
+</table>

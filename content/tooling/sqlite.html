@@ -1,0 +1,580 @@
+---
+title: "SQLite"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#commands">Commands</a>
+  </li>
+</ul>
+
+<h3 id="commands">Commands</h3>
+
+{{% code text %}}# start sqlite
+$ sqlite3
+
+# open a database file
+> .open file_name.db
+
+# list attached databases
+> .databases
+
+# list tables
+> .tables
+
+# show structure of table
+> .schema table_name
+
+# list indexes
+> .indexes
+
+# list indexes of table
+> .indexes table_name
+
+# save output to file
+> .output file_name
+> ...
+> .output
+
+# show/hide headers
+> .headers on|off
+
+# set output mode (set .help .mode for list of modes)
+> .mode ascii|box|column|table|...
+
+# execute file
+> .read file_name
+
+-- vacuum database
+> VACUUM;
+
+# quit
+> .quit
+
+# open a database file while starting sqlite
+$ sqlite file_name.db
+{{% /code %}}
+
+
+
+<h3>Data Types</h3>
+
+<p>
+  There are five primitive data types:
+</p>
+
+<ul>
+  <li>
+    INTEGER: signed integer, stored in 1, 2, 3, 4, 6, or 8 bytes depending on the magnitude of the value.
+  </li>
+  <li>
+    REAL: floating point value stored as an 8-byte IEEE floating point number.
+  </li>
+  <li>
+    TEXT: text string stored using the database encoding
+  </li>
+  <li>
+    BLOB: arbitrary binary object.
+  </li>
+  <li>
+    NULL: missing or unknown value.
+  </li>
+</ul>
+
+{{% code sql %}}SELECT typeof(1), typeof(1.0), typeof('abc'), typeof(x'1000'), typeof(NULL);{{% /code %}}
+
+<!-- 
+  A related quirk is that everything inserted into a text column is converted to a string.
+ -->
+
+
+<h3>Creating and Modifying Tables</h3>
+
+
+{{% code sql %}}-- create table
+CREATE TABLE IF NOT EXISTS table_name (
+  column_name data_type constraints,
+  column_name data_type constraints,
+  ...,
+  table_constraints
+);
+
+-- add column
+ALTER TABLE table_name ADD COLUMN column_name data_type;
+
+-- rename column
+ALTER TABLE table_name RENAME COLUMN column_name TO new_column_name;
+
+-- drop column
+ALTER TABLE table_name DROP COLUMN column_name;
+
+-- rename table
+ALTER TABLE table_name RENAME TO new_table_name;
+
+-- drop table
+DROP TABLE IF EXISTS table_name;
+
+-- drop table preventing constraint failed
+PRAGMA foreign_keys = OFF;
+DROP TABLE table_name;
+UPDATE table_name SET column_name = NULL;
+PRAGMA foreign_keys = ON;{{% /code %}}
+
+<!--
+  Whenever you create a table without specifying the WITHOUT ROWID option, you get an implicit auto-increment column called rowid. The rowid column store 64-bit signed integer that uniquely identifies a row in the table.
+
+  When you create a table that has an INTEGER PRIMARY KEY column, this column is the alias of the rowid column.
+
+  If you don’t specify the rowid value or you use a NULL value when you insert a new row, SQLite automatically assigns the next sequential integer, which is one larger than the largest rowid in the table. The rowid value starts at 1.
+-->
+
+<!-- CREATE TABLE contacts (
+  contact_id INTEGER PRIMARY KEY,
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE, 
+  phone TEXT NOT NULL UNIQUE 
+);
+
+CREATE TABLE groups (
+  group_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE contact_groups(
+  contact_id INTEGER,
+  group_id INTEGER,
+  PRIMARY KEY (contact_id, group_id),
+  FOREIGN KEY (contact_id) 
+    REFERENCES contacts (contact_id) 
+        ON DELETE CASCADE 
+        ON UPDATE NO ACTION,
+  FOREIGN KEY (group_id) 
+    REFERENCES groups (group_id) 
+        ON DELETE CASCADE 
+        ON UPDATE NO ACTION
+); -->
+
+<!--
+  CREATE TABLE IF NOT EXISTS people (
+   person_id INTEGER PRIMARY KEY,
+   first_name TEXT,
+   last_name TEXT,
+   address_id INTEGER,
+   FOREIGN KEY (address_id) 
+      REFERENCES addresses (address_id)
+);
+
+CREATE TABLE IF NOT EXISTS addresses (
+   address_id INTEGER PRIMARY KEY,
+   house_no TEXT,
+   street TEXT,
+   city TEXT,
+   postal_code TEXT,
+   country TEXT
+);
+
+INSERT INTO addresses ( house_no, street, city, postal_code, country ) 
+VALUES ( '3960', 'North 1st Street', 'San Jose ', '95134', 'USA ' ); 
+INSERT INTO people ( first_name, last_name, address_id ) 
+VALUES ('John', 'Doe', 1);
+
+DROP TABLE addresses;
+constraint failed
+
+PRAGMA foreign_keys = OFF;
+
+DROP TABLE addresses;
+
+UPDATE people
+SET address_id = NULL;
+
+PRAGMA foreign_keys = ON;
+-->
+
+
+<h3>Constraints</h3>
+
+{{% code sql %}}-- create table
+CREATE TABLE IF NOT EXISTS table_name (
+
+  -- primary key
+  column_name data_type PRIMARY KEY,
+
+  -- not null
+  column_name data_type NOT NULL,
+
+  -- unique
+  column_name data_type UNIQUE,
+
+  -- default value
+  column_name data_type DEFAULT default_value,
+
+  -- check condition
+  column_name data_type CHECK (condition)
+
+  -- multi-column primary key
+  PRIMARY KEY (column_name, column_name, ...),
+
+  -- multi-column unique
+  UNIQUE (column_name, column_name, ...),
+
+  -- table-level check 
+  CHECK (condition)
+
+  -- foreign key constraints
+  FOREIGN KEY (column_name)
+    REFERENCES table_name (column_name)
+      ON DELETE CASCADE
+      ON UPDATE NO ACTION
+);
+
+<ul>
+  <li>
+    <code>PRIMARY KEY</code>: defines a column or group of columns as being used to uniquely identify rows in the table.
+  </li>
+  <li>
+    <code>NOT NULL</code>: values in the column may not be <code>NULL</code>.
+  </li>
+  <li>
+    <code>UNIQUE</code>: values in the column or a group of columns are unique.
+  </li>
+</ul>
+
+<!-- 
+  SQLite allows the primary key column to contain NULL values.
+
+  A primary key is a column or group of columns used to identify the uniqueness of rows in a table. Each table has one and only one primary key.
+
+  Second, in case primary key consists of two or more columns, you use the PRIMARY KEY table constraint to define the primary as shown in the following statement.
+
+  SQLite treats all NULL values are different, therefore, a column with a UNIQUE constraint can have multiple NULL values.
+
+  In this syntax, whenever a row is inserted into a table or an existing row is updated, the expression associated with each CHECK constraint is evaluated and returned a numeric value 0 or 1.
+ -->
+
+
+<!-- 
+  CREATE TABLE contacts (
+    contact_id INTEGER PRIMARY KEY,
+    first_name TEXT    NOT NULL,
+    last_name  TEXT    NOT NULL,
+    email      TEXT,
+    phone      TEXT    NOT NULL
+                    CHECK (length(phone) >= 10) 
+);
+
+CREATE TABLE products (
+    product_id   INTEGER         PRIMARY KEY,
+    product_name TEXT            NOT NULL,
+    list_price   DECIMAL (10, 2) NOT NULL,
+    discount     DECIMAL (10, 2) NOT NULL
+                                DEFAULT 0,
+    CHECK (list_price >= discount AND 
+        discount >= 0 AND 
+        list_price >= 0) 
+);
+ -->
+
+
+<h3>Insert, Update and Delete</h3>
+
+{{% code sql %}}-- insert rows
+INSERT INTO table_name (column_name, column_name, ...)
+VALUES (value, value, ...), (value, value, ...), ...;
+
+-- insert row using default values
+INSERT INTO table_name DEFAULT VALUES;
+
+-- insert row using result of select
+INSERT INTO table_name SELECT column_name, column_name, ... FROM table_name;
+
+-- update existing rows by condition
+UPDATE TABLE SET column_name = value, column_name = value, ... WHERE condition;
+
+-- if a unique or primary key constraint violation occurs then delete the existing row that caused the violation and insert the new row
+INSERT OR REPLACE INTO table_name (column_name, column_name, ...)
+VALUES (value, value, ...), (value, value, ...), ...;
+
+-- delete rows by condition
+DELETE FROM table_name WHERE condition;
+
+-- delete all rows
+DELETE FROM table_name;{{% /code %}}
+
+
+<h3>Querying and Filtering</h3>
+
+{{% code sql %}}-- select all columns
+SELECT * FROM table_name;
+
+-- select list of columns
+SELECT column_name, column_name, ... FROM table_name;
+
+-- select rows in specific order
+SELECT * FROM table_name ORDER BY column_name ASC;
+
+-- rows with the same value for the first column can be further ordered by the additional columns
+SELECT * FROM table_name ORDER BY column_name ASC, column_name DESC, ...;
+
+-- select distinct rows (i.e. omit duplicates)
+SELECT DISTINCT * FROM table_name;
+
+-- constrain number of rows
+SELECT * FROM table_name LIMIT row_count;
+
+-- constrain rows from offset
+SELECT * FROM table_name LIMIT row_count OFFSET offset;
+
+-- filter results based on condition
+SELECT * FROM table_name WHERE condition;{{% /code %}}
+
+
+
+<h3>Operators</h3>
+
+{{% code sql %}}-- comparison operators
+SELECT * FROM table_name WHERE column_name = value;
+SELECT * FROM table_name WHERE column_name != value;
+SELECT * FROM table_name WHERE column_name < value;
+SELECT * FROM table_name WHERE column_name > value;
+SELECT * FROM table_name WHERE column_name <= value;
+SELECT * FROM table_name WHERE column_name >= value;
+
+-- comparisons involving NULL
+SELECT * FROM table_name WHERE column_name IS NULL;
+SELECT * FROM table_name WHERE column_name IS NOT NULL;
+
+-- logical operators
+SELECT * FROM table_name WHERE condition AND condition;
+SELECT * FROM table_name WHERE condition OR condition;
+SELECT * FROM table_name WHERE NOT condition;
+
+-- column_name = value OR column_name = value
+SELECT * FROM table_name WHERE column_name IN (value, value, ...);
+
+-- WHERE column_name >= value AND column_name <= value
+SELECT * FROM table_name WHERE column_name BETWEEN value AND value;
+
+-- match case-insensitive pattern possibly containing % (zero or more characters) and _ (any single character)
+SELECT * FROM table_name WHERE column_name LIKE pattern;
+
+-- concatenation
+SELECT column_name || column_name FROM table_name;
+{{% /code %}}
+
+
+<!-- 
+  Notice that SQLite does not provide Boolean data type therefore 1 means TRUE, and 0 means FALSE.
+
+  NULL is not equal to anything even the number zero, an empty string, and so on. Especially, NULL is not equal to itself.
+
+  The percent sign % wildcard matches any sequence of zero or more characters.
+The underscore _ wildcard matches any single character.
+ -->
+
+
+<h3>Functions</h3>
+
+{{% code sql %}}
+-- count number of rows
+SELECT COUNT(*) FROM table_name;
+
+-- count number of distinct values in column_name
+SELECT COUNT(DISTINCT column_name) FROM table_name;
+
+-- maximum and minimum value of column_name
+SELECT MAX(column_name), MIN(column_name) FROM table_name;
+
+-- sum of values in column_name
+SELECT SUM(column_name) FROM table_name;
+
+-- average of values in column_name
+SELECT AVG(column_name) FROM table_name;
+
+-- custom calculations
+SELECT SUM(column_name) * 1.0 / COUNT(*) FROM table_name;
+
+-- 
+{{% /code %}}
+
+
+
+<h3>Indexes</h3>
+
+{{% code sql %}}-- create index on column
+CREATE INDEX index_name ON table_name(column_name);
+
+-- create index on multiple columns
+CREATE INDEX index_name ON table_name(column_name, column_name, ...);
+
+-- create unique index (ensures values in one or more columns are unique)
+CREATE UNIQUE INDEX index_name ON table_name(column_name);
+
+-- check if index is being used
+EXPLAIN QUERY PLAN
+SELECT * FROM table_name WHERE column_name = value;
+
+-- drop index
+DROP INDEX IF EXISTS index_name;
+({{% /code %}}
+
+<!-- 
+  In relational databases, a table is a list of rows. In the same time, each row has the same column structure that consists of cells. Each row also has a consecutive rowid sequence number used to identify the row. Therefore, you can consider a table as a list of pairs: (rowid, row).
+
+  Unlike a table, an index has an opposite relationship: (row, rowid). An index is an additional data structure that helps improve the performance of a query.
+
+  Each index must be associated with a specific table. An index consists of one or more columns, but all columns of an index must be in the same table. A table may have multiple indexes.
+
+  The index contains data from the columns that you specify in the index and the corresponding rowid value. This helps SQLite quickly locate the row based on the values of the indexed columns.
+
+  If you create an index that consists of one column, SQLite uses that column as the sort key. In case you create an index that has multiple columns, SQLite uses the additional columns as the second, third, … as the sort keys.
+
+  SQLite sorts the data on the multicolumn index by the first column specified in the CREATE INDEX statement. Then, it sorts the duplicate values by the second column, and so on.
+
+  Therefore, the column order is very important when you create a multicolumn index.
+-->
+
+<!-- 
+  CREATE INDEX idx_contacts_name 
+ON contacts (first_name, last_name);
+
+If you query the contacts table with one of the following conditions in the WHERE clause, SQLite will utilize the multicolumn index to search for data.
+
+1) filter data by the first_name column.
+
+WHERE
+	first_name = 'John';
+
+  2)filter data by both first_name and last_name columns:
+
+WHERE
+	first_name = 'John' AND last_name = 'Doe';
+
+  However, SQLite will not use the multicolumn index if you use one of the following conditions.
+
+1)filter by the last_name column only.
+
+WHERE
+	last_name = 'Doe';
+
+  2) filter by first_name OR last_name columns.
+
+last_name = 'Doe' OR first_name = 'John';
+ -->
+
+
+<h3>Transactions</h3>
+
+{{% code sql %}}-- start transaction
+BEGIN TRANSACTION;
+
+-- commit transaction
+COMMIT;
+
+-- rollback transaction
+ROLLBACK;{{% /code %}}
+
+<!-- 
+SQLite is a transactional database that all changes and queries are atomic, consistent, isolated, and durable (ACID).
+
+SQLite guarantees all the transactions are ACID compliant even if the transaction is interrupted by a program crash, operation system dump, or power failure to the computer.
+
+Atomic: a transaction should be atomic. It means that a change cannot be broken down into smaller ones. When you commit a transaction, either the entire transaction is applied or not.
+Consistent: a transaction must ensure to change the database from one valid state to another. When a transaction starts and executes a statement to modify data, the database becomes inconsistent. However, when the transaction is committed or rolled back, it is important that the transaction must keep the database consistent.
+Isolation: a pending transaction performed by a session must be isolated from other sessions. When a session starts a transaction and executes the INSERT or UPDATE statement to change the data, these changes are only visible to the current session, not others. On the other hand, the changes committed by other sessions after the transaction started should not be visible to the current session.
+Durable: if a transaction is successfully committed, the changes must be permanent in the database regardless of the condition such as power failure or program crash. On the contrary, if the program crashes before the transaction is committed, the change should not persist.
+-->
+
+
+<h3>Group By and Having</h3>
+
+
+
+
+<h3>Table Relationships</h3>
+
+<ul>
+  <li>
+    One-to-one: A single record in the first table is associated with zero or one record in the second table.
+  </li>
+  <li>
+    Many-to-one: A single record in the first table is associated with zero or more records in the second table.
+  </li>
+  <li>
+    Many-to-many: One or more records in the first table are related to one or more records in another table.
+  </li>
+</ul>
+
+
+<h3>Joins</h3>
+
+{{% code sql %}}-- inner join
+SELECT table_table.column_name AS alias, table_table.column_name AS alias, ...
+FROM table_name
+INNER JOIN table_name
+  ON table_name.column_name = table_name.column_name;
+
+-- left join
+SELECT table_table.column_name, table_table.column_name, ...
+FROM table_name
+LEFT JOIN table_name
+  ON table_name.column_name = table_name.column_name;
+
+{{% /code %}}
+
+
+<h3>Importing and Exporting</h3>
+
+{{% code sql %}}# import from csv
+> .mode csv
+> .import file_name.csv table_name
+
+# export to csv
+> .headers on
+> .mode csv
+> .output file_name.csv
+> SELECT * FROM table_name;
+> .quit{{% /code %}}
+
+
+<!-- 
+  First, the sqlite3 tool creates the table. The sqlite3 tool uses the first row of the CSV file as the names of the columns of the table.
+
+  If the table already exists, the sqlite3 tool uses all the rows, including the first row, in the CSV file as the actual data to import.
+ -->
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://a-gentle-introduction-to-sql.readthedocs.io/en/latest/index.html">A Gentle Introduction to SQL</a>
+  </li>
+  <li>
+    <a href="https://sqlite.org/docs.html">Sqlite Documentation</a>
+  </li>
+  <li>
+    <a href="https://vladmihalcea.com/database-table-relationships/">A Beginner's Guide to Database Table Relationships</a>
+  </li>
+  <li>
+    <a href="https://news.ycombinator.com/item?id=16809620">Ask HN: Raw SQL vs. ORM?</a>
+  </li>
+</ul>
+
+
+
+<!-- 
+
+  Relation theory basics
+
+  - Data are organized into tables (relations) that represent a collection of similar objects (e.g. contributors).
+  - The columns of the table represent the attributes that members of the collection share (last name, home address, amount of contribution).
+  - Each row in the table represents an individual member of the collection (one contributor).
+  - And the values in the row represent the attributes of that individual (Smith, 1228 Laurel St., $250).
+
+
+
+ -->

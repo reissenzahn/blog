@@ -1,0 +1,141 @@
+---
+title: "Authentication & Authorization"
+date: 2020-09-29
+draft: false
+---
+
+
+<!-- 
+
+  Authorization is the mechanism for controlling who can do what in an application. It's how you make sure users have access to their own data, and aren't allowed to see data that isn't theirs.
+
+
+  Authentication vs. Authorization
+
+  Authentication and authorization are related and somewhat overlapping mechanisms in application security. But they aren’t the same thing.
+
+  Authentication is the mechanism for verifying who a user is. It’s the front door to the application. For example, a username and password together make up an identity (username) and a verification method (do you know the password).
+
+  Authorization is the mechanism of controlling what the user can do. If authentication is the front door, authorization controls what doors you can open once you’re inside.
+
+  Authorization often builds on authentication, and the two overlap most closely when information about who the user is becomes an input to determining what they can do. For instance, once a user is authenticated, we might use her username to look up her permissions; or we might be able to infer her permissions based on some other attribute that we can look up.
+
+
+  Where to put Authorization Logic?
+
+  As we trace the request through the infrastructure, we’ll keep coming back to the three main aspects of authorization:
+
+  Who is making the request?
+  What are they trying to do?
+  What are they doing it to?
+
+  In summary, there are a few candidates for where to apply authorization:
+
+  - At the network layer. This layer has very limited data and only allows for simple network access control measures like allow/deny lists. We shouldn’t focus on authorization here.
+  - At the Proxy or Router. This is best for route-level authorization, as more granular access control generally requires an additional call to a service or database to make an authorization decision.
+  - In the Application/Controller. Here, all information is available to us, so we can easily apply our authorization requirements. This is a good place to put our authorization logic.
+  - In the Database: if the application generates database filters, we can apply our authorization here. This lets us ask more broad questions about access, so when possible, it’s best to enforce authorization here.
+
+  It’s easiest to apply authorization as close as possible to the resource we want to protect, since there is the most context about precisely what the user is trying to do, and data available to make a decision.
+
+
+  Separating our authorization from our application is difficult
+
+  Authorization is so deeply interwoven with the application that it can be hard to come up with a clean interface to split authorization from business logic.
+
+
+  Formalizing Our Authorization Model
+
+  We saw in the Example section above that we can often frame an authorization decision as:
+
+  Who is making the request
+  What are they trying to do
+  What are they doing it to
+
+  In writing about authorization, there are formal terms for each of these.
+
+  The "who" is called the actor. In many cases, this actor is just a user of the application.
+
+  "What they are trying to do" often comes down to a simple verb. E.g. create, read, update, delete (CRUD) as is common in APIs. We call these actions.
+
+  “What they are doing it to” is the resource*.* This might be a specific object in the application - in the case of GitLab, a repository or an organization.
+
+  This triple (under a variety of names) has been frequently used in authorization systems. For instance, the literature on Microsoft Azure uses “Security Principal”, “Action”, and “Resource”.
+
+  The benefit of introducing this structure into your application is twofold. First, you get consistent language to talk about authorization to cover both simple and complex use cases. An actor can be a simple user, but it could also be a third-party application acting on behalf of a user who has delegated permission to another user.
+
+  Second, it provides the beginnings of a clean interface. A simple authorization interface takes in the triple (actor, action, resource) and returns an allow or deny decision for the inputs.
+
+
+  What Interface To Use For Our Authorization API
+
+  Up to this point, we’ve mostly focused on where we can “apply” authorization, which referred to the entire process of evaluating the input request, extracting relevant information, combining this with additional data lookups, implementing the rules and checks, and even filtering data by permissions.
+
+  There are two important parts to this: the enforcement and the decision. The authorization interface is the boundary between these two things.
+
+  Suppose our interface is the method is_allowed(actor, action, resource), which would be invoked with the inputs we spoke about previously, for example, is_allowed(current_user, “read”, Repository(name: “acme/anvil”).
+
+  Enforcement is how we decide what to do with an authorization decision. This means extracting the actor, action, and resource from the request as we saw in the previous examples, and calling the is_allowed method.
+
+  In GitClub, if the user doesn’t have permission to read the /acme/anvil repository, we can either respond with an HTTP 403 Forbidden response or redirect the user to a different page. Other examples of enforcement include using database filters to restrict access to an entire collection of data.
+
+  The decision is how we implement the authorization interface: given the triple of inputs (actor, action, resource), we return a result. In our previous example, the decision was: the User is allowed to access this repository, because acme/anvil is in the acme organization, and the User is a member of that organization.
+
+  Decisions don’t necessarily need to be a binary yes/no, but might be further dependent on other events or checks, or have additional effects, like emit warnings.
+
+  When we spoke about needing to apply authorization in the application or database layers, this was primarily referring to the enforcement. We will cover options around enforcement in a future guide. However, the decision is a separate piece and can be implemented in different places.
+
+
+  Options for Implementing Authorization Decisions
+
+  Making an authorization decision requires two pieces of information, data and logic:
+
+  - Authorization data is a subset of application data used for access control. E.g. Alice is a member of the Acme organization, and the acme/anvil repository belongs to the acme organization.
+  - Authorization logic describes the abstract rules expressed over data and used to determine whether a user is allowed to perform an action on a resource. E.g. members of an organization are allowed to access repositories that belong to that organization.
+  
+  There are two distinct approaches to making authorization decisions: centralized and decentralized. In the centralized approach, authorization decisions are delegated to a central authority which is provided with access to the necessary data and takes authorization logic as an input. In the decentralized approach, the application makes authorization decisions itself using the data it already has access to.
+
+  There is a third option, the hybrid approach, which takes a decentralized approach but applied to a system with multiple services and applications.
+
+  - The decentralized approach is the simplest to implement, since all applications manage their own authorization. This is the best approach for a small number of applications, or where decisions rely on data which is already managed by the application. Duplication of authorization may occur across all applications.
+  - A centralized service can help keep decision logic consistent across multiple applications, and also make policy changes decoupled. However, the downside of this is that you’ll need to centralize a lot of authorization data to make decisions. This approach works well when many services need to make authorization decisions of the same set of data.
+  - The hybrid approach leaves decision-making to individual applications, but makes those decisions accessible to other applications when necessary. This is the best approach for balancing the decoupling of logic and data across applications, but requires a consistent way to implement.
+
+
+  Putting Everything Together
+
+  Implementing authorization requires the following components:
+
+  - An authentication system to identify who is making the request (the actor).
+  - Enforcement, which takes in the request, translates it into (actor, action, resource) and passes these to the authorization decision process.
+  - Authorization logic, which specifies how a decision is made, expressed over authorization data.
+  - The decision implementation, which takes in the (actor, action, resource) as input, along with the authorization logic and data and returns a decision.
+  - The resulting decision is used by the enforcement to return a response back to the actor.
+
+  While there are many permutations and combinations of the above, for most applications we typically recommend the following setup:
+
+  - Use an identity provider to handle authentication.
+  - Enforce authorization in the application itself.
+  - Keep authorization logic separate from application code by adding an authorization interface.
+  - Keep authorization data in the application. This means using a simple decentralized model for implementing decisions when your application has a small number of services or using a hybrid approach for multiple services.
+-->
+
+
+<h3>Role-Based Access Control (RBAC)</h3>
+
+<!-- 
+  Role-based access control, means grouping permissions into roles, like "User" or "Admin," and assigning those roles to users.
+
+  
+ -->
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.osohq.com/academy">Oso Authorization Academy</a>
+  </li>
+</ul>
+
+

@@ -5,12 +5,15 @@ draft: false
 ---
 
 <p>
-  A queue is a collection of elements that are maintained in a sequence and can be modified by the insertion of elements at one end and the removal of elements from the other end. The end of the sequence at which elements are added is called the back and the end at which elements are removed is called the front. A queue is a first in, first out (FIFO) data structure as the first element to be inserted will be the first one to be removed.
+  A queue is a collection of elements that are maintained in a sequence and can be modified by the insertion of elements at one end (back) and the removal of elements from the other end (front). A queue is a first in, first out (FIFO) data structure as the first element to be inserted will be the first one to be removed.
 </p>
 
 <figure>
-  <img src="/img/data-structures/queue.png" style="max-width: 400px;">
+  <img src="/img/data-structures/queue.svg" height="100%" width="100%" style="max-width: 500px;">
 </figure>
+
+
+<h3>Enqueue and Dequeue</h3>
 
 <p>
   The enqueue operation inserts an element at the back of the queue. This can be implemented using a linked list by inserting an element at the tail of the list.
@@ -20,15 +23,46 @@ draft: false
   The dequeue operation removes an element from the front of the queue. This can be implemented using a linked list by removing the element at the head of the list. A non-essential peek operation can also be included to return the value of the next element to be dequeued without dequeuing it.
 </p>
 
+<figure>
+  <img src="/img/data-structures/queue-linked-list.svg" height="100%" width="100%" style="max-width: 500px;">
+</figure>
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/data-structures/Queue.java" lang="java" %}}
+
+
+<h3>Complexity</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th></th><th>Average case</th><th>Worst case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>enqueue</td><td>O(1)</td><td>O(1)</td>
+    </tr>
+    <tr>
+      <td>dequeue</td><td>O(1)</td><td>O(1)</td>
+    </tr>
+    <tr>
+      <td>peek</td><td>O(1)</td><td>O(1)</td>
+    </tr>
+    <tr>
+      <td>space</td><td>O(n)</td><td>O(n)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h3>Resources</h3>
+
+<ul>
+</ul>
 
 <!-- 
-  Operation   Average case  Worst case
-  Enqueue     O(1)          O(1)
-  Dequeue     O(1)          O(1)
-  Peek        O(1)          O(1)
-  Space       O(n)          O(n)
- -->
-
- <p>
   A deque is a generalization of a queue in which elements can be added to or removed from either the front of the back.
-</p>
+-->
