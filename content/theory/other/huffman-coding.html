@@ -1,0 +1,122 @@
+---
+title: "Huffman Coding"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A Huffman code is a particular type of optimal prefix code that is commonly used for lossless data compression. A prefix code is distinguished by the requirement that there is no whole code word in the system that is a prefix of any other code word. The process of finding or using a Huffman code proceeds by means of an algorithm called huffman coding. The output from this algorithm can be viewed as a variable-length code table for encoding a source symbol. More common symbols are generally represented using fewer bits than less common symbols.
+</p>
+
+
+<h3>Huffman Trees</h3>
+
+<p>
+  We proceed by creating a binary tree of nodes which each contain a symbol as well as the frequency of appearance of that symbol. A node may also have a link to a parent node which makes it easy to read the code (in reverse) starting from a leaf node. By convention, bit 0 represents following the left child and bit 1 represents following the right child.
+</p>
+
+<p>
+  The process begins with the leaf nodes and proceeds by taking the two nodes with smallest probability and creating a new internal node having these two nodes as children. The weight of the new node is set to the sum of the weight of the children. We then apply the process again, on the new internal node and on the remaining nodes and until only the root remains.
+</p>
+
+
+<h3>Constructing Huffman Trees</h3>
+
+<p>
+  The simplest construction algorithm uses a priority queue where the node with the lowest probability is given highest priority:
+</p>
+
+<ul>
+  <li>
+    Create a leaf node for each symbol and add it to the priority queue.
+  </li>
+  <li>
+    While there is more than one node in the queue, dequeue two nodes, create a new internal node with these two nodes as children and with probability equal to the sum of the probabilities of the two nodes and add the new node to the queue.
+  </li>
+  <li>
+    The remaining node in the queue is the root node.
+  </li>
+</ul>
+
+
+
+<figure>
+  <img src="/img/theory/other/huffman-coding.svg" height="100%" width="100%" style="max-width: 450px;">
+  <!-- <caption></caption> -->
+</figure>
+
+
+<h3>Compression</h3>
+
+<p>
+  Once a Huffman Tree has been built, it is traversed to generate a mapping from symbols to binary codes as follows:
+</p>
+
+<ul>
+  <li>
+    Start at the root.
+  </li>
+  <li>
+    Label the edge to the left child as 0 and the edge to the right child as 1.
+  </li>
+  <li>
+    Repeat the process for the both children and continue in this way until a leaf node is reached.
+  </li>
+</ul>
+
+<p>
+  The final encoding of any symbol is then read by a concatenation of the labels on the edges along the path from the root node to the symbol.
+</p>
+
+
+
+<h3>Decompression</h3>
+
+<p>
+  The the process of decompression is simply a matter of translating the stream of prefix codes to individual byte values, usually by traversing the Huffman tree node by node as each bit is read from the input stream (reaching a leaf node necessarily terminates the search for that particular byte value).
+</p>
+
+
+<h3>Complexity</h3>
+
+<p>
+  Since a priority queue requires O(log n) time per insertion, the approach detailed to build the Huffman tree operates in O(n log n) time where n is the number of symbols.
+</p>
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/theory/other/HuffmanCoding.java" lang="java" %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Huffman_coding">Huffman Coding (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://demo.tinyray.com/huffman">Huffman Coding Simulator</a>
+  </li>
+  <li>
+    <a href="https://github.com/TheAlgorithms/Java/blob/master/src/main/java/com/thealgorithms/others/Huffman.java">Huffman Coding Implementation (Java)</a>
+  </li>
+</ul>
+
+<!-- The technique works by creating a binary tree of nodes. These can be stored in a regular array, the size of which depends on the number of symbols, {\displaystyle n}n.  -->
+
+<!-- 
+  If the symbols are sorted by probability, there is a linear-time (O(n)) method to create a Huffman tree using two queues, the first one containing the initial weights (along with pointers to the associated leaves), and combined weights (along with pointers to the trees) being put in the back of the second queue. This assures that the lowest weight is always kept at the front of one of the two queues:
+
+  1. Start with as many leaves as there are symbols.
+  2. Enqueue all leaf nodes into the first queue (by probability in increasing order so that the least likely item is in the head of the queue).
+  3. While there is more than one node in the queues:
+    1. Dequeue the two nodes with the lowest weight by examining the fronts of both queues.
+    2. Create a new internal node, with the two just-removed nodes as children (either node can be either child) and the sum of their weights as the new weight.
+    3. Enqueue the new node into the rear of the second queue.
+  4. The remaining node is the root node; the tree has now been generated.
+-->
+
+<!-- 
+  Huffman's original algorithm is optimal for a symbol-by-symbol coding with a known input probability distribution, i.e., separately encoding unrelated symbols in such a data stream. However, it is not optimal when the symbol-by-symbol restriction is dropped, or when the probability mass functions are unknown. Also, if symbols are not independent and identically distributed, a single code may be insufficient for optimality. Other methods such as arithmetic coding often have better compression capability.
+ -->

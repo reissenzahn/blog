@@ -1,0 +1,60 @@
+---
+title: "Radix Sort"
+date: 2021-12-05
+draft: false
+---
+
+<p>
+  Radix sort is a sorting algorithm that distributes elements into buckets according to their radix. For elements with more than one significant digit, this bucketing process is repeated for each digit while preserving the ordering of the prior step. This continues until all digits have been considered. This is best applied in cases where we have integers or strings of limited length.
+</p>
+
+
+<h3>Digit Ordering</h3>
+
+<p>
+  Radix sort can be implemented to start either at the most significant digit (MSD) or the least significant digit (LSD):
+</p>
+
+<ul>
+  <li>
+    The LSD approach typically results in short keys coming before longer keys and then keys of the same length being sorted lexicographically. LSD sorts are generally stable.
+  </li>
+  <li>
+    The MSD approach acts as if the shorter keys were left-justified and padded on the right with blank characters to make the shorter keys as long as the longest key.
+  </li>
+</ul>
+
+<p>
+  For instance, with LSD we would obtain an sequence [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] whereas with MSD we would obtain [0, 1, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9].
+</p>
+
+<!-- 
+  Other than the traversal order, MSD and LSD sorts differ in their handling of variable length input. LSD sorts can group by length, radix sort each group, then concatenate the groups in size order. MSD sorts must effectively 'extend' all shorter keys to the size of the largest key and sort them accordingly, which can be more complicated than the grouping required by LSD.
+
+  However, MSD sorts are more amenable to subdivision and recursion. Each bucket created by an MSD step can itself be radix sorted using the next most significant digit, without reference to any other buckets created in the previous step. Once the last digit is reached, concatenating the buckets is all that is required to complete the sort.
+ -->
+
+
+<h3>Procedure</h3>
+
+<p>
+  We take the LSD approach. We start by finding the number of digit in the maximum value to determine the number of digits we will need to consider. Then, starting from the rightmost digit, we sort the array based on that digit using a stable sort such as counting sort. Then we sort by the next left digit, and then the next and so on. Finally, we sort by the leftmost digit. At each step we prepend any necessary zeros to those elements with fewer digits than the maximum.
+</p>
+
+
+<h3>Complexity</h3>
+
+<p>
+  The time complexity in the worst-case is O(nw) where n is the number of keys and w is the key length. The worst-case space complexity is (n + w). The extra space could limit performance for large enough inputs.
+</p>
+
+
+<h3>Implementation</h3>
+
+
+{{% code-file file="/static/code/theory/sorting-algorithms/RadixSort.java" lang="java" %}}
+
+
+<h3>Resources</h3>
+
+

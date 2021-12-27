@@ -1,0 +1,221 @@
+---
+title: "Command Pattern"
+date: 2021-12-20
+draft: false
+---
+
+<p>
+  The Command Pattern encapsulates a request as an object, thereby letting you parameterize other objects with different requests, queue or log requests, and support undoable operations.
+</p>
+
+
+In this chapter, we take encapsulation to a whole new level:
+we’re going to encapsulate method invocation.
+
+By encapsulating method invocation, we can crystallize pieces of computation so that the object invoking the computation doesn’t need to worry about how to do things, it just uses our crystallized method to get it done. We can also do some wickedly smart things with these encapsulated method invocations, like save them away for logging or reuse them to implement undo functionality in our code.
+
+
+
+<h3>Description</h3>
+
+The Client is responsible for creating the Command object. The command object consists of a set of actions on a Receiver.
+
+The actions and the Receiver
+are bound together in the
+command object.
+
+The Command object provides one method, execute(), that encapsulates the actions and can be called to invoke the actions on the Receiver.
+
+The Client calls setCommand() on
+an Invoker object and passes it the
+Command object, where it gets
+stored until it is needed.
+
+At some point in the future
+the Invoker calls the Command
+object’s execute() method.....which results
+in the actions
+being invoked on the Receiver.
+
+
+The client creates a
+command object.
+The client does a
+setCommand() to store
+the command object in
+the invoker.
+Later...the client asks
+the invoker to execute
+the command. Once the
+command is loaded into
+the invoker, it may be
+used and discarded, or it
+may remain and be used
+many times.
+
+---
+
+A command object encapsulates a request by binding together a set of actions on a specific receiver. To achieve this, it packages the actions and the receiver into an object that exposes just one method, execute().
+
+When called, execute() causes the actions to be invoked on the
+receiver. From the outside, no other objects really know what
+actions get performed on what receiver; they just know that if they
+call the execute() method, their request will be serviced.
+
+An invoker — for instance, one slot of the remote — can be parameterized with different requests.
+
+We’ve also seen a couple examples of parameterizing an object with a
+command. In the simple remote control,
+we first loaded the button slot with a “light on” command and
+then later replaced it with a “garage door open” command. Your remote slot didn’t care what command object it
+had, as long as it implemented the Command interface.
+
+
+What we haven’t encountered yet is using commands to
+implement queues and logs and support undo operations. Don’t worry,
+those are pretty straightforward extensions of the basic Command
+Pattern, and we’ll get to them soon. We can also easily support
+what’s known as the Meta Command Pattern once we have the
+basics in place. The Meta Command Pattern allows you to create
+macros of commands so that you can execute multiple commands
+at once.
+
+
+
+
+
+
+<h3>Example</h3>
+
+We consider the case of designing the API for a home automation remote control.
+
+The remote control features seven programmable slots each of which can be assigned to a different household device along with corresponding on/off buttons for each. The remote also has an undo button that undoes the operation of the last button pressed.
+
+We need to create an API for programming the remote so that each slot can be assigned to control a device or set of devices. Note that it is important that we be able to control all the current devices as well as any future devices that the vendors may supply.
+
+There are numerous classes that have been created by vendors to control home automation devices such as lights, fans, hot tubs, audio equipment, and other similar controllable appliances. Due to a lack of industry standardization, the classes do not conform to a standard interface so we have methods like dim(), setTemperature(), setVolume(), setInputChannel() and waterOn().
+
+It’s important we view this as a separation of concerns. The remote should know how to interpret button presses and make requests, but it shouldn’t know a lot about home automation or how to turn on a hot tub.
+
+We don’t want the remote to have to know the specifics of the vendor classes as whenever a new vendor class comes out, we’d have to go
+in and modify the code.
+
+
+The Command Pattern allows you to decouple the requester of an action from the object that actually performs the action. So, here the requester would be the remote control and the object that performs the action would be an instance of one of your vendor classes.
+
+It works by introducing command objects into your design. A command object encapsulates a request to do something (like turn on a light) on a specific object (say, the living room light object). So, if we store a command object for each button, when the
+button is pressed we ask the command object to do some work. The remote doesn’t have
+any idea what the work is, it just has a command object that knows how to talk to the right
+object to get the work done. So, you see, the remote is decoupled from the light object!
+
+Let me see if I at least have the right idea: using this pattern, we could create
+an API in which these command objects can be loaded into button slots, allowing the
+remote code to stay very simple. And the command objects encapsulate how to do a home
+automation task along with the object that needs to do it.
+
+
+---
+
+An Order Slip encapsulates a request to prepare a meal.
+Think of the Order Slip as an object that acts as a
+request to prepare a meal. Like any object, it can be passed
+around—from the Waitress to the order counter, or to the next
+Waitress taking over her shift. It has an interface that consists
+of only one method, orderUp(), that encapsulates the actions
+needed to prepare the meal. It also has a reference to the object
+that needs to prepare it (in our case, the Short-Order Cook). It’s
+encapsulated in that the Waitress doesn’t have to know what’s in
+the Order or even who prepares the meal; she only needs to pass
+the slip through the order window and call “Order up!”.
+
+
+The Waitress’s job is to take Order Slips and
+invoke the orderUp() method on them.
+The Waitress has it easy: take an Order from the Customer,
+continue helping customers until she makes it back to the
+order counter, and then invoke the orderUp() method to have
+the meal prepared. As we’ve already discussed, in Objectville, the
+Waitress really isn’t worried about what’s on the Order or who is going
+to prepare it; she just knows Order Slips have an orderUp() method she
+can call to get the job done.
+Now, throughout the day, the Waitress’s takeOrder() method gets
+parameterized with different Order Slips from different customers, but
+that doesn’t faze her; she knows all Order Slips support the orderUp()
+method and she can call orderUp() any time she needs a meal prepared.
+The Short-Order Cook has the knowledge
+required to prepare the meal.
+The Short-Order Cook is the object that really knows
+how to prepare meals. Once the Waitress has invoked
+the orderUp() method; the Short-Order Cook takes over and
+implements all the methods that are needed to create meals.
+Notice the Waitress and the Cook are totally decoupled: the
+Waitress has Order Slips that encapsulate the details of the
+meal; she just calls a method on each Order to get it prepared.
+Likewise, the Cook gets his instructions from the Order Slip; he
+never needs to directly communicate with the Waitress.
+
+---
+
+Allows us to separate an object making a request from the objects that receive and execute those requests. For instance, in our remote control API, we need to separate the code that gets invoked when we press a button from the objects of the vendor-specific classes that carry out those requests.
+
+What if each slot of the remote held an object like the Diner’s
+Order Slip object? Then, when a button is pressed, we could just call
+the equivalent of the orderUp() method on this object and have the
+lights turn on without the remote knowing the details of how to make
+those things happen or what objects are making them happen.
+
+
+---
+
+All command objects implement the same interface, which consists of one method called execute().
+
+
+Now, let’s say you want to implement a command for turning a light on.
+Referring to our set of vendor classes, the Light class has two methods: on()
+and off().
+
+The constructor is passed the specific
+light that this command is going to
+control—say the living room light—
+and stashes it in the light instance
+variable. When execute gets called,
+this is the light object that is going to be the receiver of the request.
+
+The execute() method calls the on() method on the receiving object, which is the light we are controlling.
+
+
+The remote is our Invoker; it will be passed a command object that can be used to make requests.
+
+We have a method for setting the command the slot is going to control. This could be called multiple times if the client of this code wanted to change the behavior of the remote button.
+
+This method is called when the button
+is pressed. All we do is take the
+current command bound to the slot
+and call its execute() method.
+
+
+---
+
+We need to provide a way to assign commands to slots.
+
+
+When we create the commands to be loaded into the
+remote, we create one LightCommand that is bound to the living
+room light object and another that is bound to the kitchen light
+object. Remember, the receiver of the request gets bound to
+the command it’s encapsulated in. So, by the time the button is
+pressed, no one cares which light is which; the right thing just
+happens when the execute() method is called.
+
+
+1. Each slot gets a command.
+2. When the button is pressed, the execute() method is called on the corresponding command.
+3. In the execute() method, actions are invoked on the receiver.
+
+
+
+
+
+<h3>Resources</h3>
+
+

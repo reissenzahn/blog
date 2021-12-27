@@ -1,0 +1,131 @@
+---
+title: "Factory Pattern"
+date: 2020-09-29
+draft: false
+---
+
+<p>
+  The Factory Method Pattern defines an interface for creating an object (i.e. the factory method), but lets subclasses decide which class to instantiate. This allows a class to defer instantiation to subclasses.
+</p>
+
+
+<h3>Description</h3>
+
+<ul>
+  <li>
+    When we create an object, we are necessarily instantiating a concrete class which means we a programming to an implementation rather than an interface.
+  </li>
+  <li>
+    Further, when we have a set of related concrete classes, we often need to introduce logic to decide which class to instantiate at runtime. This logic often ends up being duplicated in several parts of the program and, when it comes time for changes, will often need to be modified.
+  </li>
+  <li>
+    Nevertheless, we will have to instantiate concrete classes at some point so we aim to take all the parts of the program that instantiate concrete classes and encapsulate them together.
+  </li>
+  <li>
+    The abstract <code>Creator</code> class defines an abstract factory method that its subclasses implement to produce <code>Product</code> objects. The factory method may be parameterized to select among several variations of a product.
+  </li>
+  <li>
+    The <code>Product</code> returned by the factory method is typically used within methods defined in the superclass.
+  </li>
+  <li>
+    As such, the factory method decouples the code in the superclass from the object creation code in the subclass.
+  </li>
+  <li>
+    If we add additional products or change the implementation of a product, it it will not affect the <code>Creator</code> because it is not tightly coupled to any concrete <code>Product</code> subclasses.
+  </li>
+  <li>
+    By encapsulating object creation by letting subclasses decide what objects to create, we avoid duplication and reduce coupling.
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/design-patterns/factory-method.svg" height="100%" width="100%" style="max-width: 500px;">
+</figure>
+
+
+<h3>Example</h3>
+
+<ul>
+  <li>
+    We consider the case of a pizzeria franchise that wants to standardize its order system while giving franchises freedom to create their own regional pizza styles.
+  </li>
+  <li>
+    The <code>Pizzeria</code> class has an abstract <code>createPizza()</code> method which each of the subclasses <code>NYPizzeria</code> and <code>ChicagoPizzeria</code> implement according to their regional requirements.
+  </li>
+  <li>
+    Meanwhile, each subclass makes use of the inherited <code>orderPizza()</code> method which calls the particular <code>createPizza()</code> to create a Pizza.
+  </li>
+  <li>
+    The subclasses are fully responsible for which concrete <code>Pizza</code> get instantiated.
+  </li>
+  <li>
+    This way, the <code>orderPizza()</code> code is decoupled from various pizza subclasses as it operates on an abstract <code>Pizza</code> object.
+  </li>
+</ul>
+
+{{% code-file file="/static/code/programming/design-patterns/FactoryMethod.java" lang="java" %}}
+
+
+<h3>Principle: Dependency Inversion</h3>
+
+<p>
+  <i>Depend upon abstractions. Do not depend upon concrete classes.</i>
+</p>
+
+<ul>
+  <li>
+    This principle makes a strong statement about abstraction: our high-level components should not depend on our low-level components; rather, they should *both* depend on abstractions.
+  </li>
+  <li>
+    In the example, the <code>Pizzeria</code> is the high-level component and the concrete pizza classes are the low-level components.
+  </li>
+  <li>
+    Now, if the <code>Pizzeria</code> class were to be responsible for instantiating concrete pizza classes in its <code>orderPizza()</code> method, then it would be dependent on those concrete <code>Pizza</code> classes.
+  </li>
+  <li>
+    As such, we have created the <code>Pizza</code> abstraction and used the factory method pattern so that the <code>Pizzeria</code> class only depends on <code>Pizza</code>. Further, the concrete pizza classes depend on the <code>Pizza</code> abstraction as they implement its interface.
+  </li>
+  <li>
+    Hence, both our high-level component and the low-level components both depend on the <code>Pizza</code> abstraction.
+  </li>
+</ul>
+
+<!--
+The following guidelines can help you avoid OO designs that violate
+the Dependency Inversion Principle:
+
+ No variable should hold a reference to a concrete class. If you use new, you'll be holding a reference to a concrete class. Use a factory to get around that.
+
+
+ No class should derive from a concrete class.f you derive from a concrete class, you’re depending on a concrete class. Derive from an abstraction, like an interface or an abstract class.
+
+
+ No method should override an implemented method of any
+of its base classes.If you override an implemented method, then your base class wasn’t really an abstraction to start with. Those methods implemented in the base class are meant to be shared by all your subclasses.
+
+
+You’re exactly right! Like many of our principles, this is a guideline
+you should strive for, rather than a rule you should follow all the time.
+Clearly, every single Java program ever written violates these guidelines!
+But, if you internalize these guidelines and have them in the back of
+your mind when you design, you’ll know when you are violating the
+principle and you’ll have a good reason for doing so. For instance, if you
+have a class that isn’t likely to change, and you know it, then it’s not the
+end of the world if you instantiate a concrete class in your code. Think
+about it; we instantiate String objects all the time without thinking twice.
+Does that violate the principle? Yes. Is that okay? Yes. Why? Because
+String is very unlikely to change.
+If, on the other hand, a class you write is likely to change, you have some
+good techniques like Factory Method to encapsulate that change.
+
+-->
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=ryUB-bU3Se8">Factory Method (Wes Doyle)</a>
+  </li>
+</ul>

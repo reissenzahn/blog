@@ -5,29 +5,26 @@ draft: false
 ---
 
 <p>
-  A hash table is an associative data structure that maps keys to values. Hash tables can allow for lookups that are independent of the number of elements stored in the sable. Further, many hash table designs allow for insertions and deletions of key-value pairs in amortized constant average time.
+  A hash table is an associative data structure that stores entries consisting of key-value pairs. An insert operation adds key-value pairs to the hash table while a remove operation allows us to remove a key-value pair. We can also lookup the value associated with a given key in constant time. This is achieved by using a hash function to map the key to an index into an underlying array corresponding to where the value is stored.
 </p>
 
 
 <h3>Hash Functions</h3>
 
 <p>
-  A hash function maps a key to a whole number in some fixed range. Hash functions must be deterministic and so the hash of a given key must always be the same. Further, if the hash function returns the same value for two keys then the keys may be equal; if different values are returned then the keys are certainly not equal. A hash function will preferably be uniform to minimize hash collisions.
+  A hash function H : X → [0, M) maps an element x ∈ X to a positive integer H(x) ∈ [0, M). Typically, the number of elements in X is much greater than M and so we will have x1, x2 ∈ X such that H(x1) = H(x2) in which case a hash collision is said to occur. These functions must be deterministic so the hash of a given key must always be the same. A good hash function fast to compute and minimizes collisions by dispersing hashes randomly and uniformly.
 </p>
 
 
 <h3>Insertion and Lookup</h3>
 
 <p>
-  When a key-value pair is inserted, a hash function is used to compute an index from the key and the value is stored at that index in an array. During lookup, the key is hashed using the hash function and the resulting index indicates where the value can be found in the array.
+  A hash table stores values in an underlying array. When a key-value pair is inserted, a hash function is used to compute an index from the key and the value is stored at that index in an array. During lookup, the key is hashed using the hash function and the resulting index indicates where the value can be found in the array.
 </p>
 
 <figure>
   <img src="/img/data-structures/hash-table.svg" height="100%" width="100%" style="max-width: 400px;">
 </figure>
-
-
-<h3>Load Factor</h3>
 
 <p>
   The load factor α = k/n where n is the capacity of the underlying array and k is the number of currently occupied entries. The performance of a hash table worsens as α increases and so it is essential to resize the hash table when the load factor exceeds a certain value. This involves creating a new array with a larger capacity and rehashing all items inside the old array to disperse them throughout the new array. Typical load factor thresholds are 0.6 and 0.75.
@@ -131,8 +128,19 @@ draft: false
 
 
 <!-- 
-  // If j != -1 this means we previously encountered a deleted cell.
-  // We can perform an optimization by swapping the entries in cells
-  // i and j so that the next time we search for this key it will be
-  // found faster. This is called lazy deletion/relocation.
+
+
+  HASH FUNCTIONS
+
+
+
+
+
+
+
+
+
+  MISC
+
+  Further, if the hash function returns the same value for two keys then the keys may be equal; if different values are returned then the keys are certainly not equal.
 -->

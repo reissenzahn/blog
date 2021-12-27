@@ -1,0 +1,821 @@
+---
+title: "HTTP"
+date: 2020-09-29
+draft: false
+---
+
+<p>
+  Hypertext Transfer Protocol (HTTP) is an application layer protocol that provides the foundation of data communication for the World Wide Web.
+</p>
+
+
+
+<h3>Characteristics</h3>
+
+<p>
+  HTTP is an application-level protocol with the following characteristics:
+</p>
+
+<ul>
+  <li>
+    Data is exchanged through a sequence of request-response messages. An HTTP client tries to connect to a HTTP server which accepts the connection and waits for a request message. The client sends a request to server and, upon receiving the request, the server sends back an HTTP response message.
+  </li>
+  <li>
+    Implementations typically make use of TCP for the underlying reliable transport layer protocol. The standard port for HTTP servers to listen on is port 80 if the connection is not encrypted or port 443 if the connection is encrypted.
+  </li>
+  <li>
+    HTTP is a stateless protocol which means that the server does not maintain any state about a connection between requests.
+  </li>
+  <li>
+    In HTTP/1.0 the TCP/IP connection should always be closed by server after a response has been sent. HTTP/1.1 introduced a keep-alive mechanism so that a connection could be reused for more than one request-response.
+  </li>
+</ul>
+
+<!-- 
+  At any time (for many reasons) client or server can close the connection. Closing a connection is usually advertised in advance by using one or more HTTP headers in the last request/response message sent to server or client.
+
+  Some web applications need to manage user sessions, so they implement states or server side sessions using for instance HTTP cookies or hidden variables within web forms.
+-->
+
+
+<h3>Uniform Resource Locators</h3>
+
+<p>
+  A Uniform Resource Locator (URL) is a reference to a web resource that specifies its location on a computer network and a mechanism for retrieving it. A URL is a specific type of Uniform Resource Identifier (URI). Every HTTP URL conforms to the syntax of a generic URI. The URI generic syntax consists of a hierarchical sequence of five components:
+</p>
+
+{{% code text %}}uri = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+
+authority = [userinfo "@"] host [":" port]
+
+query = key1=value1&key2=value2{{% /code %}}
+
+<ul>
+  <li>
+    A non-empty scheme component. Although schemes are case-insensitive the canonical form is lowercase.
+  </li>
+  <li>
+    An optional authority component comprising an optional userinfo subcomponent, a host subcomponent typically consisting of either a hostname or an IP address and an optional port subcomponent. IPv4 addresses must be in dot-decimal notation and IPv6 addresses must be enclosed in brackets.
+  </li>
+  <li>
+    A path component consisting of a sequence of path segments.
+  </li>
+  <li>
+    An optional query component containing a query string of non-hierarchical data such as a sequence of attribute-value pairs separated by a delimiter.
+  </li>
+  <li>
+    An optional fragment component containing a fragment identifier providing direction to a secondary resource.
+  </li>
+</ul>
+
+
+<h3>Request Messages</h3>
+
+<p>
+  A client sends request messages to the server which consist of:
+</p>
+
+<ul>
+  <li>
+    A request line consisting of the request method, the requested URL and the protocol version separated by spaces and followed by a CRLF.
+  </li>
+  <li>
+    Zero or more request header fields each consisting of the case-insensitive field name, a colon, optional leading whitespace, the field value, an optional trailing whitespace and a CRLF.
+  </li>
+  <li>
+    An empty line consisting of a CRLF.
+  </li>
+  <li>
+    An optional message body.
+  </li>
+</ul>
+
+<p>
+  Request header fields allow the client to pass additional information beyond the request line which act as request modifiers. They give information about the client, about the target resource, or about the expected handling of the request. In the HTTP/1.1, all header fields except <code>Host</code> are optional.
+</p>
+
+{{% code text %}}GET / HTTP/1.1
+Host: www.example.com
+User-Agent: Mozilla/5.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-GB,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+{{% /code %}}
+
+
+<h3>Response Messages</h3>
+
+<p>
+  A server sends response messages to the client which consist of:
+</p>
+
+<ul>
+  <li>
+    A status line consisting of the protocol version, the response status code and a (possibly empty) reason phrase separated by spaces and followed by a CRLF.
+  </li>
+  <li>
+    Zero or more response header fields in the same format as the request headers.
+  </li>
+  <li>
+    An empty line consisting of a CRLF.
+  </li>
+  <li>
+    An optional message body (typically the requested resource).
+  </li>
+</ul>
+
+<p>
+  The response header fields allow the server to pass additional information beyond the status line which act as response modifiers. They give information about the server or about further access to the target resource or related resources.
+</p>
+
+{{% code text %}}HTTP/1.1 200 OK
+Date: Mon, 23 May 2005 22:38:34 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 155
+Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
+Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)
+ETag: "3f80f-1b6-3e1cb03b"
+Accept-Ranges: bytes
+Connection: close
+
+<html>
+  <head>
+    <title>Example</title>
+  </head>
+  <body>
+    <p>Hello, HTTP!</p>
+  </body>
+</html>{{% /code %}}
+
+
+
+Consider including these headers in your requests:
+
+- User-Agent: Identifies the program making the request.
+
+If you're writing servers, consider including these headers in your responses:
+
+Server: Identifies the server software.
+Last-Modified: header gives the modification date of the resource being returned.
+
+An HTTP message may have a body of data sent after the header lines. In a response, this is where the requested resource is returned to the client. In a request, this is where user-entered data or uploaded files are sent to the server.
+
+If an HTTP message includes a body, there are usually header lines in the message that describe the body. In particular,
+
+The Content-Type: header gives the MIME-type of the data in the body, such as text/html or image/gif.
+
+The Content-Length: header gives the number of bytes in the body.
+Return to Table of Contents
+
+
+
+
+To retrieve the file at the URL
+
+http://www.example.com/file.html
+
+first open a socket to the host www.example.com, port 80. Then, send something like the following through the socket:
+
+GET /path/file.html HTTP/1.0
+From: someuser@jmarshall.com
+User-Agent: HTTPTool/1.0
+[blank line here]
+
+The server should respond with something like the following, sent back through the same socket:
+
+HTTP/1.0 200 OK
+Date: Fri, 31 Dec 1999 23:59:59 GMT
+Content-Type: text/html
+Content-Length: 1354
+
+<html>
+<body>
+<h1>Happy New Millennium!</h1>
+(more file contents)
+</body>
+</html>
+
+After sending the response, the server closes the socket.
+
+
+
+<h3>Request Methods</h3>
+
+<p>
+  HTTP defines methods to indicate the desired action to be performed on the identified resource. These methods are:
+</p>
+
+<ul>
+  <li>
+    GET: Requests that the target resource transfers a representation of its state. GET requests should only retrieve data and should have no other effect.
+  </li>
+  <li>
+    HEAD: Requests that the target resource transfers a representation of its state but without the representation data enclosed in the response body (i.e. response headers only).
+  </li>
+  <li>
+    POST: Requests that the target resource processes the representation enclosed in the request according to the semantics of the target resource.
+  </li>
+  <li>
+    PUT: Requests that the target resource creates or updates its state with the state defined by the representation enclosed in the request.
+  </li>
+  <li>
+    DELETE: Requests that the target resource deletes its state.
+  </li>
+  <li>
+    CONNECT: Requests that the intermediary establishes a TCP/IP tunnel to the origin server identified by the request target. It is often used to secure connections through one or more HTTP proxies with TLS.
+  </li>
+  <li>
+    OPTIONS: Requests that the target resource transfers the HTTP methods that it supports.
+  </li>
+  <li>
+    TRACE: Requests that the target resource transfers the received request in the response body. That way a client can see what (if any) changes or additions have been made by intermediaries.
+  </li>
+  <li>
+    PATCH: Requests that the target resource modifies its state according to the partial update defined in the representation enclosed in the request.
+  </li>
+</ul>
+
+<p>
+  Unlike HTTP header field names, the methods names are case sensitive.
+</p>
+
+<p>
+  A request method is safe if a request with that method does not modify the state of the server or have other effects. Meanwhile, a method is idempotent if multiple identical requests with that method have the same intended effect as a single such request. Finally a request method is cacheable if responses to requests with that method may be stored for future reuse.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th></th><th>Request has payload body</th><th>Response has payload body</th><th>Safe</th><th>Idempotent</th><th>Cacheable</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>GET</th><td>Optional</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td>
+    </tr>
+    <tr>
+      <th>HEAD</th><td>Optional</td><td>No</td><td>Yes</td><td>Yes</td><td>Yes</td>
+    </tr>
+    <tr>
+      <th>POST</th><td>Yes</td><td>Yes</td><td>No</td><td>No</td><td>Yes</td>
+    </tr>
+    <tr>
+      <th>PUT</th><td>Yes</td><td>Yes</td><td>No</td><td>Yes</td><td>No</td>
+    </tr>
+    <tr>
+      <th>DELETE</th><td>Optional</td><td>Yes</td><td>No</td><td>Yes</td><td>No</td>
+    </tr>
+    <tr>
+      <th>CONNECT</th><td>Optional</td><td>Yes</td><td>No</td><td>No</td><td>No</td>
+    </tr>
+    <tr>
+      <th>OPTIONS</th><td>Optional</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No</td>
+    </tr>
+    <tr>
+      <th>TRACE</th><td>No</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No</td>
+    </tr>
+    <tr>
+      <th>PATCH</th><td>Yes</td><td>Yes</td><td>No</td><td>No</td><td>No</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h3>Response Status Codes</h3>
+
+<p>
+  The first line of an HTTP response is called the status line and includes a numeric status code and a textual reason phrase. The first digit of the status code specifies one of five standard classes of responses:
+</p>
+
+<ul>
+  <li>
+    1XX (informational): The request was received; continuing process.
+  </li>
+  <li>
+    2XX (successful): The request was successfully received, understood and accepted.
+  </li>
+  <li>
+    3XX (redirection): Further action needs to be taken in order to complete the request.
+  </li>
+  <li>
+    4XX (client error): The request contains bad syntax or cannot be fulfilled.
+  </li>
+  <li>
+    5XX (server error): The server failed to fulfill an apparently valid request.
+  </li>
+</ul>
+
+<p>
+  Some common status codes are:
+</p>
+
+<ul>
+  <li>
+    100 Continue: The server has received the request headers and the client should proceed to send the request body (in the case of a request for which a body needs to be sent). To have a server check the request headers, a client must set Expect: 100-continue as a header in its initial request and receive a 100 Continue status code in response before sending the body.
+  </li>
+  <li>
+    102 Processing: Indicates that the server has received and is processing the request but no response is available yet. This prevents the client from timing out and assuming the request was lost.
+  </li>
+  <li>
+    200 OK: Standard response for successful requests.
+  </li>
+  <li>
+    201 Created: The request has been fulfilled resulting in the creation of a new resource.
+  </li>
+  <li>
+    202 Accepted: The request has been accepted for processing but the processing has not been completed.
+  </li>
+  <li>
+    301 Moved Permanently: This and all future requests should be directed to the given URI.
+  </li>
+  <li>
+    302 Found: Invitation to the user agent to make a second, otherwise identical, request to the new URL specified in the location field. The end result is a redirection to the new URL.
+  </li>
+  <li>
+    400 Bad Request: The server cannot or will not process the request due to an apparent client error.
+  </li>
+  <li>
+    401 Unauthorized: The user does not have valid authentication credentials for the target resource.
+  </li>
+  <li>
+    403 Forbidden: The request contained valid data and was understood by the server but the server is refusing action.
+  </li>
+  <li>
+    404 Not Found: The requested resource could not be found but may be available in the future.
+  </li>
+  <li>
+    405 Method Not Allowed: A request method is not supported for the requested resource.
+  </li>
+  <li>
+    406 Not Acceptable: The requested resource is capable of generating only content not acceptable according to the <code>Accept</code> headers sent in the request.
+  </li>
+  <li>
+    429 Too Many Requests: The user has sent too many requests in a given amount of time. Intended for use with rate-limiting schemes.    
+  </li>
+  <li>
+    500 Internal Server Error: A generic error message, given when an unexpected condition was encountered and no more specific message is suitable.
+  </li>
+  <li>
+    503 Service Unavailable: The server cannot handle the request because it is overloaded or down for maintenance.
+  </li>
+</ul>
+
+
+
+<h3>Request Fields</h3>
+
+<ul>
+  <li>
+    <code>Accept</code>: Media types that are acceptable for the response.
+  </li>
+
+  <li>
+    <code>Content-Type</code>: The media type of the body of the request.
+  </li>
+  <li>
+    <code>Cookie</code>: An HTTP cookie previously set by the server with <code>Set-Cookie</code>.
+  </li>
+  <li>
+    <code>Date</code>: The date and time at which the message was originated (e.g. Tue, 15 Nov 1994 08:12:31 GMT).
+  </li>
+  <li>
+    <code>Transfer-Encoding</code>: The form of encoding used to transfer the entity to the user. Currently defined methods are: chunked, compress, deflate, gzip, identity.
+  </li>
+  <li>
+    <code>User-Agent</code>: The user agent string of the user agent.
+  </li>
+  <li>
+    <code>Upgrade</code>: Ask the server to upgrade to another protocol.
+  </li>
+</ul>
+
+
+
+<h3>Cookies</h3>
+
+<!-- 
+  HTTP cookies are small blocks of data created by a web server while a user is browsing a website and placed on the device used to access the website by the web browser.
+
+  They enable web servers to store stateful information on the user’s device.
+
+  Authentication cookies are commonly used by web servers to authenticate that a user is logged in, and with which account they are logged in.
+  
+  Without the cookie, users would need to authenticate themselves by logging in on each page containing sensitive information that they wish to access.
+  
+  Tracking cookies, and especially third-party tracking cookies, are commonly used as ways to compile long-term records of individuals' browsing histories.
+
+  Uses include session management, personalization and tracking.
+
+  A cookie consists of a name and value as well as zero or more attributes that store information such as the expiration, domain, and flags (e.g. Secure and HttpOnly).
+ -->
+
+<!-- 
+  TYPES OF COOKIES
+
+
+  Session cookie: A session cookie exists only in temporary memory while the user navigates a website and are deleted when the user closes the web browser. Session cookies are identified by the absence of an expiration date.
+
+  Persistent cookie: A persistent cookie expires at a specific date or after a specific length of time. Session cookies are identified by the Expires attribute which instructs the browser to delete the cookie at a specific date and time.
+
+  Secure cookie: A secure cookie can only be transmitted over an encrypted connection (i.e. HTTPS). A cookie is made secure by adding the Secure flag to the cookie.
+
+  Http-only cookie: An http-only cookie cannot be accessed by client-side APIs such as JavaScript. A cookie is given this characteristic by adding the HttpOnly flag to the cookie.
+
+  Same-site cookie: With attribute SameSite set to Strict the browser only sends cookies to a target domain that is the same as the origin domain.
+
+  Third-party cookie: A third-party cookie belongs to a domain different from the one shown in the address bar. This sort of cookie typically appears when web pages feature content from external websites, such as banner advertisements.
+-->
+
+<!--
+  Cookies are arbitrary pieces of data, usually chosen and first sent by the web server, and stored on the client computer by the web browser. The browser then sends them back to the server with every request.
+  
+  Although cookies are usually set by the web server, they can also be set by the client using a scripting language such as JavaScript.
+
+  The cookie specifications require that browsers meet the following requirements in order to support cookies:
+
+  Can support cookies as large as 4,096 bytes in size.
+  Can support at least 50 cookies per domain (i.e. per website).
+  Can support at least 3,000 cookies in total.
+
+  Cookies are set using the Set-Cookie header field, sent in an HTTP response from the web server.
+
+HTTP/1.0 200 OK
+Content-type: text/html
+Set-Cookie: theme=light
+Set-Cookie: sessionToken=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT
+...
+
+This request contains a Cookie header field, which contains the two cookies that the server instructed the browser to set:
+
+GET /spec.html HTTP/1.1
+Host: www.example.org
+Cookie: theme=light; sessionToken=abc123
+…
+
+To remove a cookie, the server must include a Set-Cookie header field with an expiration date in the past.
+
+In addition to a name and value, cookies can also have one or more attributes. Browsers do not include cookie attributes in requests to the server—they only send the cookie's name and value. Cookie attributes are used by browsers to determine when to delete a cookie, block a cookie or whether to send a cookie to the server.
+
+Domain and Path
+The Domain and Path attributes define the scope of the cookie. They essentially tell the browser what website the cookie belongs to. For security reasons, cookies can only be set on the current resource's top domain and its subdomains, and not for another domain and its subdomains. For example, the website example.org cannot set a cookie that has a domain of foo.com because this would allow the website example.org to control the cookies of the domain foo.com.
+
+If a cookie's Domain and Path attributes are not specified by the server, they default to the domain and path of the resource that was requested.[50] However, in most browsers there is a difference between a cookie set from foo.com without a domain, and a cookie set with the foo.com domain. In the former case, the cookie will only be sent for requests to foo.com, also known as a host-only cookie. In the latter case, all subdomains are also included (for example, docs.foo.com).[51][52] A notable exception to this general rule is Edge prior to Windows 10 RS3 and Internet Explorer prior to IE 11 and Windows 10 RS4 (April 2018), which always sends cookies to subdomains regardless of whether the cookie was set with or without a domain.[53]
+
+Below is an example of some Set-Cookie header fields in the HTTP response of a website after a user logged in. The HTTP request was sent to a webpage within the docs.foo.com subdomain:
+
+HTTP/1.0 200 OK
+Set-Cookie: LSID=DQAAAK…Eaem_vYg; Path=/accounts; Expires=Wed, 13 Jan 2021 22:23:01 GMT; Secure; HttpOnly
+Set-Cookie: HSID=AYQEVn…DKrdst; Domain=.foo.com; Path=/; Expires=Wed, 13 Jan 2021 22:23:01 GMT; HttpOnly
+Set-Cookie: SSID=Ap4P…GTEq; Domain=foo.com; Path=/; Expires=Wed, 13 Jan 2021 22:23:01 GMT; Secure; HttpOnly
+…
+The first cookie, LSID, has no Domain attribute, and has a Path attribute set to /accounts. This tells the browser to use the cookie only when requesting pages contained in docs.foo.com/accounts (the domain is derived from the request domain). The other two cookies, HSID and SSID, would be used when the browser requests any subdomain in .foo.com on any path (for example www.foo.com/bar). The prepending dot is optional in recent standards, but can be added for compatibility with RFC 2109 based implementations.[54]
+
+Expires and Max-Age
+The Expires attribute defines a specific date and time for when the browser should delete the cookie. The date and time are specified in the form Wdy, DD Mon YYYY HH:MM:SS GMT, or in the form Wdy, DD Mon YY HH:MM:SS GMT for values of YY where YY is greater than or equal to 0 and less than or equal to 69.[55]
+
+Alternatively, the Max-Age attribute can be used to set the cookie's expiration as an interval of seconds in the future, relative to the time the browser received the cookie. Below is an example of three Set-Cookie header fields that were received from a website after a user logged in:
+
+HTTP/1.0 200 OK
+Set-Cookie: lu=Rg3vHJZnehYLjVg7qi3bZjzg; Expires=Tue, 15 Jan 2013 21:47:38 GMT; Path=/; Domain=.example.com; HttpOnly
+Set-Cookie: made_write_conn=1295214458; Path=/; Domain=.example.com
+Set-Cookie: reg_fb_gate=deleted; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.example.com; HttpOnly
+The first cookie, lu, is set to expire sometime on 15 January 2013. It will be used by the client browser until that time. The second cookie, made_write_conn, does not have an expiration date, making it a session cookie. It will be deleted after the user closes their browser. The third cookie, reg_fb_gate, has its value changed to "deleted", with an expiration time in the past. The browser will delete this cookie right away because its expiration time is in the past. Note that cookie will only be deleted if the domain and path attributes in the Set-Cookie field match the values used when the cookie was created.
+
+Secure and HttpOnly
+The Secure and HttpOnly attributes do not have associated values. Rather, the presence of just their attribute names indicates that their behaviors should be enabled.
+
+The Secure attribute is meant to keep cookie communication limited to encrypted transmission, directing browsers to use cookies only via secure/encrypted connections. However, if a web server sets a cookie with a secure attribute from a non-secure connection, the cookie can still be intercepted when it is sent to the user by man-in-the-middle attacks. Therefore, for maximum security, cookies with the Secure attribute should only be set over a secure connection.
+
+The HttpOnly attribute directs browsers not to expose cookies through channels other than HTTP (and HTTPS) requests. This means that the cookie cannot be accessed via client-side scripting languages (notably JavaScript), and therefore cannot be stolen easily via cross-site scripting (a pervasive attack technique).[58]
+-->
+
+
+<h3>Media Types</h3>
+
+<p>
+  Multipurpose Internet Mail Extensions (MIME) media types are used in the <code>Accept</code> and <code>Content-Type</code> fields of HTTP messages. The media types consist type and subtype. For instance:
+</p>
+
+<ul>
+  <li>
+    text/plain
+  </li>
+  <li>
+    text/html
+  </li>
+  <li>
+    application/json
+  </li>
+  <li>
+    image/jpeg
+  </li>
+  <li>
+    audio/mp3
+  </li>
+  <li>
+    video/mp4
+  </li>
+</ul>
+
+
+
+<h3>Compression</h3>
+
+<p>
+  HTTP servers often use compression to optimize transmission, for example with Content-Encoding: gzip or Content-Encoding: deflate. 
+</p>
+
+
+<h3>Chunked Transfer-Encoding</h3>
+
+<p>
+  Chunked transfer encoding is a streaming data transfer mechanism available in HTTP/1.1. A data stream is divided into a series of non-overlapping chunks which are sent out and received independently of one another. No knowledge of the data stream outside the currently-being-processed chunk is necessary for both the sender and the receiver at any given time.
+</p>
+
+<p>
+  If a Transfer-Encoding field with a value of "chunked" is specified in an HTTP request or response message then the body of the message consists of an unspecified number of chunks, a terminating chunk, trailer, and a final CRLF. Each chunk is preceded by its size in bytes expressed as a hexadecimal number followed by optional parameters a CRLF and then the chunk data terminated by CRLF. The transmission ends when a terminating zero-length chunk is received. It is followed by the trailer, which consists of a (possibly empty) sequence of entity header fields.
+</p>
+
+<p>
+  If chunk extensions are provided, the chunk size is terminated by a semicolon and followed by the parameters, each also delimited by semicolons. Each parameter is encoded as an extension name followed by an optional equal sign and value. 
+  
+  If both compression and chunked encoding are enabled, then the content stream is first compressed, then chunked; so the chunk encoding itself is not compressed, and the data in each chunk is not compressed individually. The remote endpoint then decodes the stream by concatenating the chunks and decompressing the result.
+</p>
+
+<!-- 
+
+For version 1.1 of the HTTP protocol, the chunked transfer mechanism is considered to be always and anyway acceptable, even if not listed in the TE (transfer encoding) request header field, and when used with other transfer mechanisms, should always be applied last to the transferred data and never more than one time. This transfer coding method also allows additional entity header fields to be sent after the last chunk if the client specified the "trailers" parameter as an argument of the TE field. The origin server of the response can also decide to send additional entity trailers even if the client did not specify the "trailers" option in the TE request field, but only if the metadata is optional (i.e. the client can use the received entity without them). Whenever the trailers are used, the server should list their names in the Trailer header field; three header field types are specifically prohibited from appearing as a trailer field: Transfer-Encoding, Content-Length and Trailer.
+
+Header fields that regulate the use of trailers are TE (used in requests), and Trailers (used in responses).
+
+Example
+
+5\r\n
+Examp\r\n
+3\r\n
+le \r\n
+E\r\n
+in \r\n
+\r\n
+chunks.\r\n
+0\r\n
+\r\n
+
+Example in
+
+chunks.
+ -->
+
+
+<!-- If a server wants to start sending a response before knowing its total length, it might use the simple chunked transfer-encoding which breaks the complete response into smaller chunks and sends them in series. You can identify such a response because it contains the "Transfer-Encoding: chunked" header.
+
+A chunked message body contains a series of chunks, followed by a line with "0" (zero), followed by optional footers (just like headers), and a blank line. Each chunk consists of two parts:
+
+a line with the size of the chunk data, in hex, possibly followed by a semicolon and extra parameters you can ignore (none are currently standard), and ending with CRLF.
+the data itself, followed by CRLF.
+So a chunked response might look like the following:
+
+HTTP/1.1 200 OK
+Date: Fri, 31 Dec 1999 23:59:59 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+
+1a; ignore-stuff-here
+abcdefghijklmnopqrstuvwxyz
+10
+1234567890abcdef
+0
+some-footer: some-value
+another-footer: another-value
+[blank line here]
+
+Note the blank line after the last footer. The length of the text data is 42 bytes (1a + 10, in hex), and the data itself is abcdefghijklmnopqrstuvwxyz1234567890abcdef. The footers should be treated like headers, as if they were at the top of the response.
+
+The chunks can contain any binary data, and may be much larger than the examples here. The size-line parameters are rarely used, but you should at least ignore them correctly. Footers are also rare, but might be appropriate for things like checksums or digital signatures.
+
+For comparison, here's the equivalent to the above response, without using chunked encoding:
+
+HTTP/1.1 200 OK
+Date: Fri, 31 Dec 1999 23:59:59 GMT
+Content-Type: text/plain
+Content-Length: 42
+some-footer: some-value
+another-footer: another-value
+
+abcdefghijklmnopqrstuvwxyz1234567890abcdef -->
+
+
+
+
+<h3>Proxies and Web Caches</h3>
+
+<!--
+  HTTP is designed to permit intermediate network elements to improve or enable communications between clients and servers. High-traffic websites often benefit from web cache servers that deliver content on behalf of upstream servers to improve response time. Web browsers cache previously accessed web resources and reuse them, whenever possible, to reduce network traffic. HTTP proxy servers at private network boundaries can facilitate communication for clients without a globally routable address, by relaying messages with external servers.
+
+  To allow intermediate HTTP nodes (proxy servers, web caches, etc.) to accomplish their functions, some of the HTTP headers (found in HTTP requests/responses) are managed hop-by-hop whereas other HTTP headers are managed end-to-end (managed only by the source client and by the target web server).
+-->
+
+An HTTP proxy is a program that acts as an intermediary between a client and a server. It receives requests from clients, and forwards those requests to the intended servers. The responses pass back through it in the same way. Thus, a proxy has functions of both a client and a server.
+
+Proxies are commonly used in firewalls, for LAN-wide caches, or in other situations.
+
+When a client uses a proxy, it typically sends all requests to that proxy, instead of to the servers in the URLs. Requests to a proxy differ from normal requests in one way: in the first line, they use the complete URL of the resource being requested, instead of just the path. For example,
+
+GET http://www.somehost.com/path/file.html HTTP/1.0
+
+That way, the proxy knows which server to forward the request to.
+
+
+
+Host: Header
+Starting with HTTP 1.1, one server at one IP address can be multi-homed, i.e. the home of several Web domains. For example, "www.host1.com" and "www.host2.com" can live on the same server.
+
+Several domains living on the same server is like several people sharing one phone: a caller knows who they're calling for, but whoever answers the phone doesn't. Thus, every HTTP request must specify which host name (and possibly port) the request is intended for, with the Host: header. A complete HTTP 1.1 request might be
+
+GET /path/file.html HTTP/1.1
+Host: www.host1.com:80
+[blank line here]
+except the ":80" isn't required, since that's the default HTTP port.
+Host: is the only required header in an HTTP 1.1 request. It's also the most urgently needed new feature in HTTP 1.1. Without it, each host name requires a unique IP address, and we're quickly running out of IP addresses with the explosion of new domains.
+
+
+
+
+
+
+
+Persistent Connections and the "Connection: close" Header
+In HTTP 1.0 and before, TCP connections are closed after each request and response, so each resource to be retrieved requires its own connection. Opening and closing TCP connections takes a substantial amount of CPU time, bandwidth, and memory. In practice, most Web pages consist of several files on the same server, so much can be saved by allowing several requests and responses to be sent through a single persistent connection.
+
+Persistent connections are the default in HTTP 1.1, so nothing special is required to use them. Just open a connection and send several requests in series (called pipelining), and read the responses in the same order as the requests were sent. If you do this, be very careful to read the correct length of each response, to separate them correctly.
+
+If a client includes the "Connection: close" header in the request, then the connection will be closed after the corresponding response. Use this if you don't support persistent connections, or if you know a request will be the last on its connection. Similarly, if a response contains this header, then the server will close the connection following that response, and the client shouldn't send any more requests through that connection.
+
+A server might close the connection before all responses are sent, so a client must keep track of requests and resend them as needed. When resending, don't pipeline the requests until you know the connection is persistent. Don't pipeline at all if you know the server won't support persistent connections (like if it uses HTTP 1.0, based on a previous response).
+
+Return to Table of Contents
+
+The "100 Continue" Response
+During the course of an HTTP 1.1 client sending a request to a server, the server might respond with an interim "100 Continue" response. This means the server has received the first part of the request, and can be used to aid communication over slow links. In any case, all HTTP 1.1 clients must handle the 100 response correctly (perhaps by just ignoring it).
+
+The "100 Continue" response is structured like any HTTP response, i.e. consists of a status line, optional headers, and a blank line. Unlike other responses, it is always followed by another complete, final response.
+
+So, further extending the last example, the full data that comes back from the server might consist of two responses in series, like
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 200 OK
+Date: Fri, 31 Dec 1999 23:59:59 GMT
+Content-Type: text/plain
+Content-Length: 42
+some-footer: some-value
+another-footer: another-value
+
+abcdefghijklmnoprstuvwxyz1234567890abcdef
+To handle this, a simple HTTP 1.1 client might read one response from the socket; if the status code is 100, discard the first response and read the next one instead.
+
+Return to Table of Contents
+
+
+HTTP 1.1 Servers
+To comply with HTTP 1.1, servers must:
+
+require the Host header from HTTP 1.1 clients and return a 400 Bad Request response otherwise.
+accept absolute URL's in a request
+accept requests with chunked data
+either support persistent connections, or include the "Connection: close" header with each response
+use the "100 Continue" response appropriately
+include the Date: header in each response
+handle requests with If-Modified-Since: or If-Unmodified-Since: headers
+support at least the GET and HEAD methods
+support HTTP 1.0 requests
+Return to Table of Contents
+
+
+Persistent Connections and the "Connection: close" Header
+
+If an HTTP 1.1 client sends multiple requests through a single connection, the server should send responses back in the same order as the requests-- this is all it takes for a server to support persistent connections.
+
+If a request includes the "Connection: close" header, that request is the final one for the connection and the server should close the connection after sending the response. Also, the server should close an idle connection after some timeout period (can be anything; 10 seconds is fine).
+
+If you don't want to support persistent connections, include the "Connection: close" header in the response. Use this header whenever you want to close the connection, even if not all requests have been fulfilled. The header says that the connection will be closed after the current response, and a valid HTTP 1.1 client will handle it correctly.
+
+
+
+Using the "100 Continue" Response
+As described in the section on HTTP 1.1 Clients, this response exists to help deal with slow links.
+
+When an HTTP 1.1 server receives the first line of an HTTP 1.1 (or later) request, it must respond with either "100 Continue" or an error. If it sends the "100 Continue" response, it must also send another, final response, once the request has been processed. The "100 Continue" response requires no headers, but must be followed by the usual blank line, like:
+
+HTTP/1.1 100 Continue
+[blank line here]
+[another HTTP response will go here]
+
+
+The Date: Header
+Caching is an important improvement in HTTP 1.1, and can't work without timestamped responses. So, servers must timestamp every response with a Date: header containing the current time, in the form
+
+Date: Fri, 31 Dec 1999 23:59:59 GMT
+All responses except those with 100-level status (but including error responses) must include the Date: header.
+
+All time values in HTTP use Greenwich Mean Time.
+
+
+Handling Requests with If-Modified-Since: or If-Unmodified-Since: Headers
+To avoid sending resources that don't need to be sent, thus saving bandwidth, HTTP 1.1 defines the If-Modified-Since: and If-Unmodified-Since: request headers. The former says "only send the resource if it has changed since this date"; the latter says the opposite. Clients aren't required to use them, but HTTP 1.1 servers are required to honor requests that do use them.
+
+Unfortunately, due to earlier HTTP versions, the date value may be in any of three possible formats:
+
+If-Modified-Since:  Fri, 31 Dec 1999 23:59:59 GMT
+If-Modified-Since:  Friday, 31-Dec-99 23:59:59 GMT
+If-Modified-Since:  Fri Dec 31 23:59:59 1999
+
+Again, all time values in HTTP use Greenwich Mean Time (though try to be tolerant of non-GMT times). If a date with a two-digit year seems to be more than 50 years in the future, treat it as being in the past-- this helps with the millennium bug. In fact, do this with any date handling in HTTP 1.1.
+
+Although servers must accept all three date formats, HTTP 1.1 clients and servers must only generate the first kind.
+
+If the date in either of these headers is invalid, or is in the future, ignore the header.
+
+If, without the header, the request would result in an unsuccessful (non-200-level) status code, ignore the header and send the non-200-level response. In other words, only apply these headers when you know the resource would otherwise be sent.
+
+The If-Modified-Since: header is used with a GET request. If the requested resource has been modified since the given date, ignore the header and return the resource as you normally would. Otherwise, return a "304 Not Modified" response, including the Date: header and no message body, like
+
+HTTP/1.1 304 Not Modified
+Date: Fri, 31 Dec 1999 23:59:59 GMT
+[blank line here]
+The If-Unmodified-Since: header is similar, but can be used with any method. If the requested resource has not been modified since the given date, ignore the header and return the resource as you normally would. Otherwise, return a "412 Precondition Failed" response, like
+
+HTTP/1.1 412 Precondition Failed
+[blank line here]
+Return to Table of Contents
+
+Supporting the GET and HEAD methods
+To comply with HTTP 1.1, a server must support at least the GET and HEAD methods. If you're handling CGI scripts, you should probably support the POST method too.
+
+Four other methods (PUT, DELETE, OPTIONS, and TRACE) are defined in HTTP 1.1, but are rarely used. If a client requests a method you don't support, respond with "501 Not Implemented", like
+
+HTTP/1.1 501 Not Implemented
+[blank line here]
+Return to Table of Contents
+
+
+
+<h3>ETag</h3>
+
+<p>
+  ETags are an optional mechanism provided by HTTP for Web cache validation. An ETag is an opaque identifier assigned by a Web server to a specific version of a resource found at a URL. If the resource representation at that URL ever changes then a new and different ETag is assigned.
+</p>
+
+<!--
+ETags can quickly be compared to determine whether two representations of a resource are the same.
+
+
+
+The method by which ETags are generated has never been is not specified. Common methods include using a collision-resistant hash function of the resource content, a hash of the last modification timestamp, or even just a revision number. Whatever the case, each ETag should be unique or at least duplication of ETags should be "acceptably rare"
+
+RFC-7232 explicitly states that ETags should be content-coding aware, e.g.
+
+ETag: "123-a" – for no Content-Encoding
+ETag: "123-b" – for Content-Encoding: gzip
+
+
+Strong and weak validation
+
+The ETag mechanism supports both strong validation and weak validation. They are distinguished by the presence of an initial "W/" in the ETag identifier, as:
+
+"123456789"   – A strong ETag validator
+W/"123456789" – A weak ETag validator
+A strongly validating ETag match indicates that the content of the two resource representations is byte-for-byte identical and that all other entity fields (such as Content-Language) are also unchanged. Strong ETags permit the caching and reassembly of partial responses, as with byte-range requests.
+
+A weakly validating ETag match only indicates that the two representations are semantically equivalent, meaning that for practical purposes they are interchangeable and that cached copies can be used. However, the resource representations are not necessarily byte-for-byte identical, and thus weak ETags are not suitable for byte-range requests. Weak ETags may be useful for cases in which strong ETags are impractical for a Web server to generate, such as with dynamically-generated content.
+
+
+Typical usage is as follows:
+
+- The client requests a resource and the Web server returns the current representation of the resources at the requested URL.
+- The server includes the corresponding ETag value in the <code>ETag</code> field.
+
+In typical usage, when a URL is retrieved, the Web server will return the current representation of the resource along with its corresponding ETag value in the HTTP response header "ETag" field. The client may then decide to cache the representation, along with its ETag. Later, if the client wants to retrieve the same URL resource again, it will first determine whether the locally cached version of the URL has expired (through the Cache-Control and the Expire headers). If the URL has not expired, it will retrieve the locally cached resource. If it is determined that the URL has expired (is stale), the client will send a request to the server that includes its previously-saved copy of the ETag in the "If-None-Match" field.
+
+The server may now compare the client's ETag with the ETag for the current version of the resource. If the ETag values match, meaning that the resource has not changed, the server may send back a very short response with a HTTP 304 Not Modified status. The 304 status tells the client that its cached version is still good and that it should use that.
+
+However, if the ETag values do not match, meaning the resource has likely changed, a full response including the resource's content is returned, just as if ETags were not being used. In this case, the client may decide to replace its previously cached version with the newly returned representation of the resource and the new ETag.
+
+ETag values can be used in Web page monitoring systems. Efficient Web page monitoring is hindered by the fact that most websites do not set the ETag headers for Web pages. When a Web monitor has no hints whether Web content has been changed, all content has to be retrieved and analyzed using computing resources for both the publisher and subscriber.
+
+Mismatched ETag detection
+A buggy website can at times fail to update the ETag after its semantic resource has been updated. As of 2019, an example of a prominent such site is export.arxiv.org.[4] As a result, the incorrectly returned response is status 304, and the client fails to retrieve the updated resource. To detect such a buggy website:
+
+Cache the response and ETag, assuming there is an ETag and that the response was not aborted.
+For a subsequent request that would've included the If-None-Match header, do not send this header with perhaps a random 20% probability. With this probability, if the response returns an altered content but the same ETag as what was previously cached, mark the website as buggy and disable ETag caching for it. As a reminder, for a strong ETag, the content comparison can be byte-for-byte, whereas, for a weak ETag, it would check semantic equivalence only.
+Tracking using ETags
+ETags can be used to track unique users,[5] as HTTP cookies are increasingly being deleted by privacy-aware users. In July 2011, Ashkan Soltani and a team of researchers at UC Berkeley reported that a number of websites, including Hulu, were using ETags for tracking purposes.[6] Hulu and KISSmetrics have both ceased "respawning" as of 29 July 2011,[7] as KISSmetrics and over 20 of its clients are facing a class-action lawsuit over the use of "undeletable" tracking cookies partially involving the use of ETags.[8]
+
+Because ETags are cached by the browser and returned with subsequent requests for the same resource, a tracking server can simply repeat any ETag received from the browser to ensure an assigned ETag persists indefinitely (in a similar way to persistent cookies). Additional caching headers can also enhance the preservation of ETag data.[9]
+
+ETags may be flushable by clearing the browser cache (implementations vary).
+ -->
+
+

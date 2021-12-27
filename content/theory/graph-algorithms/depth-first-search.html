@@ -9,30 +9,11 @@ draft: false
   Depth-first search is a graph traversal algorithm which explores a graph to find every vertex reachable from a starting vertex. The algorithm proceeds by repeatedly exploring an unvisited vertex adjacent to the current vertex. This continues until a dead-end is reached at which point the algorithm backtracks until it finds an unvisited vertex to explore. This process is repeated until the algorithm backtracks past the source vertex.
 </p>
 
-<p>
-  Given a graph \(G = (V,E)\) and a starting vertex, depth-first search proceeds as follows:
-</p>
 
-<ol>
-  <li>
-    Initialize an empty stack.
-  </li>
-  <li>
-    Mark the source vertex as visited and push it onto the stack.
-  </li>
-  <li>
-    Pop a vertex off the stack and consider each of its adjacent vertices.
-  </li>
-  <li>
-    If a vertex adjacent to the popped vertex has not been visited then mark it as visited and push it onto the stack.
-  </li>
-  <li>
-    Repeat steps 3-4 until the stack is empty.
-  </li>
-</ol>
+<h3>Recursive Approach</h3>
 
 <p>
-  Alternatively, depth-first search lends itself to a recursive implementation:
+  Depth-first search lends itself to an intuitive recursive implementation:
 </p>
 
 <ol>
@@ -43,34 +24,65 @@ draft: false
     Consider each of its adjacent vertices.
   </li>
   <li>
-    If an adjacent vertex has not been visited then recurse with that vertex.
+    For each adjacent vertex, if that vertex has not been visited then recurse with that vertex.
   </li>
 </ol>
 
+<figure>
+  <img src="/img/theory/graph-algorithms/depth-first-search.svg" height="100%" width="100%" style="max-width: 400px;">
+</figure>
+
 <p>
-  Depth-first search has worst-case performance of \(O(|V| + |E|)\) and worst-case space complexity of \(O(|V|)\).
+  Above we start at A and explore B, C, D, G, L and P. We then backtrack to L and explore H. We backtrack to G and explore J, I, E and F. Again, we backtrack to I after which we explore M, N, K and O before backtracking back to A.
 </p>
 
-<p>This has time complexity O(n + m) where the graph has n vertices and m edges.</p>
 
-<!--
-  https://www.youtube.com/watch?v=qH-mHxkoK0Q
+<h3>Iterative Approach</h3>
+
+<p>
+  Depth-first search can be implemented iteratively using a stack. We start by marking the source vertex as visited and push it onto the stack. We then pop a vertex off the stack and consider each of its adjacent vertices. If a vertex adjacent to the popped vertex has not been visited then mark it as visited and push it onto the stack. We repeat this until the stack is empty.
+</p>
+
+
+<h3>Complexity</h3>
+
+<p>This has worst-case time complexity of O(n + m) where the graph has n vertices and m edges. The worst-case space complexity is O(n).</p>
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/theory/graph-algorithms/DepthFirstSearch.java" lang="java" %}}
+
+
+
+<h3>Resources</h3>
 
 <ul>
   <li>
-    <a href="https://leetcode.com/problems/flood-fill/">733. Flood Fill</a>
-  </li>
-  <li>
-    <a href="https://leetcode.com/problems/path-sum/">112. Path Sum</a>
-  </li>
-  <li>
-    <a href="https://leetcode.com/problems/binary-tree-paths/">257. Binary Tree Paths</a>
-  </li>
-  <li>
-    <a href="https://leetcode.com/problems/minimum-depth-of-binary-tree/">111. Minimum Depth of Binary Tree</a>
-  </li>
-  <li>
-    <a href="https://leetcode.com/problems/keys-and-rooms/">841. Keys and Rooms</a>
+    <a href="https://www.youtube.com/watch?v=qH-mHxkoK0Q">Depth First Search (Algorithms with Attitude)</a>
   </li>
 </ul>
--->
+
+
+<h3>Problems</h3>
+
+<ul>
+  <li>
+    <a href="/leetcode/111">111. Minimum Depth of Binary Tree</a>
+  </li>
+  <li>
+    <a href="/leetcode/112">112. Path Sum</a>
+  </li>
+  <li>
+    <a href="/leetcode/257">257. Binary Tree Paths</a>
+  </li>
+  <li>
+    <a href="/leetcode/695">695. Max Area of Island</a>
+  </li>
+  <li>
+    <a href="/leetcode/733">733. Flood Fill</a>
+  </li>
+  <li>
+    <a href="/leetcode/841">841. Keys and Rooms</a>
+  </li>
+</ul>

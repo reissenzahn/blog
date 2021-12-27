@@ -1,0 +1,437 @@
+---
+title: "Object Orientation"
+date: 2020-09-29
+draft: false
+---
+
+<!-- 
+  Class: Pattern or blueprint for creating an object. A class contains all attributes and behaviors that describe or make up the object.
+Object: A thing that can be seen and touched (and manipulated). It is an instance of a class.
+In a bit more detail, a (software) object is a construct that combines a state (data) and behavior (operations). When combined, the state and the behavior represent an abstraction of a "real-world" object. See example here.
+
+Attributes: Characteristics that describe the object (sometimes referred to as properties).
+Methods: Operations (or actions) that objects perform or operations which are performed to an object. Sometimes referred to as behaviors.
+Instance: An object created from a class (is an instance of that class).
+Abstraction: Refers to hiding the internal details of an object from the user.
+Inheritance: Refers to the capability of creating a new class from an existing class.
+Base Class: An originally created class, along with its attributes and behaviors. A class from which another class inherits its attributes and behaviors.
+Derived Class: A newly created class, derived from a base class which inherits all of the attributes and behaviors from the base class, but may have addtional attributes and behaviors associated with it.
+
+ -->
+
+<!-- 
+  Object-oriented methodology is a way of viewing software components and their relationships. Object-oriented methodology relies on three characteristics that define object-oriented languages: encapsulation, polymorphism, and inheritance. These three terms are elaborated below.
+
+Objects and Methods
+An object is an encapsulation of data together with procedures that manipulate the data and functions that return information about the data. The procedures and functions are both called methods.
+
+
+
+Messages and Receivers
+In object-oriented languages, this encapsulation is effected in part by having all method calls handled by objects that recognize the method. This leads to a different syntax for calling methods. For example, in C, you might have a table data structure with a procedure called add for adding a new entry. The declaration for this procedure could be
+    void add(Table t, Data dat, Key k);
+A typical call for this function is
+    add(t, dat, k);
+In the object-oriented language Java, a method with similar effect could be declared by
+
+    void add(Data dat, Key k);
+and a typical call would be
+    t.add(dat, k);
+In this call, t plays a special role: it recognizes and carrys out the add method. In object-oriented terminology, this method call is refered to as a message, and t is the receiver of the message. One benefit of this approach is that there can be many methods named "add", with different objects implementing them in different ways. This allows programmers to reuse names of methods, allowing the same name to have different meanings in different contexts.
+
+Polymorphism and Overloading
+Polymorphism refers to the capability of having methods with the same names and parameter types exhibit different behavior depending on the receiver. In other words, you can send the same message to two different objects and they can respond in different ways.
+More generally, the capability of using names to mean different things in different contexts is called overloading. This also includes allowing two methods to have the same name but different parameters types, with different behavior depending on the parameter types. Note that a language could support some kinds of overloading without supporting polymorphism. In that case, most people in the object-oriented community would not consider it to be an object-oriented language.
+
+Polymorphism and overloading can lead to confusion if used excessively. However, the capability of using words or names to mean different things in different contexts is an important part of the power of natural languages. People begin developing the skills for using it in early childhood.
+
+
+Members
+Objects can have their own data, including variables and constants, and their own methods. The variables, constants, and methods associated with an object are collectively refered to as its members or features.
+
+Classes
+Many object-oriented languages use an important construction called a class. A class is a category of objects, classified according to the members that they have. Like objects, classes can also be implemented in classical languages, using separate compilation and structs for encapsulation. See Implementing a Class in C for a brief explanation and example.
+The object-oriented language Java uses the following syntax for class definitions:
+
+public class A {
+
+    declarations for members
+
+}
+Each object in the class will have all members defined in the declarations.
+
+Class Members and Instance Members
+In many object-oriented languages, classes are objects in their own right (to a greater or lesser extent, depending on the language). Their primary function is as factories for objects in the category. A class can also hold data variable and constants that are shared by all of its objects and can handle methods that deal with an entire class rather than an individual object. These members are called class members or, in some languages (C++ and Java, for example), static members. The members that are associated with objects are called instance members.
+
+Inheritance
+One important characteristic of object-oriented languages is inheritance. Inheritance refers to the capability of defining a new class of objects that inherits from a parent class. New data elements and methods can be added to the new class, but the data elements and methods of the parent class are available for objects in the new class without rewriting their declarations.
+For example, Java uses the following syntax for inheritance:
+
+public class B extends A {
+
+    declarations for new members
+
+}
+Objects in class B will have all members that are defined for objects in class A. In addition, they have the new members defined in the declaration of class B. The extends keyword signals that class B inherits from class A. We also say that B is a subclass of A and that A is the parent class of B.
+In some languages, Java for example, the programmer has some control over which members are inherited. In Java, a member is defined with a keyword indicating its level of accessibility. The keyword private indicates that the member is not inherited by subclasses. This capability is not often used.
+ -->
+
+
+
+<h3>Classes and Objects</h3>
+
+<ul>
+  <li>
+    An object encapsulates related state and behavior.
+  </li>
+  <li>
+    State is stored in fields and behavior is exposed through methods which operate on the internal state.
+  </li>
+  <li>
+    Methods serve as the primary mechanism for object-to-object communication.
+  </li>
+  <li>
+    Using methods to interact with an object allows for the details of its implementation to remain hidden.
+  </li>
+  <li>
+    A class is the blueprint from which individual objects are created. An object is an instance of a given class.
+  </li>
+</ul>
+
+
+<!--
+ — a fundamental principle of object-oriented programming.
+
+Information-hiding: By interacting only with the methods of an object, the details of its internal implementation remain hidden from the outside world.
+
+Modularity: The source code for an object can be written and maintained independently of the source code for other objects. Once created, an object can be easily passed around inside the system.
+-->
+
+<!--
+class Bicycle {
+
+  int cadence = 0;
+  int speed = 0;
+  int gear = 1;
+
+  void changeCadence(int newValue) {
+    cadence = newValue;
+  }
+
+  void changeGear(int newValue) {
+    gear = newValue;
+  }
+
+  void speedUp(int increment) {
+    speed = speed + increment;   
+  }
+
+  void applyBrakes(int decrement) {
+    speed = speed - decrement;
+  }
+
+  void printStates() {
+    System.out.println("cadence:" + cadence + " speed:" + speed + " gear:" + gear);
+  }
+}
+
+class BicycleDemo {
+  public static void main(String[] args) {
+
+    // Create two different Bicycle objects
+    Bicycle bike1 = new Bicycle();
+    Bicycle bike2 = new Bicycle();
+
+    // Invoke methods on those objects
+    bike1.changeCadence(50);
+    bike1.speedUp(10);
+    bike1.changeGear(2);
+    bike1.printStates();
+
+    bike2.changeCadence(50);
+    bike2.speedUp(10);
+    bike2.changeGear(2);
+    bike2.changeCadence(40);
+    bike2.speedUp(10);
+    bike2.changeGear(3);
+    bike2.printStates();
+  }
+}
+-->
+
+
+<h3>Encapsulation</h3>
+
+<ul>
+  <li>
+    Hiding internal state and requiring all interaction to be performed through methods is called data encapsulation.
+  </li>
+  <li>
+    This allows us to make use of the functionality of an object without having to understand the underlying implementation.
+  </li>
+</ul>
+
+<!-- 
+This allow the software developers to restrict the interactions between components to those that are required to achieve the desired functionality.
+
+encapsulation. The process of enclosing programming
+elements inside larger, more abstract entities. Also known
+as information hiding, or separation of concerns.
+
+Encapsulation is when you hide the implementation of a class in such a way that it is easy to use and easy to change.
+
+It makes the class act as a black box that provides a service to its users, but does not open up the code so someone can change
+it or use it the wrong way.
+-->
+
+
+<h3>Interfaces and Abstract Classes</h3>
+
+<ul>
+  <li>
+    An interface is a contract between a class and the world that .
+  </li>
+  <li>
+    When a class implements an interface, it promises to provide the behavior defined by that interface.
+  </li>
+</ul>
+
+<!-- 
+Objects define their interaction with the outside world through the methods that they expose. 
+
+In its most common form, an interface is a group of related methods with empty bodies. To use an interface, you write a class that implements the interface. When an instantiable class implements an interface, it provides a method body for each of the methods declared in the interface.
+
+When you define a new interface, you are defining a new reference data type. You can use interface names anywhere you can use any other data type name. If you define a reference variable whose type is an interface, any object you assign to it must be an instance of a class that implements the interface.
+-->
+
+
+
+
+<h3>Inheritance</h3>
+
+<ul>
+  <li>
+    Inheritance is when a subclass inherits state and behavior from a superclass.
+  </li>
+  <li>
+    A subclass can add its own state and behavior to what it inherits form its superclass.
+  </li>
+  <li>
+    A subclass can also change the behavior of its superclass by overriding that behavior.
+  </li>
+  <li>
+    Inheritance allows you to  build classes based on other classes and avoid code duplication.
+  </li>
+</ul>
+
+{{% code java %}}public class Airplane {
+
+  private int speed;
+
+  public Airplane() {}
+
+  public void setSpeed(int speed) {
+    this.speed = speed;
+  }
+
+  public int getSpeed() {
+    return speed;
+  }
+}
+
+public class Jet extends Airplane {
+
+  // add a variable
+  private static final int MULTIPLIER = 2;
+
+  public Jet() {
+
+    // invoke constructor of superclass
+    super();
+  }
+
+  // override a method
+  public void setSpeed(int speed) {
+
+    // invoke a method of the superclass
+    super.setSpeed(speed * MULTIPLIER);
+  }
+
+  // add a method
+  public void accelerate() {
+    super.setSpeed(getSpeed() * 2);
+  }
+}{{% /code %}}
+
+
+
+<!--
+
+class Animal {
+
+  speak() {
+    
+  }
+}
+
+class Dog extends Animal {
+  
+  public void speak() {
+    System.out.println("")
+  }
+}
+
+class Cat extends Animal {
+
+}
+
+-->
+
+
+
+<h3>Polymorphism</h3>
+
+<ul>
+  <li>
+    Polymorphism allows a subclass to stand in for its superclass.
+  </li>
+  <li>
+    This allows us to write code that works on the superclass and to have it work with any subclass type.
+  </li>
+</ul>
+
+
+{{% code java %}}// we can use a Jet instance anywhere we use an Airplane instance
+Airplane plane = new Jet();
+
+
+{{% /code %}}
+
+
+
+
+<h3>Design Principles</h3>
+
+
+
+{{% code java %}}
+abstract class Animal {
+  public abstract void makeSound();
+}
+
+class Dog extends Animal {
+  public void makeSound() {
+    System.out.println("bark!");
+  }
+}
+
+class Cat extends Animal {
+  public void makeSound() {
+    System.out.println("meow");
+  }
+}
+
+// programming to an implementation
+Dog d = new Dog();
+d.bark();
+
+// programming to an interface
+Animal animal = new Dog();
+animal.makeSound();
+
+// assign the concrete implementation object at runtime
+Animal animal = getAnimal();
+animal.makeSound();{{% /code %}}
+
+<!-- 
+  By coding to an interface, you know you can insulate yourself
+from many of the changes that might happen to a system
+down the road. Why? If your code is written to an interface,
+then it will work with any new classes implementing that
+interface through polymorphism. However, when you have
+code that makes use of lots of concrete classes, you’re looking
+for trouble because that code may have to be changed as new
+concrete classes are added. So, in other words, your code will
+not be “closed for modification.” To extend your code with
+new concrete types, you’ll have to reopen it.
+
+
+When an object inherits behavior by subclassing, that behavior is set statically at compile time. In addition, all subclasses must inherit the same behavior. On the other hand, if we can extend an object's behavior through composition then this can be done dynamically at runtime.
+
+By dynamically composing
+objects, I can add new functionality by writing new code rather than altering
+existing code. Because I’m not changing existing code, the chances of
+introducing bugs or causing unintended side effects in pre-existing code are
+much reduced.
+-->
+
+
+
+
+<p>
+  <i>Principle X:</i> Depend upon abstractions. Do not depend upon concrete classes.
+</p>
+
+<!-- 
+It should be pretty clear that reducing dependencies to
+concrete classes in our code is a “good thing.” In fact, we’ve
+got an OO design principle that formalizes this notion; it even
+has a big, formal name: Dependency Inversion Principle.
+
+
+A “high-level” component is a class with behavior defined in terms of other, “low-level” components.
+For example, PizzaStore is a
+high-level component because its behavior is defined in terms of pizzas — it creates all the different pizza objects, and
+prepares, bakes, cuts, and boxes
+them, while the pizzas it uses are
+low-level components.
+
+It suggests that our high-level components should not depend on our low-level components; rather, they should both depend on abstractions.
+
+Well, let’s start by looking again at the pizza store diagram
+on the previous page. PizzaStore is our “high-level
+component” and the pizza implementations are our “lowlevel components,” and clearly PizzaStore is dependent on
+the concrete pizza classes.
+
+Now, this principle tells us we should instead write our code
+so that we are depending on abstractions, not concrete
+classes. That goes for both our high-level modules and our
+low-level modules.
+
+But how do we do this? Let’s think about how we’d apply this
+principle to our very dependent PizzaStore implementation...
+
+Now, the main problem with the very dependent PizzaStore is that it depends
+on every type of pizza because it actually instantiates concrete types in its
+orderPizza() method.
+While we’ve created an abstraction, Pizza, we’re nevertheless creating concrete
+Pizzas in this code, so we don’t get a lot of leverage out of this abstraction.
+How can we get those instantiations out of the orderPizza() method? Well, as we
+know, the Factory Method Pattern allows us to do just that.
+
+
+PizzaStore now depends only on Pizza, the abstract class.
+
+Pizza is an abstract
+class...an abstraction.
+
+The concrete pizza classes depend on the Pizza abstraction too, because they implement the Pizza interface (remember, we’re using “interface” in the general sense) in the Pizza abstract class
+
+After applying Factory Method, you’ll notice that our high-level component, the
+PizzaStore, and our low-level components, the pizzas, both depend on Pizza, the
+abstraction. Factory Method is not the only technique for adhering to the Dependency
+Inversion Principle, but it is one of the more powerful ones.
+
+The “inversion” in the name Dependency Inversion
+Principle is there because it inverts the way you typically
+might think about your OO design. Look at the diagram
+on the previous page. Notice that the low-level components
+now depend on a higher-level abstraction. Likewise, the
+high-level component is also tied to the same abstraction.
+So, the top-to-bottom dependency chart we drew a couple
+of pages back has inverted itself, with both high-level and
+low-level modules now depending on the abstraction.
+
+TODO: 142
+-->
+

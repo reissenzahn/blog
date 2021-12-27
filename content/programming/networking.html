@@ -1,0 +1,306 @@
+---
+title: "Networking"
+date: 2020-09-29
+draft: false
+---
+
+<h3>OSI Model</h3>
+
+<p>
+  The Open Systems Interconnection model provides a conceptual model composed of seven layers:
+</p>
+
+<ol reversed>
+  <li>
+    Application: High-level APIs including resource sharing and remote file access.
+  </li>
+  <li>
+    Presentation: Translation of data between a networking service and an application including character encoding, data compression and encryption/decryption.
+  </li>
+  <li>
+    Session: Managing communication sessions (i.e. continuous exchange of information in the form of multiple back-and-forth transmissions between two nodes).
+  </li>
+  <li>
+    Transport: Reliable transmission of data segments between points on a network, including segmentation, acknowledgement and multiplexing.
+  </li>
+  <li>
+    Network: Structuring and managing a multi-node network including addressing, routing and traffic control.
+  </li>
+  <li>
+    Data link: Reliable transmission of data frames between two nodes connected by a physical layer.
+  </li>
+  <li>
+    Physical: Transmission of raw bit streams over a physical medium.
+  </li>
+</ol>
+
+<!--
+  In the OSI model, an application, such as a web browser, exists in the application
+  layer (layer 7). A protocol from this layer, such as HTTP used to transmit web pages,
+  doesn't have to concern itself with how the data is being transmitted. It can rely on services
+  provided by the layer underneath it to effectively transmit data.
+
+  It should be noted that chunks of data are often referred to by different names depending
+  on the OSI layer they're on. A data unit on layer 2 is called a frame, since layer 2 is
+  responsible for framing messages. A data unit on layer 3 is referred to as a packet, while a
+  data unit on layer 4 is a segment if it is part of a TCP connection or a datagram if it is a UDP
+  message.
+-->
+
+
+<h3>TCP/IP Model</h3>
+
+<p>
+  The TCP/IP reference model subscribes to a less rigid, although still hierarchical, model that reflects a more realistic view of how networking is commonly implemented. The layers are:
+</p>
+
+<ol reversed>
+  <li>
+    Application: The scope in which applications communicate data to other applications on another or the same host.
+  </li>
+  <li>
+    Transport: Performs host-to-host communications on either the local network or remote networks separated by routers.
+  </li>
+  <li>
+    Internet: Exchanges datagrams across network boundaries. It provides a uniform networking interface that hides the actual topology (layout) of the underlying network connections.
+  </li>
+  <li>
+    Link: Defines the networking methods within the scope of the local network link on which hosts communicate without intervening routers.
+  </li>
+</ol>
+
+<p>
+  Application layer protocols include SMTP, FTP, SSH and HTTP. UDP is the basic transport layer protocol, providing an unreliable connectionless datagram service while TCP provides flow-control, connection establishment, and reliable transmission of data. The primary network layer protocol is the Internet Protocol.
+</p>
+
+<p>
+  When communicating over a network, data must be processed down through the layers at the sender and up again through the layers at the receiver. At each layer, the data is encapsulated in a suitable format. For instance, an HTML page transmitted by a web server might first be encapsulated in an HTTP response message and then in a TCP packet before being routed in a IP packet and transmitted over the wire in an Ethernet frame.
+</p>
+
+
+<h3>Internet Protocol</h3>
+
+<p>
+  IPv4 is ubiquitous but uses 32-bit addresses which has led to address scarcity. IPv6 was designed to replace IPv4 and uses 128-bit addresses and many systems provide support for both IPv4 and IPv6 using a dual-stack configuration.
+</p>
+
+<p>
+  All internet Protocol traffic routes in an address. IPv4 uses 32-bit addresses that are commonly divided into four 8-bit sections with each section being displayed as a number between 0 and 255 inclusive separated by periods (e.g. 192.168.0.1). Classless Inter-Domain Routing (CIDR) notation is typically used to describes address ranges by specifying the number of bits that are fixed. For instance, 10.0.0.0/8 represents the range 10.0.0.0 10 10.255.255.255.
+</p>
+
+<p>
+  A special address called the loopback address is reserved at 127.0.0.1. Any traffic sent to the loopback address is passed back up the network software stack as if it had been received from another device. The address ranges 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 are reserved for private use.
+</p>
+
+<p>
+  IPv6 uses 128-bit addresses that are written as groups of four hexadecimal characters delineated by colons (e.g. fe80:0000:0000:0000:75f4:ac69:5fa7:67f9). Leading zeros in each section can be omitted and consecutive sections of zeros can be replaced with a double colon. For instance, the address 2001:0db8:0000:0000:0000:ff00:0042:8329 can be written as 2001:db8::ff00:42:8329. The loopback address is ::1.
+</p>
+
+<p>
+  Dual-stack implementations recognize a special class of IPv6 addresses that map directly to IPv4 addresses. These addresses start with 80 zero bits, and then by 16 one bits, followed by the 32-bit IPv4 address which corresponds to the range ::ffff:0:0/96. For instance, the IPv6 address ::ffff:192.168.0.1 maps to the IPv4 address 192.168.0.1.
+</p>
+
+<!-- 
+  It should be noted the IPv6 introduces many additional features over IPv4 besides just a
+  greatly expanded address range. IPv6 addresses have new attributes, such as scope and
+  lifetime, and it is normal for IPv6 network interfaces to have multiple IPv6 addresses. IPv6
+  addresses are used and managed differently than IPv4 addresses.
+ -->
+
+
+<h3>DNS</h3>
+
+<p>
+  The Internet Protocol routes packets to an IP address. As such, the Domain Name System (DNS) is used to translate a given domain name into a corresponding IP address. The IP address for a domain name server is usually assigned by your ISP.
+</p>
+
+<p>
+  To resolve a hostname, your computer sends a UDP message to your domain name server and asks it for an AAAA-type record for the domain you're trying to resolve. If this record exists, an IPv6 address is returned. You can then connect to a server at that address to load the website. If no AAAA record exists, then your computer queries the server again, but asks for an A record. If this record exists, you will receive an IPv4 address for the server.
+</p>
+
+<p>
+  It is also possible, and common, for multiple records of the same type to exist, each pointing to a different address. This is useful for redundancy in the case where multiple servers can provide the same service.
+</p>
+
+<!-- 
+  UDP is used by DNS as an entire request and response can fit in a single packet.
+-->
+
+
+<h3>Internet Routing</h3>
+
+<p>
+  When you make a connection over the internet, your data first transmits to your local router. From there, it is transmitted to another router, which is connected to another router, and so on. Eventually, your data reaches a router that is connected to the receiving device, at which point, the data has reached its destination.
+</p>
+
+<!-- 
+  In Unix-based systems, the utility to trace routes is called traceroute. You would use it like traceroute example.com.
+ -->
+
+
+
+<h3>Network Address Translation</h3>
+
+<p>
+  The address ranges 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 are reserved for private use for hosts connected to a Local Area Network (LAN). The devices on the same LAN can directly address one another by their local address. However, any traffic communicated to the internet must undergo address translation by the router.
+</p>
+
+<p>
+  A router that implements NAT remembers which local address a connection is established from. When the router receives an outgoing packet, it modifies the source IP address from the private LAN address to its public internet IP address. Likewise, when the router receives the return communication, it must modify the destination address from its public IP to the private IP of the original sender. It knows the private IP address because it stores which private IP address sent the packet in order to route the reply.
+</p>
+
+<!-- 
+  In addition to modifying the source IP address in the packet, a router must also update the checksums in the packet. Otherwise, the packet would be detected as containing errors and discarded by the next router. NATs will also modify the packet data in some cases. For example, in the File Transfer Protocol (FTP), some connection information is sent as part of the data in the packet. In these cases, the NAT router will look at the packet's data in order to know how to forward future incoming packets.
+-->
+
+
+<h3>Subnets</h3>
+
+<p>
+  An IP address can be split into two parts: the most significant bits are used to identify the subnet and the least significant bits are used to identify the specific device on the network. Devices on the same subnet can communicate without the need of an intervening router.
+</p>
+
+<p>
+  IPv4 traditionally uses a mask notation to identify the IP address parts. For example, consider a router on the 10.0.0.0 network with a subnet mask of 255.255.255.0. This router can take any incoming packet and perform a bitwise AND operation with the subnet mask to determine whether the packet belongs on the local subnet or needs to be forwarded on. For example, this router receives a packet to be delivered to 10.0.0.105. It does a bitwise AND operation on this address with the subnet mask of 255.255.255.0, which produces 10.0.0.0 so the traffic is local. If, instead, we consider a packet destined for 10.0.15.22, the result of the bitwise AND with the subnet mask is 10.0.15.0 so it must be forwarded.
+</p>
+
+<p>
+  Alternatively, we can use CIDR notation. For instance, if the IPv6 subnet is /112, then the router knows that any address that matches on the first 112 bits is on the local subnet.
+</p>
+
+
+<h3>Transmission Modes</h3>
+
+<p>
+  There are four principal transmission modes in the Internet Protocol:
+</p>
+
+<ul>
+  <li>
+    Unicast: Delivers a packet to a single specific node.
+  </li>
+  <li>
+    Broadcast: Delivers a single packet to all nodes in the network. The network automatically replicates datagrams as needed to reach all the recipients within the scope of the broadcast which is generally an entire network subnet.
+  </li>
+  <li>
+    Multicast: Delivers a packet to a group of nodes that have expressed interest in receiving the message.
+  </li>
+  <li>
+    Anycast: Delivers a packet to any one out of a group of nodes, typically the one nearest to the source.
+  </li>
+</ul>
+
+<p>
+  IPv4 and lower network levels support local broadcast addressing. IPv4 provides some optional (but commonly implemented) support for multicasting. IPv6 mandates multicasting support while providing additional features over IPv4's multicasting. Though IPv6 is not considered to broadcast, its multicasting functionality can essentially emulate it.
+</p>
+
+<!-- 
+
+It's worth noting that these alternative addressing methods don't generally work over the
+broader internet. Imagine if one peer was able to broadcast a packet to every connected
+internet device. It would be a mess!
+If you can use IP multicasting on your local network, though, it is worthwhile to implement
+it. Sending one IP level multicast conserves bandwidth compared to sending the same
+unicast message multiple times.
+-->
+
+
+<h3>Port Numbers</h3>
+
+<p>
+  An IP address is used route a packet to a specific system while a port number is used to route the packet to a specific process on that system. Port numbers are stored as unsigned 16-bit integers so they are between 0 and 65,535 inclusive. Some common port numbers assigned by thee Internet Assigned Numbers Authority (IANA) are:
+</p>
+
+<ul>
+  <li>
+    20, 21: File Transfer Protocol (FTP)
+  </li>
+  <li>
+    22: Secure Shell (SSH)
+  </li>
+  <li>
+    23: Telnet
+  </li>
+  <li>
+    25: Simple Mail Transfer Protocol (SMTP)
+  </li>
+  <li>
+    53: Domain Name System (DNS)
+  </li>
+  <li>
+    80: Hypertext Transfer Protocol (HTTP)
+  </li>
+  <li>
+    143: Internet Message Access Protocol (IMAP)
+  </li>
+  <li>
+    194: Internet Relay Chat (IRC)
+  </li>
+  <li>
+    443: HTTP over TLS/SSL (HTTPS)
+  </li>
+</ul>
+
+<!-- 
+  TODO: ephemeral ports
+-->
+
+
+<h3>Sockets</h3>
+
+<p>
+  A socket is one end-point of a communication link between systems that acts as an abstraction used to send and receive data over the network. An open socket is uniquely defined by a 5-tuple consisting of the local IP address, local port, remote IP address, remote port and the protocol used (UDP or TCP).
+</p>
+
+<p>
+  This 5-tuple is used by the operating system to know which process is responsible for received packets. For instance, if you use two web clients to establish two simultaneous connections to example.com on port 80 then your operating system keeps the connections separate by looking at the local IP address, local port, remote IP  address, remote port, and protocol. In this case, the local IP addresses, remote IP addresses,remote port (80), and protocol (TCP) are identical. The deciding factor then is the local port which will have been chosen to be different by the operating system for connection.
+</p>
+
+<p>
+  This 5-tuple is also important to understand how NAT works. A private network may have many systems accessing the same outside resource, and the router NAT must store this five tuple for each connection in order to know how to route received packets back into the private network.
+</p>
+
+
+<h3>TCP and UDP</h3>
+
+<p>
+  Sockets come in two basic types: connection-oriented and connectionless.
+</p>
+
+<p>
+  In a connectionless protocol, such as UDP, each data packet is addressed individually. From the perspective of the protocol, each data packet is completely independent and unrelated to any packets coming before or after it. UDP makes no guarantee that a packet will arrive and or that packets will arrive in the same order they were sent. It is possible that a single packet may arrive twice.
+</p>
+
+<p>
+  TCP is a connection-oriented protocol that guarantees that data arrives in the same order it is sent. It prevents duplicate data from arriving twice, and it retries sending missing data. It also provides additional features such as notifications when a connection is terminated and algorithms to mitigate network congestion.
+</p>
+
+<!-- UDP also has the advantage in cases where you want to send a message without expecting
+a response from the other end. This makes it useful when using IP broadcast or multicast.
+TCP, on the other hand, requires bidirectional communication to provide its guarantees,
+and TCP does not work with IP multicast or broadcast. -->
+
+
+
+
+<h3>Resources</h3>
+
+
+
+
+<!-- 
+  # list routers along path to destination host
+  $ traceroute reissenzahn.com
+
+  # show network interfaces and addresses
+  $ ip addr
+ -->
+
+
+<!-- 
+  TODO: what is the wildcard 0.0.0.0?
+
+  Finally, ai_flags = AI_PASSIVE is set. This is telling getaddrinfo() that we want it to
+bind to the wildcard address. That is, we are asking getaddrinfo() to set up the address,
+so we listen on any available network interface.
+ -->

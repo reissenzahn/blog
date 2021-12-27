@@ -1,0 +1,77 @@
+---
+title: "695. Max Area of Island"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  public int maxAreaOfIsland(int[][] grid) {
+    // if we can modify grid then we could use -1 to mean visited
+    boolean[][] visited = new boolean[grid.length][grid[0].length];
+    
+    int maximumArea = 0;
+    
+    // start dfs at each position in grid
+    for (int i = 0; i < grid.length; i++) {
+      for (int j = 0; j < grid[0].length; j++) {
+        maximumArea = Math.max(maximumArea, this.dfs(grid, visited, i, j));
+      }
+    }
+    
+    return maximumArea;
+  }
+  
+  private int dfs(int[][] grid, boolean[][] visited, int i0, int j0) {
+    // proceed if the grid item is unvisited and 1
+    if (visited[i0][j0] || grid[i0][j0] == 0) return 0;
+    
+    Stack<int[]> stack = new Stack<>();
+    visited[i0][j0] = true;
+    stack.push(new int[]{i0, j0});
+    
+    int area = 0;
+    
+    while (!stack.isEmpty()) {
+      int[] p = stack.pop();
+      int i = p[0];
+      int j = p[1];
+      
+      // check four adjacent positions
+      this.check(grid, visited, stack, i - 1, j);
+      this.check(grid, visited, stack, i, j - 1);
+      this.check(grid, visited, stack, i, j + 1);
+      this.check(grid, visited, stack, i + 1, j);
+      
+      area++;
+    }
+    
+    return area;
+  }
+  
+  private void check(int[][] grid, boolean[][] visited, Stack<int[]> stack, int i, int j) {
+    // check if position is valid
+    if (i < 0 || i >= grid.length) return;
+    if (j < 0 || j >= grid[0].length) return;
+    
+    // check if adjacent position is unvisited and 1
+    if (!visited[i][j] && grid[i][j] == 1) {
+      visited[i][j] = true;
+      stack.push(new int[]{i, j});
+    }
+  }
+}{{% /code %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/max-area-of-island/">Original Problem</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=iJGr1OtmH0c">NeetCode</a>
+  </li>
+</ul>

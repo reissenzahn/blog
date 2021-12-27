@@ -11,7 +11,6 @@
 
 ```
 
-- [Singleton Pattern ~ OODesign.com](https://www.oodesign.com/singleton-pattern.html)
 - [Singleton Considered Stupid ~ Steve Yegge](https://sites.google.com/site/steveyegge2/singleton-considered-stupid)
 
 
@@ -443,90 +442,7 @@ class AnotherVisitor {
 @enduml
 -->
 
-<pre><code class="java">interface CreditCard {
-  
-  String getName();
-  void accept(OfferVisitor visitor);
-}
-
-class BronzeCreditCard implements CreditCard {
-
-  public String getName() {
-    return "bronze";
-  }
-  
-  public void accept(OfferVisitor visitor) {
-    visitor.visitBronzeCreditCard(this);
-  }
-}
-
-class SilverCreditCard implements CreditCard {
-
-  public String getName() {
-    return "silver";
-  }
-
-  public void accept(OfferVisitor visitor) {
-    visitor.visitSilverCreditCard(this);
-  }
-}
-
-class GoldCreditCard implements CreditCard {
-
-  public String getName() {
-    return "gold";
-  }
-
-  public void accept(OfferVisitor visitor) {
-    visitor.visitGoldCreditCard(this);
-  }
-}
-
-interface OfferVisitor {
-
-  void visitBronzeCreditCard(BronzeCreditCard bronzeCreditCard);
-  void visitSilverCreditCard(SilverCreditCard silverCreditCard);
-  void visitGoldCreditCard(GoldCreditCard goldCreditCard);
-}
-
-class GasOfferVisitor implements OfferVisitor {
-  public void visitBronzeCreditCard(BronzeCreditCard bronzeCreditCard) {
-    System.out.println("Computing gas offer for bronze credit card");
-  }
-
-  public void visitSilverCreditCard(SilverCreditCard silverCreditCard) {
-    System.out.println("Computing gas offer for bronze credit card");
-  }
-
-  public void visitGoldCreditCard(GoldCreditCard goldCreditCard) {
-    System.out.println("Computing gas offer for bronze credit card");
-  }
-}
-
-class HotelOfferVisitor implements OfferVisitor {
-  public void visitBronzeCreditCard(BronzeCreditCard bronzeCreditCard) {
-    System.out.println("Computing hotel offer for bronze credit card");
-  }
-
-  public void visitSilverCreditCard(SilverCreditCard silverCreditCard) {
-    System.out.println("Computing hotel offer for bronze credit card");
-  }
-
-  public void visitGoldCreditCard(GoldCreditCard goldCreditCard) {
-    System.out.println("Computing hotel offer for bronze credit card");
-  }
-}
-
-public class Example {
-
-  public static void main(String[] args) {
-
-    CreditCard creditCard = new GoldCreditCard();
-    OfferVisitor offerVisitor = new GasOfferVisitor();
-
-    creditCard.accept(offerVisitor);
-  }
-}</code></pre>
+<pre><code class="java"></code></pre>
 
 <!-- 
   https://www.youtube.com/watch?v=TeZqKnC2gvA

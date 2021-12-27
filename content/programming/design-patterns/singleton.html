@@ -1,0 +1,71 @@
+---
+title: "Iterator Pattern"
+date: 2020-09-29
+draft: false
+---
+
+<p>
+  The Singleton Pattern ensures a class has only one instance and provides a global point of access to it.
+</p>
+
+
+
+<h3>Description</h3>
+
+<!--
+  - The Singleton Pattern ensures only one instance of a class is gets created which is useful for case in which instantiating more than one objects results in problems like incorrect program behavior, overuse of resources or inconsistent results.
+
+  - Further, the pattern provides a global point of access to the object without the downsides of a global variable. For instance, it allows us to only create the object when it is actually needed whereas using a global variable would result in it being created when the program starts which might waste resources.
+
+  - The class declares its constructor as private to prevent it from being instantiated by external code. Instead, an instance static field is provided to hold the single instance of the class and a static getInstance() method is use to provide a global access point to the instance. 
+
+  - The getInstance() method is implemented so that the singleton instance is created in a lazy manner (which is especially important for resource-intensive objects). This method first checks if the instance has been created. If it has then the instance is returned; otherwise, the instance is created and stored in the instance field.
+-->
+
+
+
+<h3>Example</h3>
+
+<!-- 
+  - We consider the case of a modern chocolate factory with a computer-controlled chocolate boiler. The ChocolateBoiler class keeps track of whether the boiler is empty and whether the chocolate has boiled so as to prevent misuse (e.g. filling the boiler when it is already full).
+
+  - We want to prevent more than one ChocolateBoiler class from getting loose. As such, we make the ChocolateBoiler class a singleton in the usual way.
+
+  - We now decide to add threads to our program. We consider the case of two threads invoking getInstance(). The first thread sees that the singleton instance has not been created and thus creates the instance. However, before the first thread can assign the new instance to the instance field, the second thread also checks the instance field and so creates another instance of ChocolateBoiler.
+
+  - To address this, we could make the getInstance() method synchronized so that no two threads can enter the method at the same time. However, this synchronization overhead becomes unnecessary after the first time getInstance() is invoked.
+
+  - We 
+ -->
+
+
+
+Pattern, somehow the Chocolate Boiler’s fill() method was
+able to start filling the boiler even though a batch of milk
+and chocolate was already boiling! That’s 500 gallons of
+spilled milk (and chocolate)! What happened!?
+
+
+
+We don’t know what happened! The new Singleton
+code was running fine. The only thing we can think
+of is that we just added some optimizations to
+the Chocolate Boiler Controller that makes use of
+multiple threads.
+
+Could the addition of threads have caused
+this? Isn’t it the case that once we’ve set the
+uniqueInstance variable to the sole instance
+of ChocolateBoiler, all calls to getInstance()
+should return the same instance? Right?
+
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://sites.google.com/site/steveyegge2/singleton-considered-stupid">Singleton Considered Stupid (Steve Yegge)</a>
+  </li>
+</ul>

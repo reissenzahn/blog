@@ -1,0 +1,66 @@
+---
+title: "Bit Manipulation"
+date: 2021-11-26
+draft: false
+---
+
+<p>
+  Bit manipulation refers to the act of manually setting, clearing and otherwise manipulating bits.
+</p>
+
+
+<h3>Bitwise Operators</h3>
+
+{{% code java %}}
+00001100 | 00011001 = 00011101
+
+
+{{% /code %}}
+
+
+<h3>Two's Complement</h3>
+
+<p>
+  Integers are usually represented using the two's complement representation. The leftmost bit is set to 1 to indicate the number is negative and 0 to indicate it is positive.
+</p>
+
+<p>
+  Calculating the two's complement negative notation of an integer you start with the absolute value of the number in binary and then invert the digits and add one. To convert back from two's complement notation, we once again invert and add 1 to obtain the absolute value of the number. For instance, for -30 we have:
+</p>
+
+{{% code text %}}00000000 00000000 00000000 00011110
+
+11111111 11111111 11111111 11100001  // invert
+11111111 11111111 11111111 11100010  // add 1
+
+00000000 00000000 00000000 00011101  // invert
+00000000 00000000 00000000 00111110  // add 1{{% /code %}}
+
+<p>
+  An advantage of two's complement is that it unifies addition and subtraction. For instance, we have 69 - 12 = 69 + (-12) so:
+</p>
+
+{{% code text %}}  0000 0000 0000 0000 0000 0000 0100 0101  // 69
++ 1111 1111 1111 1111 1111 1111 1111 0100  // -12
+  0000 0000 0000 0000 0000 0000 0011 1001  // 57{{% /code %}}
+
+
+<h3>Getting and Setting Bits</h3>
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.cs.cornell.edu/~tomf/notes/cps104/twoscomp.html">Two's Complement Explained</a>
+  </li>
+</ul>
+
+
+
+<!-- 
+  If we write a << x, we are shifting x bits of a to the left. By the magic of bitwise operations, this is equivalent to multiplying a * 2^x.
+
+So, our expression hash = ((hash << 5) + hash) + c is equivalent to hash = (hash * 2^5) + hash + c, that is equivalent to hash = hash * (2^5 + 1) + c, that is equivalent hash = hash * 33 +c.
+ -->

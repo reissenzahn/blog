@@ -1,0 +1,176 @@
+---
+title: "WebRTC"
+date: 2021-09-29
+draft: false
+---
+
+<p>
+  WebRTC is an open source project to enable realtime communication of audio, video and data in Web and native apps.
+</p>
+
+
+<h3>Finding Candidates</h3>
+
+<p>
+  The Interactive Connectivity Establishment (ICE) framework is used for connecting peers. Initially, ICE tries to connect peers directly through UDP. In this case, a STUN server is used to enable a peer behind a NAT to obtain its public IP address and port. If UDP fails then ICE tries TCP. Further, if direct connection fails (perhaps due to a symmetric NAT or firewall) then ICE uses an intermediary TURN server as a relay. This process of finding network interfaces and ports is referred to as <i>finding candidates</i>.
+</p>
+
+
+<h3>Signaling</h3>
+
+<p>
+  WebRTC uses RTCPeerConnection to communicate streaming data between peers but also needs a mechanism called signaling to send control messages. This is used to send session control messages (to initialize or close communication and report errors) and to exchange network configuration information and media capabilities. This exchange of information via signaling must be completed before peer-to-peer communication can begin.
+</p>
+
+<p>
+  Suppose Alice wants to communicate with Bob. First, Alice and Bob exchange network information:
+</p>
+
+<ol>
+  <li>
+    Alice creates an RTCPeerConnection object with an onicecandidate event handler which runs when network candidates become available.
+  </li>
+  <li>
+    Alice sends serialized candidate date to Bob through some signaling channel.
+  </li>
+  <li>
+    When Bob receives a candidate message from Alice he calls addIceCandidate() to add the candidate to the remote peer description.
+  </li>
+</ol>
+
+<p>
+  Then the Session Description Protocol (SDP) is used to exchange local and remote audio and video media information (such as resolution and codec capabilities). The proceeds by exchanging an <i>offer</i> and an <i>answer</i>:
+</p>
+
+<ol>
+  <li>
+    Alice runs the createOffer() method to obtain an RTCSessionDescription for her local session.
+  </li>
+  <li>
+    Alice sets the local description using setLocalDescription() and then sends this session description to Bob through their signaling channel. Note that RTCPeerConnection won't start gathering candidates until setLocalDescription() is called.
+  </li>
+  <li>
+    Bob sets the description Alice sent him as the remote description using setRemoteDescription().
+  </li>
+  <li>
+    Bob runs the createAnswer() method, passing it the remote description he got from Alice to obtain an RTCSessionDescription for his local session that is compatible with the one he received. Bob sets that as the local description and sends it to Alice.
+  </li>
+  <li>
+    When Alice gets the session description she sets that as the remote description with setRemoteDescription().
+  </li>
+</ol>
+
+<p>
+  The acquisition and exchange of network and media information can be done simultaneously but both processes must have completed before audio and video streaming between peers can begin. When we are finished with the RTCPeerConnection we will call the close() method to prevent leaking resources.
+</p>
+
+
+<h3>Session Descriptions</h3>
+
+<p>
+  The RTCSessionDescription objects are blobs that conform to the Session Description Protocol (SDP).
+</p>
+
+
+<h3>MediaStream</h3>
+
+
+
+
+
+<h3>RTCPeerConnection</h3>
+
+
+
+
+<h3>RTCDataChannel</h3>
+
+
+<!--
+  Overview
+
+  
+
+
+  APIs
+
+  getUserMedia(): capture audio and video.
+  MediaRecorder: record audio and video.
+  RTCPeerConnection: stream audio and video between users.
+  RTCDataChannel: stream data between users.
+
+  
+  STUN & TURN
+
+  WebRTC is designed to work peer-to-peer, so users can connect by the most direct route possible. However, WebRTC is built to cope with real-world networking: client applications need to traverse NAT gateways and firewalls, and peer to peer networking needs fallbacks in case direct connection fails. As part of this process, the WebRTC APIs use STUN servers to get the IP address of your computer, and TURN servers to function as relay servers in case peer-to-peer communication fails.
+
+  --
+
+  The servers argument to RTCPeerConnection is where you could specify STUN and TURN servers.
+
+  WebRTC is designed to work peer-to-peer, so users can connect by the most direct route possible. However, WebRTC is built to cope with real-world networking: client applications need to traverse NAT gateways and firewalls, and peer to peer networking needs fallbacks in case direct connection fails.
+
+  As part of this process, the WebRTC APIs use STUN servers to get the IP address of your computer, and TURN servers to function as relay servers in case peer-to-peer communication fails. WebRTC in the real world explains in more detail.
+
+
+  Security
+
+  Encryption is mandatory for all WebRTC components, and its JavaScript APIs can only be used from secure origins (HTTPS or localhost). Signaling mechanisms aren't defined by WebRTC standards, so it's up to you make sure to use secure protocols.
+
+
+  Adapter.js
+
+  adapter.js is a shim to insulate apps from spec changes and prefix differences. (Though in fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names.)
+
+
+  RTCPeerConnection
+
+  RTCPeerConnection is an API for making WebRTC calls to stream video and audio, and exchange data.
+
+  WebRTC uses the RTCPeerConnection API to set up a connection to stream video between WebRTC clients, known as peers.
+
+  Setting up a call between WebRTC peers involves three tasks:
+
+  1. Create a RTCPeerConnection for each end of the call and, at each end, add the local stream from getUserMedia().
+  2. Get and share network information: potential connection endpoints are known as ICE candidates.
+  3. Get and share local and remote descriptions: metadata about local media in SDP format.
+
+
+  Example
+
+  Imagine that Alice and Bob want to use RTCPeerConnection to set up a video chat.
+
+  First up, Alice and Bob exchange network information. The expression ‘finding candidates' refers to the process of finding network interfaces and ports using the ICE framework.
+
+  1. Alice creates an RTCPeerConnection object with an onicecandidate (addEventListener('icecandidate')) handler.
+
+  2. Alice calls getUserMedia() and adds the stream passed to that.
+
+  3. The onicecandidate handler from step 1. is called when network candidates become available.
+
+  4. Alice sends serialized candidate data to Bob. In a real application, this process (known as signaling) takes place via a messaging service.
+
+  5. When Bob gets a candidate message from Alice, he calls addIceCandidate(), to add the candidate to the remote peer description:
+
+  WebRTC peers also need to find out and exchange local and remote audio and video media information, such as resolution and codec capabilities. Signaling to exchange media configuration information proceeds by exchanging blobs of metadata, known as an offer and an answer, using the Session Description Protocol format, known as SDP:
+
+  1. Alice runs the RTCPeerConnection createOffer() method. The promise returned provides an RTCSessionDescription: Alice's local session description.
+
+  2. If successful, Alice sets the local description using setLocalDescription() and then sends this session description to Bob via their signaling channel.
+
+  3. Bob sets the description Alice sent him as the remote description using setRemoteDescription().
+
+  4. Bob runs the RTCPeerConnection createAnswer() method, passing it the remote description he got from Alice, so a local session can be generated that is compatible with hers. The createAnswer() promise passes on an RTCSessionDescription: Bob sets that as the local description and sends it to Alice.
+
+  5. When Alice gets Bob's session description, she sets that as the remote description with setRemoteDescription().
+-->
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=p2HzZkd2A40">Real-time communication with WebRTC (Google I/O 2013)</a>
+  </li>
+</ul>

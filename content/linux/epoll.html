@@ -1,0 +1,254 @@
+---
+title: "epoll"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  The epoll API allows a process to monitor multiple file descriptors simultaneously to see whether an I/O system call could be performed without blocking.
+</p>
+
+
+<h3>Readiness Notification Models</h3>
+
+<p>
+  When a file descriptor is added to an epoll instance, we can choose between two models of readiness notification:
+</p>
+
+<ul>
+  <li>
+    Level-triggered notification: By default, a file descriptor is considered to be ready if it is possible to perform an I/O system call without blocking.
+  </li>
+  <li>
+    Edge-triggered notification: Notification is provided if there is I/O activity (e.g. new input) on a file descriptor since it was last monitored.
+  </li>
+</ul>
+
+<!-- 
+  We illustrate the difference between level-triggered and edge-triggered epoll notification using an example. Suppose that we are using epoll to monitor a socket for
+input (EPOLLIN), and the following steps occur:
+1. Input arrives on the socket.
+2. We perform an epoll_wait(). This call will tell us that the socket is ready, regardless of whether we are employing level-triggered or edge-triggered notification.
+3. We perform a second call to epoll_wait().
+If we are employing level-triggered notification, then the second epoll_wait() call
+will inform us that the socket is ready. If we are employing edge-triggered notification, then the second call to epoll_wait() will block, because no new input has
+arrived since the previous call to epoll_wait().
+ -->
+
+
+<h3>Creating an epoll Instance</h3>
+
+{{% code c %}}#include <sys/epoll.h>
+
+int epoll_create(int size);{{% /code %}}
+
+<p>
+  The central data structure of epoll is an epoll instance which is referred to via an open file descriptor. The file descriptor is used as a handle for a list of file descriptors the process has declared an interest in monitoring (the interest list) and a list of file descriptors that are ready for I/O (the ready list). The membership of the ready list is a subset of the interest list.
+</p>
+
+<p>
+  The <code>epoll_create()</code> system call creates a new epoll instance whose interest list is initially empty. The <code>size</code> argument is ignored but must be greater than zero. This call returns a file descriptor referring to the instance on success or <code>-1</code> on error. When the epoll instance is no longer required, this file descriptor should be closed with <code>close()</code>. When all file descriptors referring to an epoll instance are closed, the instance is destroyed and its associated resources are released.
+</p>
+
+<p>
+  The limit of the total number of file descriptors that each user can register in all epoll interest lists can be viewed an modified via the <code>/proc/sys/fs/epoll/max_user_watches</code> file. The default value is calculated based on available system memory.
+</p>
+
+
+<h3>Modifying the Interest List</h3>
+
+{{% code c %}}#include <sys/epoll.h>
+
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *ev);
+
+struct epoll_event {
+  uint32_t events;    // epoll events (bit mask)
+  epoll_data_t data;  // user data
+ };
+ 
+typedef union epoll_data {
+  void *ptr;     // pointer to user-defined data
+  int fd;        // file descriptor
+  uint32_t u32;  // 32-bit integer
+  uint64_t u64;  // 64-bit integer
+} epoll_data_t;{{% /code %}}
+
+<p>
+  The <code>epoll_ctl()</code> system call modifies the interest list of the epoll referred to by <code>epfd</code>. The <code>fd</code> argument identifies which of the file descriptors in the interest list is to have its settings modified. This argument can be a file descriptor for a pipe, FIFO, socket, POSIX message queue, inotify instance, terminal, device, or even another epoll descriptor (i,e, we can build a kind of hierarchy of monitored descriptors). However, it must not be a file descriptor for a regular file or a directory.
+</p>
+
+<p>
+  The <code>op</code> argument specifies the operation to be performed, and has one of the following values:
+</p>
+
+<ul>
+  <li>
+    <code>EPOLL_CTL_ADD</code>: Add the file descriptor fd to the interest list for epfd. The set of events that we are interested in monitoring for fd is specified in the buffer pointed to by <code>ev</code>.
+  </li>
+  <li>
+    <code>EPOLL_CTL_MOD</code>: Modify the events setting for the file descriptor fd, using the information specified in the buffer pointed to by <code>ev</code>.
+  </li>
+  <li>
+    <code>EPOLL_CTL_DEL</code>: Remove the file descriptor fd from the interest list for epfd. The <code>ev</code> argument is ignored for this operation. 
+  </li>
+</ul>
+
+<p>
+  The <code>ev</code> argument specifies settings for the file descriptor <code>fd</code>. The events subfield is a bit mask specifying the set of events that we are interested in monitoring for <code>fd</code>. The data subfield is a union, one of whose members can be used to specify information that is passed back to the calling process <code>via epoll_wait()</code> if <code>fd</code> later becomes ready.
+</p>
+
+<!-- 
+  int epfd;
+ struct epoll_event ev;
+ epfd = epoll_create(5);
+ if (epfd == -1)
+ errExit("epoll_create");
+ ev.data.fd = fd;
+ ev.events = EPOLLIN;
+ if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, ev) == -1)
+ errExit("epoll_ctl");
+ -->
+
+
+<h3>Waiting for Events</h3>
+
+{{% code c %}}#include <sys/epoll.h>
+
+int epoll_wait(int epfd, struct epoll_event *evlist, int maxevents, int timeout);{{% /code %}}
+
+<p>
+  The <code>epoll_wait()</code> system call returns information about ready file descriptors from the epoll instance referred to by the file descriptor <code>epfd</code>. A single <code>epoll_wait()</code> call can return information about multiple ready file descriptors. The information about ready file descriptors is returned in the array of <code>epoll_event</code> structures pointed to by <code>evlist</code>. The <code>evlist</code> array is allocated by the caller and the number of elements it contains is specified in <code>maxevents</code>.
+</p>
+
+<p>
+  Each item in the array evlist returns information about a single ready file descriptor. The events subfield returns a mask of the events that have occurred on this descriptor. The data subfield returns whatever value was specified in ev.data when we registered interest in this file descriptor using epoll_ctl(). Note that the data field provides the only mechanism for finding out the number of the file descriptor associated with this event. Thus, when we make the epoll_ctl() call that places a file descriptor in the interest list, we should either set ev.data.fd to the file
+  descriptor number or set ev.data.ptr to point to a structure that contains the file descriptor number.
+</p>
+
+<p>
+  The timeout argument determines the blocking behavior of epoll_wait() as follows:
+</p>
+
+<ul>
+  <li>
+    <code>timeout=-1</code>: Block until an event occurs for one of the file descriptors in the interest list for epfd or until a signal is caught.
+  </li>
+  <li>
+    <code>timeout=0</code>: Perform a nonblocking check to see which events are currently available on the file descriptors in the interest list for epfd.
+  </li>
+  <li>
+    <code>timeout=n</code>: Block for up to timeout milliseconds, until an event occurs on one of the file descriptors in the interest list for epfd or until a signal is caught.
+  </li>
+</ul>
+
+<p>
+  On success, epoll_wait() returns the number of items that have been placed in the array evlist or 0 if no file descriptors were ready within the interval specified by timeout. On error, epoll_wait() returns -1.
+</p>
+
+
+<h3>epoll Events</h3>
+
+<p>
+  The bit values that can be specified in ev.events when we call epoll_ctl() are as follows:
+</p>
+
+<ul>
+  <li>
+    <code>EPOLLIN</code>: Data other than high-priority data can be read.
+  </li>
+  <li>
+    <code>EPOLLPRI</code>: High-priority data can be read.
+  </li>
+  <li>
+    <code>EPOLLRDHUP</code>: Shutdown on peer socket.
+  </li>
+  <li>
+    <code>EPOLLOUT</code>: Normal data can be written.
+  </li>
+  <li>
+    <code>EPOLLET</code>: Employ edge-triggered event notification.
+  </li>
+  <li>
+    <code>EPOLLONESHOT</code>: Disable monitoring after event notification.
+  </li>
+</ul>
+
+<p>
+  The bit and that are placed in the evlist[].events fields returned by epoll_wait() include <code>EPOLLIN</code>, <code>EPOLLPRI</code>, <code>EPOLLRDHUP</code> and <code>EPOLLOUT</code> as above as well as <code>EPOLLERR</code> to indicate an error has occurred and <code>EPOLLHUP</code> to indicate a hangup has occurred.
+</p>
+
+<p>
+  If we want to be notified only once about a particular file descriptor, then we can specify the <code>EPOLLONESHOT</code> flag in the ev.events value passed in epoll_ctl(). If this flag is specified, then, after the next epoll_wait() call that informs us that the corresponding file descriptor is ready, the file descriptor is marked inactive in the interest list, and we will not be informed about its state by future epoll_wait() calls. If desired, we can subsequently reenable monitoring of this file descriptor using the epoll_ctl() <code>EPOLL_CTL_MOD</code> operation.
+</p>
+
+
+<h3>Enabling Edge-Triggered Notification</h3>
+
+<p>
+  By default, the epoll mechanism provides level-triggered notification. With edge-triggered notification, a call to epoll_wait() tells us if there has been I/O activity on a file descriptor since the previous call to epoll_wait() (or since the descriptor was opened, if there was no previous call). To employ edge-triggered notification, we specify the <code>EPOLLET</code> flag in ev.events when calling epoll_ctl().
+</p>
+
+<p>
+  With the level-triggered model it is not necessary to perform as much I/O as possible on the file descriptor each time we are notified that a file descriptor is ready. By contrast, programs that employ edge-triggered notification typically perform as much I/O as possible after notification of an I/O event. Monitored file descriptors are also normally placed in non-blocking mode.
+</p>
+
+<p>
+  The general framework for using edge-triggered epoll notification is involves making all file descriptors that are to be monitored non-blocking before building the epoll interest list using epoll_ctl(). We then handle I/O events in a loop byt first retrieving a list of ready descriptors using epoll_wait() and then, for each file descriptor that is ready, process I/O until the relevant system call (e.g., read(), write(), recv(), send(), or accept()) returns with the error EAGAIN or EWOULDBLOCK.
+</p>
+
+
+
+<h3>Examples</h3>
+
+{{% code-file file="/static/code/linux/epoll/event_loop.c" lang="c" %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://web.archive.org/web/20170427121729/https://banu.com/blog/2/how-to-use-epoll-a-complete-example-in-c/">How to use epoll? A complete example in C.</a>
+  </li>
+  <li>
+    <a href="https://www.suchprogramming.com/epoll-in-3-easy-steps/">epoll() In 3 Easy Steps!</a>
+  </li>
+  <li>
+    <a href="https://idea.popcount.org/2017-02-20-epoll-is-fundamentally-broken-12/">Epoll is fundamentally broken</a>
+  </li>
+</ul>
+
+<!-- 
+  Preventing file-descriptor starvation when using edge-triggered notification
+
+Suppose that we are monitoring multiple file descriptors using edge-triggered notification, and that a ready file descriptor has a large amount (perhaps an endless
+stream) of input available. If, after detecting that this file descriptor is ready, we
+attempt to consume all of the input using nonblocking reads, then we risk starving
+the other file descriptors of attention. One solution to this problem
+is for the application to maintain a list of file descriptors that have been notified as
+being ready, and execute a loop that continuously performs the following actions:
+1. Monitor the file descriptors using epoll_wait() and add ready descriptors to the
+application list. If any file descriptors are already registered as being ready in
+the application list, then the timeout for this monitoring step should be small
+or 0, so that if no new file descriptors are ready, the application can quickly
+proceed to the next step and service any file descriptors that are already known
+to be ready.
+2. Perform a limited amount of I/O on those file descriptors registered as being
+ready in the application list (perhaps cycling through them in round-robin fashion, rather than always starting from the beginning of the list after each call to
+epoll_wait()). A file descriptor can be removed from the application list when
+the relevant nonblocking I/O system call fails with the EAGAIN or EWOULDBLOCK error.
+ -->
+
+<!-- 
+  In a multithreaded program, it is possible for one thread to use epoll_ctl() to
+add file descriptors to the interest list of an epoll instance that is already being
+monitored by epoll_wait() in another thread. These changes to the interest list will
+be taken into account immediately, and the epoll_wait() call will return readiness
+information about the newly added file descriptors.
+
+  If multiple processes (or threads) are performing I/O on the same open file
+descriptions, then, from a particular process’s point of view, a descriptor’s
+readiness may change between the time the descriptor was notified as being
+ready and the time of the subsequent I/O call. Consequently, a blocking I/O call
+could block, thus preventing the process from monitoring other file descriptors.
+(This can occur for all of the I/O models that we describe in this chapter, regardless of whether they employ level-triggered or edge-triggered notification.)
+ -->

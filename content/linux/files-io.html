@@ -1,0 +1,245 @@
+---
+title: "File I/O"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  The universal I/O means that the system calls open(), read(), write() and close() are used to perform I/O on all types of files including devices. This is achieved by ensuring that each file system and device driver implements the same set of I/O system calls.
+</p>
+
+<!-- 
+  In order to perform I/O on a regular file, we must first obtain a file descriptor
+using open(). I/O is then performed using read() and write(). After performing all
+I/O, we should free the file descriptor and its associated resources using close().
+These system calls can be used to perform I/O on all types of files.
+The fact that all file types and device drivers implement the same I/O interface
+allows for universality of I/O, meaning that a program can typically be used with
+any type of file without requiring code that is specific to the file type.
+ -->
+
+
+<h3>File Descriptors</h3>
+
+<p>
+  A file descriptor is a (usually small) non-negative integer that is used to refer to an open file. Each process has its own set of file descriptors. By convention, a program inherits copies of three standard file descriptors from the shell. These are:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>fd</th><th>POSIX name</th><th>stdin stream</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td><td>STDIN_FILENO</td><td>stdin</td>
+    </tr>
+    <tr>
+      <td>1</td><td>STDOUT_FILENO</td><td>stdout</td>
+    </tr>
+    <tr>
+      <td>2</td><td>STDERR_FILENO</td><td>stderr</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h3>Opening a File</h3>
+
+{{% code c %}}#include <sys/stat.h>
+#include <fcntl.h>
+
+int open(const char *pathname, int flags, ... /* mode_t mode */);{{% /code %}}
+
+<p>
+  The open() system call either opens an existing file or creates and opens a new file. The file to be opened is identified by the pathname argument. If pathname is a symbolic link then it is dereferenced. A file descriptor used to refer to the file is returned on success or -1 on error.
+</p>
+
+<p>
+  The flags argument is a bit mask that specifies the access mode for the file. The flags argument can be specified by ORing together zero or more constant. Some of these are:
+</p>
+
+<ul>
+  <li>
+    O_RDONLY: Open the file for reading only.
+  </li>
+  <li>
+    O_WRONLY: Open the file for writing only.
+  </li>
+  <li>
+    O_RDWR: Open the file for both reading and writing.
+  </li>
+  <li>
+    O_CREAT: Create file if it doesn’t already exist.
+  </li>
+  <li>
+    O_TRUNC: Truncate existing file to zero length.
+  </li>
+  <li>
+    O_APPEND: Writes are always appended to end of file.
+  </li>
+</ul>
+
+<p>
+  When open() is used to create a new file, the mode bit-mask argument specifies the permissions to be placed on the file. If the open() call doesn’t specify O_CREAT then mode can be omitted.
+</p>
+
+
+<h3>Reading from a File</h3>
+
+{{% code c %}}#include <unistd.h>
+
+ssize_t read(int fd, void *buffer, size_t count);{{% /code %}}
+
+<p>
+  The read() system call reads data from the open file referred to by fd. The count argument specifies the maximum number of bytes to read. The buffer argument supplies the address of the memory buffer into which the input data is to be placed. This buffer must be at least count bytes long. A successful call to read() returns the number of bytes actually read or 0 if end-of-file is encountered. On error, -1 is returned.
+</p>
+
+<p>
+  A call to read() may read less than the requested number of bytes. For a regular file, the probable reason for this is that we were close to the end of the file. When read() is applied to other types of files (such as pipes, FIFOs, sockets, or terminals) there are also various circumstances where it may read fewer bytes than requested. For instance, by default, a read() from a terminal reads characters only up to the next \n character. 
+</p>
+
+<!-- 
+  char buffer[MAX_READ + 1];
+  ssize_t numRead;
+  numRead = read(STDIN_FILENO, buffer, MAX_READ);
+  if (numRead == -1)
+  errExit("read");
+  buffer[numRead] = '\0';
+  printf("The input data was: %s\n", buffer);
+-->
+
+
+<h3>Writing to a File</h3>
+
+{{% code c %}}#include <unistd.h>
+
+ssize_t write(int fd, void *buffer, size_t count);{{% /code %}}
+
+<p>
+  The write() system call writes data to an open file with file descriptor fd. The buffer argument is the address of the data to be written and count is the number of bytes to write from buffer. On success, write() returns the number of bytes actually written; this may be less than count. On error, -1 is returned.
+</p>
+
+
+<h3>Closing a File</h3>
+
+{{% code c %}}#include <unistd.h>
+
+int close(int fd);{{% /code %}}
+
+<p>
+  The close() system call closes an open file descriptor which frees it for subsequent reused by the process. It returns 0 on success or -1 on error. File descriptors are a consumable resource, so failure to close a file descriptor could result in a process running out of descriptors. When a process terminates all of its open file descriptors are automatically closed though its usually good practice to close unneeded file descriptors explicitly.
+</p>
+
+
+<h3>Changing the File Offset</h3>
+
+<p>
+  For each open file, the kernel records a file offset which corresponds to the location in the file at which the next read() or write() will commence. The file is expressed as an ordinal byte position relative to the start of the file. The first byte of the file is at offset 0. The file offset is set to point to the start of the file when the file is opened and is automatically adjusted by each subsequent call to read() or write() so that it points to the next byte of the file after the byte(s) just read or written. Thus, successive read() and write() calls progress sequentially through a file.
+</p>
+
+{{% code c %}}#include <unistd.h>
+
+off_t lseek(int fd, off_t offset, int whence);{{% /code %}}
+
+<p>
+  The lseek() system call adjusts the file offset of the open file referred to by the file descriptor fd according to the values specified in offset and whence. The offset argument species a value in bytes while the whence argument indicates the base pint from which offset is to be interpreted and is one of the following:
+</p>
+
+<ul>
+  <li>
+    SEEK_SET: The file offset is set offset bytes from the beginning of the file.
+  </li>
+  <li>
+    SEEK_CUR: The file offset is adjusted by offset bytes relative to the current file offset.
+  </li>
+  <li>
+    SEEK_END: The file offset is set to the size of the file plus offset. In other words, offset is interpreted with respect to the next byte after the last byte of the file.
+  </li>
+</ul>
+
+<p>
+  If whence is SEEK_CUR or SEEK_END, offset may be negative or positive; for SEEK_SET, offset must be nonnegative. The return value from a successful lseek() is the new file offset. On error, -1 is returned.
+</p>
+
+<!-- 
+  lseek(fd, 0, SEEK_SET); /* Start of file */
+  lseek(fd, 0, SEEK_END); /* Next byte after the end of the file */
+  lseek(fd, -1, SEEK_END); /* Last byte of file */
+  lseek(fd, -10, SEEK_CUR); /* Ten bytes prior to current location */
+  lseek(fd, 10000, SEEK_END); /* 10001 bytes past last byte of file */
+-->
+
+
+<h3>File Holes</h3>
+
+<p>
+  If a program seeks past the end of a file and then makes a call to read() it will return 0, indicating end-of-file. If it performs a write then the space in between the previous end of the file and the newly written bytes is referred to as a file hole. From a programming point of view, the bytes in a hole exist, and reading from the hole returns a buffer of bytes containing 0 (null bytes). File holes do not, however, take up any disk space.
+</p>
+
+
+
+
+<!-- CHAPTER 5 -->
+
+
+<h3>File Control Operations</h3>
+
+<p>
+  The fcntl() system call performs a range of control operations on an open file descriptor. The cmd argument can specify a wide range of operations. It return value on success depends on cmd and or -1 is returned on error.
+</p>
+
+{{% code c %}}#include <fcntl.h>
+
+int fcntl(int fd, int cmd, ...);{{% /code %}}
+
+<p>
+  One use of fcntl() is to retrieve or modify the access mode and open file status flags of an open file. (These are the values set by the flags argument specified in the call to open().) To retrieve these settings, we specify cmd as F_GETFL:
+</p>
+
+<!-- int flags, accessMode;
+flags = fcntl(fd, F_GETFL); /* Third argument is not required */
+if (flags == -1)
+ errExit("fcntl");
+ if (flags & O_SYNC)
+ printf("writes are synchronized\n");
+
+accessMode = flags & O_ACCMODE;
+if (accessMode == O_WRONLY || accessMode == O_RDWR)
+ printf("file is writable\n");-->
+
+<p>
+  We can use the fcntl() F_SETFL command to modify some of the open file status flags. The flags that can be modified are O_APPEND, O_NONBLOCK, O_NOATIME, O_ASYNC, and O_DIRECT. Attempts to modify other flags are ignored. To modify the open file status flags, we use fcntl() to retrieve a copy of the existing
+  flags, then modify the bits we wish to change, and finally make a further call to fcntl()
+  to update the flags. Thus, to enable the O_APPEND flag, we would write the following:
+</p>
+
+<!-- 
+  int flags;
+flags = fcntl(fd, F_GETFL);
+if (flags == -1)
+ errExit("fcntl");
+flags |= O_APPEND;
+if (fcntl(fd, F_SETFL, flags) == -1)
+ errExit("fcntl");
+ -->
+
+
+<!-- TODO -->
+
+
+<h3>Non-blocking I/O</h3>
+
+<p>
+  Specifying the O_NONBLOCK flag when opening a file serves two purposes. Firstly, if the file cannot be opened immediately then open() returns an error instead of blocking. Secondly, after a successful open(), subsequent I/O operations are also non-blocking. If an I/O system call cannot complete immediately then either a partial data transform is performed or the system call fails with one of the errors EAGAIN or EWOULDBLOCK. Which error is returned depends on the system call. On Linux, these two error constants are synonymous.
+</p>
+
+<p>
+  Non-blocking mode can be used with devices (e.g., terminals and pseudoterminals), pipes, FIFOs, and sockets. Because file descriptors for pipes and sockets are not obtained using open(), we must enable thi flag using the fcntl() F_SETFL operation.
+</p>
+
+<!-- 
+  If we place a file descriptor in nonblocking mode by enabling the O_NONBLOCK open file status flag, then an I/O system call that cannott be immediately completed returns an error instead of blocking.
+ -->
+

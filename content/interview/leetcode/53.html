@@ -1,0 +1,52 @@
+---
+title: "53. Maximum Subarray"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+<p>
+  We consider stepping over each element of nums while keeping a count of the maximum subarray we can make between some prior element and the current element called sum. If our current sum up to and including nums[i] is less than nums[i] then we should just take nums[i] as our new sum; otherwise we can add nums[i] to our sum. We then keep track of the largest value of such a sum.
+</p>
+
+{{% code java %}}class Solution {
+  
+  public int maxSubArray(int[] nums) {
+    if (nums.length == 1) return nums[0];
+    
+    int sum = nums[0];
+    int max = sum;
+    int i = 1;
+    
+    while (i < nums.length) {
+      if ((sum + nums[i]) < nums[i]) {
+        sum = nums[i];
+      } else {
+        sum += nums[i];
+      }
+      
+      max = Math.max(max, sum);
+      i++;
+    }
+    
+    return max;
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+<p>
+  We make a single pass over nums so the time complexity is O(n) where n is the length of nums.
+</p>
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/maximum-subarray/">Original Problem</a>
+  </li>
+</ul>

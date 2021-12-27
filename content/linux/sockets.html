@@ -1,0 +1,435 @@
+---
+title: "Sockets"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  Sockets are a method of IPC that allow data to be exchanged between applications running on either the same host or on different hosts connected by a network.
+</p>
+
+<!-- #region communication-domains -->
+<h3>Communication Domains</h3>
+
+<p>
+  A socket exists in a communication domain which determines the range of communication and the format of the address used to identify the socket. For instance:
+</p>
+
+<ul>
+  <li>
+    AF_UNIX: Allows communication between applications on the same host.
+  </li>
+  <li>
+    AF_INET: Allows communication between applications running on hosts connected via an IPv4 network.
+  </li>
+  <li>
+    AF_INET6: Allows communication between applications running on hosts connected via an IPv6 network.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region socket-types -->
+<h3>Socket Types</h3>
+
+<p>
+  Every sockets implementation provides at least two types of sockets:
+</p>
+
+<ul>
+  <li>
+    SOCK_STREAM: Provides a connection-oriented, reliable, bi-directional, byte-stream communication channel between a connected pair of sockets (referred to the local and remote peers).
+  </li>
+  <li>
+    SOCK_DGRAM: Provides connectionless, unreliable, message-oriented exchange of datagrams where a socket does not need to be connected to another socket in order to be used.
+  </li>
+</ul>
+
+<p>
+  In the Internet domain, stream sockets employ TCP and datagram sockets employ UDP. 
+</p>
+<!-- #endregion -->
+
+
+<h3>Socket Addresses</h3>
+
+{{% code c %}}struct sockaddr {
+  sa_family_t sa_family;  // address family
+  char sa_data[14];       // socket address
+};{{% /code %}}
+
+<p>
+  Each socket domain uses a different address format and so there are different structure types defined to store the various socket addresses. The generic address structure sockaddr is provided so that the various domain-specific address structures can be cast to a single type for use as arguments in system calls. Each of the address structures begins with a family field corresponding to the sa_family field of the sockaddr structure which is used to determine the size and format of the address stored in the remainder of the structure.
+</p>
+
+
+<h3>Socket Creation</h3>
+
+{{% code c %}}#include <sys/socket.h>
+
+int socket(int domain, int type, int protocol);{{% /code %}}
+
+<p>
+  The socket() system call creates a new socket. The domain argument specifies the communication domain for the socket and the type argument specifies the socket type. The protocol argument is typically specified as 0. A call returns a file descriptor used to refer to the newly created socket in subsequent system calls or -1 on error.
+</p>
+
+
+<h3>Binding a Socket to an Address</h3>
+
+{{% code c %}}#include <sys/socket.h>
+
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);{{% /code %}}
+
+<p>
+  The bind() system call binds the socket identified by the file descriptor sockfd to an address. The addr argument is a pointer to a structure specifying the address to which the socket is to be bound and addrlen specifies the size of this address structure. The type of address structure used depends on the communication domain. A call returns 0 on success or -1 on error.
+</p>
+
+
+<h3>Listening for Incoming Connections</h3>
+
+{{% code c %}}#include <sys/socket.h>
+
+int listen(int sockfd, int backlog);{{% /code %}}
+
+<p>
+  The listen() system call marks the stream socket specified by the file descriptor sockfd as passive. The socket will subsequently be used to accept connections from other active sockets. A call returns 0 on success or -1 on error.
+</p>
+
+<p>
+  Notice that a client may call connect() before the server calls accept(). For instance, the server may be bust handling other clients. This results in a pending connection for which the kernel must record some information. The backlog argument allows us to limit the number of such pending connections with further connection requests block until a pending connection is accepted. The upper limit on the value that can be specified is given by the SOMAXCONN constant. Linux allows this limit to be adjusted at run time via the /proc/sys/net/core/somaxconn file.
+</p>
+
+
+<h3>Accepting a Connection</h3>
+
+{{% code c %}}#include <sys/socket.h>
+
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);{{% /code %}}
+
+<p>
+  The accept() system call accepts an incoming connection on the listening stream socket referred to by the file descriptor sockfd. If there are no pending connections the call blocks until a connection request arrives. A call returns a file descriptor to a new socket that is connected to the peer socket that performed the connect() or -1 on error. The listening socket remains open and can be used to accept further connections.
+</p>
+
+<p>
+  The addr argument points to a structure that is used to return the address of the peer socket. Tje type of addr depends on the socket domain. The addrlen argument points to an integer that, prior to the call, must be initialized to the size of the buffer pointer to by addr. Upon return from accept(), addrlen is set to indicate the number of bytes of data were actually copied in the buffer. If we are not interested in the address of the peer socket then addr and addrlen should be specified as NULL and 0 respectively.
+</p>
+
+
+<h3>Connecting to a Socket</h3>
+
+{{% code c %}}#include <sys/socket.h>
+
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);{{% /code %}}
+
+<p>
+  The connect() system call connects the active socket referred to by sockfd to the listening socket whose address is specified by addr and addrlen which are specified in the same way as the corresponding arguments to bind(). A call returns 0 on success or -1 on error. If this fails we should close the socket, create a new socket and reattempt the connection with the new socket.
+</p>
+
+<p>
+  Calling connect() on a datagram socket causes the kernel to record a particular address as the peer of this socket. After a datagram socket has been connected datagrams can be sent through the socket using write() or send() and are automatically sent to the same peer socket. Also, only datagrams sent by the peer socket may be read on the socket. We can change the peer of a connected datagram socket by issuing a further connect() call and we can dissolve the peer association altogether by specifying an address structure in which the address family is specified as AF_UNSPEC.
+</p>
+
+
+<h3>Closing a Socket</h3>
+
+<p>
+  The usual way of terminating a stream socket connection is to call close().  If multiple file descriptors refer to the same socket then the connection is terminated when all of the descriptors are closed.
+</p>
+
+<p>
+  Afterward, when the peer application attempts to read from the other end of the connection, it receives EOF once all buffered data has been read. If the peer application attempts to write to its socket, it receives a SIGPIPE signal, and the system call fails with the error EPIPE. The usual way of dealing with this possibility is to ignore the SIGPIPE signal and find out about the closed connection via the EPIPE error.
+</p>
+
+
+<h3>Socket I/O</h3>
+
+<p>
+  To perform I/O on a stream socket, we can use read() and write() or the socket-specific send() and recv() system calls. Since sockets are bi-directional, both calls may be used on each end of the connection. By default, these calls block if the I/O operation cannot be completed immediately. Non-blocking I/O is enabled using fcntl() with the F_SETFL operation to enable the O_NONBLOCK open file status flag.
+</p>
+
+<!-- 
+  On Linux, we can call ioctl(fd, FIONREAD, &cnt) to obtain the number of
+unread bytes available on the stream socket referred to by the file descriptor
+fd. For a datagram socket, this operation returns the number of bytes in the
+next unread datagram (which may be zero if the next datagram is of zero
+length), or zero if there are no pending datagrams.
+ -->
+
+
+<h3>Exchanging Datagrams</h3>
+
+{{% code c %}}#include <sys/socket.h>
+
+ssize_t recvfrom(int sockfd, void *buffer, size_t length, int flags, struct sockaddr *src_addr, socklen_t *addrlen);
+
+ssize_t sendto(int sockfd, const void *buffer, size_t length, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);{{% /code %}}
+
+<p>
+  The sendto() system call sends a datagram to the address specified by the dest_addr and addrlen arguments. The dest_addr argument is an address structure suitable for this communication domain. It is initialized with the address of the destination socket. The addrlen argument specifies the size of addr. A call returns the number of bytes sent or -1 on error
+</p>
+
+<p>
+  The recvfrom() system call receives a datagram on the socket identifier by the file descriptor sockfd into the buffer pointed to by buffer with length given by length. The flags argument is a bit mask controlling socket-specific I/O features and can be specified as 0 if we do not require these features. The src_addr and addrlen arguments are used to obtain the address of the peer socket as with accept(). recvfrom() retrieves exactly one message from a datagram socket which is silently truncated to length bytes if the size of that message exceeds length bytes. A call returns the number of received, 0 on EOF or -1 on error
+</p>
+
+
+<h3>Stream Sockets</h3>
+
+<p>
+  The operation of stream sockets proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Each application creates a stream socket using socket().
+  </li>
+  <li>
+    One application calls bind() to bind the socket to a well-known address and then calls listen() to indicate it is willing to accept incoming connections.
+  </li>
+  <li>
+    The other application establishes the connection by calling connect() with the address of the socket to which the connection is to be made.
+  </li>
+  <li>
+    The application that called listen() then accepts the connection using accept().
+  </li>
+  <li>
+    Once the connection is established, data can be transmitted in both directions between the applications using the conventional read() and write() system calls or via a number of socket specific system calls such as send() and recv().
+  </li>
+  <li>
+    One application calls close() to close the connection.
+  </li>
+</ol>
+
+<p>
+  By default, a socket that has been created using socket() is active. An active socket can be used in a connect() call to establish a connection to a passive socket. A passive socket is one that has been marked to allow incoming connections by calling listen(). Accepting an incoming connection is referred to as performing a passive open. In a client-server scenario, the server performs the passive open and the client performs the active open.
+</p>
+
+
+<h3>Datagram Sockets</h3>
+
+<p>
+  The operation of datagram sockets proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Each application creates a datagram socket using socket().
+  </li>
+  <li>
+    One application uses bind() to bind its socket to a well-known address.
+  </li>
+  <li>
+    To send a datagram, an application calls sendto() which takes as one of its arguments the address of the socket to which the datagram is to be sent.
+  </li>
+  <li>
+    In order to receive a datagram, an application calls recvfrom() which may block if no datagram has yet arrived. Because recvfrom() allows us to obtain the address of the sender, we can send a reply if desired.
+  </li>
+  <li>
+    When the socket is no longer needed, the application closes it using close().
+  </li>
+</ol>
+
+
+<h3>Internet Socket Addresses</h3>
+
+{{% code c %}}#include <netinet/in.h>
+
+#define __ss_aligntype uint32_t  // on 32-bit architectures
+
+struct in_addr {
+  in_addr_t s_addr;  // unsigned 32-bit integer
+};
+
+struct sockaddr_in {
+  sa_family_t sin_family;   // address family (AF_INET)
+  in_port_t sin_port;       // port number
+  struct in_addr sin_addr;  // ipv4 address
+  unsigned char __pad[X];   // padding
+};
+
+struct in6_addr {
+  uint8_t s6_addr[16];  // 16 bytes = 128 bits
+ };
+
+struct sockaddr_in6 {
+  sa_family_t sin6_family;   // address family (AF_INET6)
+  in_port_t sin6_port;       // port number
+  uint32_t sin6_flowinfo;    // ipv6 flow information
+  struct in6_addr sin6_addr; // ipv6 address
+  uint32_t sin6_scope_id;    // scope id
+};
+
+struct sockaddr_storage {
+  sa_family_t ss_family;
+  __ss_aligntype __ss_align;      // force alignment
+  char __ss_padding[SS_PADSIZE];  // pad to 127 bytes
+};{{% /code %}}
+
+<p>
+  Internet domain socket addresses consist of an IP address and a port number. An IPv4 socket address is stored in a sockaddr_in structure. The sin_port and sin_addr fields are the port number and the IP address in network byte order. An IPv6 address is stored in a sockaddr_in6 structure. The sin6_flowinfo and sin6_scope_id are set to 0 when not being used. All fields in the sockaddr_in6 structure are in network byte order.
+</p>
+
+<p>
+  The predefined in6addr_any and in6addr_loopback variables are provided for initializing an IPv6 socket address structure with the wildcard and loopback addresses respectively. This is necessary as an IPv6 address is stored in an array. Unlike their IPv4 counterparts, the IPv6 constant and variable initializers are in network byte order. 
+</p>
+
+<p>
+  The sockaddr_storage structure is defined to be large enough so that any type of socket address structure can be cast and stored in it.
+</p>
+
+<!-- 
+  struct sockaddr_in6 addr;
+memset(&addr, 0, sizeof(struct sockaddr_in6));
+addr.sin6_family = AF_INET6;
+addr.sin6_addr = in6addr_any;
+addr.sin6_port = htons(SOME_PORT_NUM);
+ -->
+
+
+<h3>Network Byte Order</h3>
+
+{{% code c %}}#include <arpa/inet.h>
+
+uint16_t htons(uint16_t host_uint16);
+uint32_t htonl(uint32_t host_uint32);
+uint16_t ntohs(uint16_t net_uint16);
+uint32_t ntohl(uint32_t net_uint32);{{% /code %}}
+
+<p>
+  IP addresses and port numbers are integer values and are thus represented according to the conventions of the host machine. Since port numbers and IP addresses must be transmitted between and understood by all hosts on a network, they must be converted to network byte order (big endian) before being stored in socket address structures. The htons(), htonl(), ntohs(), and ntohl() functions are provided for converting integers in either direction between host and network byte order.
+</p>
+
+
+<h3>Binary and Presentation Form Conversion</h3>
+
+{{% code c %}}#include <arpa/inet.h>
+#include <netinet/in.h>
+
+#define INET_ADDRSTRLEN 16
+#define INET6_ADDRSTRLEN 46
+
+int inet_pton(int domain, const char *src_str, void *addrptr);
+
+const char *inet_ntop(int domain, const void *addrptr, char *dst_str, size_t len);{{% /code %}}
+
+<p>
+  The inet_pton() function converts the presentation string in  dotted-decimal or hex-string notation contained in src_str into a binary IP address in network byte order. The domain argument should be specified as either AF_INET or AF_INET6. The converted address is placed in the structure pointed to by addrptr which should point to either an in_addr or an in6_addr structure according to the domain. It returns 1 on success, 0 if src_str is not in the correct format or -1 on error.
+</p>
+
+<p>
+  The inet_ntop() function performs the reverse conversion. Again, domain should be specified as either AF_INET or AF_INET6, and addrptr should point to an in_addr or in6_addr structure that we wish to convert. The resulting null-terminated string is placed in the buffer pointed to by dst_str. The len argument must specify the size of this buffer. It returns a pointer to dst_str on success or NULL on error.
+</p>
+
+<p>
+  To correctly size the buffer pointed to by dst_str, we can employ two constants which indicate the maximum lengths (including the terminating null byte) of the presentation strings for IPv4 and IPv6 addresses.
+</p>
+
+
+<h3>Hostname to Address Conversion</h3>
+
+{{% code c %}}#include <sys/socket.h>
+#include <netdb.h>
+
+struct addrinfo {
+  int ai_flags;              // input flags (AI_* constants)
+  int ai_family;             // address family
+  int ai_socktype;           // SOCK_STREAM or SOCK_DGRAM
+  int ai_protocol;           // socket protocol
+  size_t ai_addrlen;         // size of struct pointed to by ai_addr
+  char *ai_canonname;        // canonical name of host
+  struct sockaddr *ai_addr;  // pointer to socket address structure
+  struct addrinfo *ai_next;  // next structure in linked list
+};
+
+int getaddrinfo(const char *host, const char *service, const struct addrinfo *hints, struct addrinfo **result);
+
+const char *gai_strerror(int errcode);
+
+void freeaddrinfo(struct addrinfo *result);{{% /code %}}
+
+<p>
+  The getaddrinfo() function converts host and service names to  either IPv4 or IPv6 addresses and port numbers. Given a hostname and a service name, getaddrinfo() allocates a linked list of addrinfo structures and sets result to point to the beginning of this list. Each of these addrinfo structures includes a pointer to a socket address structure corresponding to host and service. The call returns 0 on success or a nonzero value on error.
+</p>
+
+<p>
+  The host argument contains either a hostname or a numeric address string, expressed in IPv4 dotted-decimal notation or IPv6 hex-string notation. The service argument contains either a service name or a decimal port number. The hints argument specifies further criteria for selecting the socket addresses. Only the ai_family, ai_socktype, ai_protocol and ai_flags fields of the hints structure can be set with other fields initialized to 0 or NULL as appropriate.
+</p>
+
+<p>
+  The hints.ai_family specifies the domain for the returned socket address structures and may be specified as AF_INET, AF_INET6 or AF_UNSPEC for all types of socket address structures. The hints.ai_socktype field specifies the type of socket as either SOCK_DGRAM, SOCK_STREAM or 0 if any socket type is acceptable. The hints.ai_protocol is typically specified as 0.
+</p>
+
+<p>
+  The hints.ai_flags field is a bit mask that modifies the behavior of getaddrinfo() and is formed by ORing together zero or more of the following:
+</p>
+
+<ul>
+  <li>
+    <code>AI_ADDRCONFIG</code>: Return IPv4 addresses only if there is at least one IPv4 address configured for the local system (other than the IPv4 loopback address) and return IPv6 addresses only if there is at least one IPv6 address configured for the local system (other than the IPv6 loopback address).
+  </li>
+  <li>
+    <code>AI_CANONNAME</code>: If host is not NULL, return a pointer to a null-terminated string containing the canonical name of the host. This pointer is returned in a buffer pointed to by the ai_canonname field of the first of the addrinfo structures returned via result.
+  </li>
+  <li>
+    <code>AI_NUMERICHOST</code>: Force interpretation of host as a numeric address string. This is used to prevent name resolution in cases where it is unnecessary, since name resolution can be time-consuming.
+  </li>
+  <li>
+    <code>AI_NUMERICSERV</code>: Interpret service as a numeric port number. This flag prevents the invocation of any name-resolution service, which is not required if service is a numeric string.
+  </li>
+  <li>
+    <code>AI_PASSIVE</code>: Return socket address structures suitable for a passive open. In this case, host should be NULL, and the IP address component of the socket address structures returned by result will contain a wildcard IP address. If this flag is not set then the address structures returned via result will be suitable for use with connect() and sendto(); if host is NULL, then the IP address in the returned socket address structures will be set to the loopback IP address.
+  </li>
+</ul>
+
+<p>
+  The gai_strerror() function takes one of the nonzero error codes returned by getaddrinfo() on error and returns a pointer to a string containing a corresponding error message. The freeaddrinfo() function is used to free memory allocated by getaddrinfo() when it is no longer needed.
+</p>
+
+
+<h3>Address to Hostname Conversion</h3>
+
+{{% code c %}}#include <sys/socket.h>
+#include <netdb.h>
+
+int getnameinfo(const struct sockaddr *addr, socklen_t addrlen, char *host, size_t hostlen, char *service, size_t servlen, int flags);{{% /code %}}
+
+<p>
+  The getnameinfo() function is the converse of getaddrinfo(). Given a socket address structure (either IPv4 or IPv6), it returns strings containing the corresponding host and service name or numeric equivalents if the names can’t be resolved. The addr argument is a pointer to the socket address structure that is to be converted. The length of that structure is given in addrlen. The resulting host and service names are returned as null-terminated strings in the buffers pointed to by host and service. These buffers must be allocated by the caller and their sizes must be passed in hostlen and servlen. It returns 0 on success, or nonzero on error.
+</p>
+
+<p>
+  If we are not interested in obtaining the hostname, we can specify host as NULL and hostlen as 0. Similarly, if we don’t need the service name, we can specify service as NULL and servlen as 0. However, at least one of host and service must be non-NULL. The final argument, flags, is a bit mask that controls the behavior of getnameinfo(). The following constants may be ORed together to form this bit mask:
+</p>
+
+<ul>
+  <li>
+    NI_DGRAM: Forces the name of the datagram socket (i.e., UDP) service to be returned.
+  </li>
+  <li>
+    NI_NAMEREQD: By default, if the hostname can’t be resolved, a numeric address string is returned in host. If the NI_NAMEREQD flag is specified, an error (EAI_NONAME) is returned instead.
+  </li>
+  <li>
+    NI_NUMERICHOST: Force a numeric address string to be returned in host. This is useful if we want to avoid a possibly time-consuming call to the DNS server.
+  </li>
+  <li>
+    NI_NUMERICSERV:  Force a decimal port number string to be returned in service. This is useful in cases where we know that the port number is an ephemeral port number.
+  </li>
+</ul>
+
+<!-- 
+   The <netdb.h> header file
+defines two constants to assist in sizing these buffers. NI_MAXHOST indicates the maximum size, in bytes, for a returned hostname string. It is defined as 1025. NI_MAXSERV
+indicates the maximum size, in bytes, for a returned service name string. It is
+defined as 32.
+ -->
+
+
+<h3>Ephemeral Ports</h3>
+
+<!-- 
+   For example, for an Internet domain socket, the server could omit the
+call to bind() and simply call listen(), which causes the kernel to choose an ephemeral port for that socket. Afterward, the server can use getsockname() (Section 61.5) to retrieve the
+address of its socket. In this scenario, the server must then publish that address
+so that clients know how to locate the server’s socket.
+ -->
+
+

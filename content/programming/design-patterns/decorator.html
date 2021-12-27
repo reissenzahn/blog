@@ -1,0 +1,139 @@
+---
+title: "Decorator Pattern"
+date: 2021-12-20
+draft: false
+---
+
+<p>
+  The Decorator Pattern attaches additional responsibilities to an object dynamically. Decorators provide a flexible alternative to subclassing for extending functionality.
+</p>
+
+
+<h3>Description</h3>
+
+<ul>
+  <li>
+    You can use one or more decorators to wrap an object. Each decorator HAS-A a component, which means the decorator has an instance variable that holds a reference to a component.
+  </li>
+  <li>
+    Decorators have the same supertype as the objects they decorate so we can pass around a decorated object in place of the original wrapped object.
+  </li>
+  <li>
+    Each decorator adds its own behavior before and/or after delegating to the object it decorates to do the rest of the job. Decorators can also add new methods and extend the state of the component.
+  </li>
+  <li>
+    We can decorate objects dynamically at runtime as, while we use inheritance to achieve type matching, we acquire new behavior by composing objects together.
+  </li>
+</ul>
+
+<!-- 
+As such, we use inheritance to achieve type matching but add behavior through composition of decorators with the base components as well as other decorators.
+
+---
+
+The Decorator Pattern provides
+an alternative to subclassing for
+extending behavior.
+
+ The Decorator Pattern involves
+a set of decorator classes that
+are used to wrap concrete
+components.
+
+ Decorator classes mirror the type
+of the components they decorate.
+(In fact, they are the same type
+as the components they decorate,
+either through inheritance or
+interface implementation.)
+
+ Decorators change the behavior of
+their components by adding new
+functionality before and/or after (or
+even in place of) method calls to
+the component.
+
+ You can wrap a component with
+any number of decorators.
+ Decorators are typically
+transparent to the client of the
+component—that is, unless
+the client is relying on the
+component’s concrete type.
+-->
+
+<figure>
+  <img src="/img/design-patterns/decorator.svg" height="100%" width="100%" style="max-width: 750px;">
+</figure>
+
+
+
+<h3>Example</h3>
+
+<!--
+- We consider the case of a coffee shop that sells a wide variety of beverages as well as condiments for those beverages.
+- The Beverage abstract class is subclassed by all beverages and has an abstract cost() method that each subclass implements to return the cost of the beverage.
+- If we simply subclass Beverage to account for the costs of the various condiments then we will end up with a class explosion: EspressoWithStreamedMilkAndMocha, HouseBlendWithSteamedMilkAndWhip,etc.
+- We could add instance variables to the Beverage class like withMocha and withWhip. The cost() method in Beverage could then calculate the costs for all of the condiments, while the overridden cost() in the subclasses could extend that functionality to include the cost of the specific beverage.
+- However, this would force us to alter the cost() method in Beverage each time condiment prices change or new condiments are added. Also some condiments may not be appropriate for certain beverages. And what if a customer orders a double mocha?
+- Instead, we will start with a beverage and decorate it with condiments at runtime. For instance, we might start with a Espresso object, decorate it with a Mocha object and then decorate it with a Whip object.
+- This way, we get a Espresso object wrapped in Mocha and Whip objects. The Mocha and Whip types mirror the Beverage type so we can treat the wrapped object as a Beverage.
+- When we call the cost() method we will rely on delegation to add up the condiment costs. Calling cost() on the Whip object will call cost() on the Mocha object which will call cost() on the Espresso object.
+-  This gives us a whole lot more flexibility about how to mix and match condiments and beverages.
+
+---
+
+Sue: Yes, if we rely on inheritance, then our behavior can only be determined statically at
+compile time. In other words, we get only whatever behavior the superclass gives us or that we
+override. With composition, we can mix and match decorators any way we like...at runtime.
+-->
+
+
+{{% code-file file="/static/code/programming/design-patterns/Decorator.java" lang="java" %}}
+
+
+<h3>Principle: Open-Closed</h3>
+
+<p>
+  <i>
+    Classes should be open for extension but closed for modification.
+  </i>
+</p>
+
+<ul>
+  <li>
+    We often spend a lot of time getting certain code correct and so we do not want to alter existing code. However, by allowing extension we can still allow for new behavior to be added as requirements change.
+  </li>
+  <li>
+    This leads to designs that are resilient to change and flexible enough to take on new functionality to meet changing requirements.
+  </li>
+  <li>
+    We must carefully identify that areas of code that need to be extended as trying to apply the Open-Closed Principle everywhere is wasteful and can lead to greater complexity by introducing new levels of abstraction.
+  </li>
+</ul>
+
+
+<!--
+Decorator: Sure. Well, you know I’ve got the power to add flexibility to designs, that much is
+for sure, but I also have a dark side. You see, I can sometimes add a lot of small classes to a design,
+and this occasionally results in a design that’s less than straightforward for others to understand.
+
+Decorator: There’s more, I’m afraid. I’ve got typing problems: you see, people sometimes
+take a piece of client code that relies on specific types and introduce decorators without
+thinking through everything. Now, one great thing about me is that you can usually insert decorators
+transparently and the client never has to know it’s dealing with a decorator. But like I said, some code is
+dependent on specific types and when you start introducing decorators, boom! Bad things
+happen.
+
+Decorator: I know, I try not to be. I also have the problem that introducing decorators can
+increase the complexity of the code needed to instantiate the component. Once you’ve got
+decorators, you’ve got to not only instantiate the component, but also wrap it with who knows
+how many decorators.
+-->
+
+
+<h3>Resources</h3>
+
+<ul>
+
+</ul>

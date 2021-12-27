@@ -1,0 +1,54 @@
+---
+title: "Counting Sort"
+date: 2021-12-05
+draft: false
+---
+
+<p>
+  Counting sort is an integer sorting algorithm for sorting an array of small positive integers. It proceeds by counting the occurrences of each value and applying prefix sum on those counts to determine the positions of each value in the output array. Counting sort is a stable sort so the relative order of equal values is preserved. Its running time is linear in the number of items and the difference between the maximum key value and the minimum key value so it is  suitable for use in situations where the variation in keys is not significantly greater than the number of items.
+</p>
+
+
+<h3>Procedure</h3>
+
+<p>
+  We start with an array of length n whose values lie in a small range from 0 to some constant. We proceed as follows:
+</p>
+
+<ol>
+  <li>
+    Find the maximum value in the array to determine the size of an array necessary to store the count of each value.
+  </li>
+  <li>
+    Loop through the array and increment the appropriate counter for each.
+  </li>
+  <li>
+    Compute the prefix sum on the count array.
+  </li>
+  <li>
+    Loop through the array in reverse and for each value use the value as an index into the count array. Decrement that count array value and use the decremented value as an index to copy the value into an output array.
+  </li>
+</ol>
+
+
+<h3>Complexity</h3>
+
+<table>
+  This has worst-case performance of O(n + k) where k is the maximum value and n is the number of elements in the array. The worst-case space complexity is the same.
+</table>
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/theory/sorting-algorithms/CountingSort.java" lang="java" %}}
+
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.cs.usfca.edu/~galles/visualization/CountingSort.html">Counting Sort Visualization</a>
+  </li>
+</ul>

@@ -1,0 +1,1 @@
+In Go, nil is an identifier that represents the lack of a value for some types. Like the untyped numeric constants we saw in the previous chapter, nil has no type, so it can be assigned or compared against values of different types.

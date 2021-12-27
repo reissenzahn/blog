@@ -1,0 +1,192 @@
+---
+title: "Object Orientation"
+date: 2021-12-21
+draft: false
+---
+
+<p>
+  The State Pattern allows an object to alter its behavior when its internal state changes. The object will appear to change its class.
+</p>
+
+
+<h3>Description</h3>
+
+<ul>
+  <li>
+    
+  </li>
+</ul>
+
+<!--
+- The State Pattern encapsulates state into separate classes and delegates to the object representing the current state. This way, the behavior of the class changes when the internal state changes and so it appears to the client that the object has changed class.
+- The Context is the class that can have a number of internal states. It delegates to handlers provided by the current state. The State interface defines a common interface for all concrete states so that they are interchangeable.
+- As such, the State Pattern provides an alternative to putting lots of conditionals in your context; by encapsulating the behaviors within state objects, you can simply change the state object in context to change its behavior.
+
+---
+
+With the State Pattern, we have a set of behaviors encapsulated in
+state objects; at any time the context is delegating to one of those
+states. Over time, the current state changes across the set of state
+objects to reflect the internal state of the context, so the context’s
+behavior changes over time as well. The client usually knows very
+little, if anything, about the state objects.
+
+---
+
+The states are used by the Context to represent
+its internal state and behavior, so all requests to the states
+come from the Context. Clients don’t directly change the
+state of the Context. It is the Context’s job to oversee its
+state, and you don’t usually want a client changing the state
+of a Context without that Context’s knowledge.
+
+---
+
+ The State Pattern allows an
+object to have many different
+behaviors that are based on
+its internal state.
+ Unlike a procedural state
+machine, the State Pattern
+represents each state as a
+full-blown class.
+ The Context gets its behavior
+by delegating to the current
+state object it is composed
+with.
+ By encapsulating each state
+into a class, we localize any
+changes that will need to be
+made.
+ The State and Strategy
+Patterns have the same class
+diagram, but they differ in
+intent.
+ The Strategy Pattern typically
+configures Context classes
+with a behavior or algorithm.
+ The State Pattern allows
+a Context to change its
+behavior as the state of the
+Context changes.
+ State transitions can be
+controlled by the State
+classes or by the Context
+classes.
+ Using the State Pattern will
+typically result in a greater
+number of classes in your
+design.
+ State classes may be shared
+among Context instances.
+-->
+
+<figure>
+  <img src="/img/design-patterns/state.svg" height="100%" width="100%" style="max-width: 700px;">
+</figure>
+
+
+
+<h3>Example</h3>
+
+<ul>
+  <li>
+    We consider the case of a gumball machine. The machine starts in the "No Quarter" state. Inserting a quarter transitions to "Has Quarter". From there, ejecting the quarter transitions back to "No Quarter" and turning the crank transitions to "Gumball Sold". If the gumball is then dispensed, the machine checks the number of gumballs and either transitions to "No Quarter" or "Out of Gumballs".
+  </li>
+  <li>
+    An initial approach would be to create a <code>GumballMachine</code> class that keeps track of its current state with <code>state</code> instance variable. Methods like <code>insertQuarter()</code> and <code>turnCrank()</code> would then perform a suitable function according to the current state.
+  </li>
+  <li>
+    However, suppose we now have to introduce a new feature: 10% of the time, when the crank is turned, the customer gets two gumballs instead of one. In this case, we would have to add a new "Winner" state which would mean we would have to update the conditional logic in every single method to handle the new state.
+  </li>
+  <li>
+    Instead, we will localize the behavior for each state so that we can make changes to one state without breaking other code. For this, we will put the behavior of each state in its own class (so that every state just implements its own actions). Then <code>GumballMachine</code> can just delegate to the state object that represents the current state.
+  </li>
+  <li>
+    This way, it will be easier to add new states as, while we will still have to change code, the changes will be much more limited in scope as we will only need to add a new class and change a few transitions.
+  </li>
+</ul>
+
+<!--
+Then take each state in our design and
+encapsulate it in a class that implements
+the State interface.
+
+We define a State interface that contains a method for every action in the machine and provide a class that implements this interface for every state of the machine. These classes will be responsible for the behavior of the machine when it is in the corresponding state.
+
+We can then remove the conditional logic and instead delegate the work to the current State class.
+
+
+we’re going to
+rework it to encapsulate state objects in their own classes and then delegate to the current
+state when an action occurs.
+We’re following our design principles here, so we should end up with a design that is easier to
+maintain down the road. Here’s how we’re going to do it:
+Not only are we following design principles, as you’ll see, we’re actually implementing the
+State Pattern. But we’ll get to all the official State Pattern stuff after we rework our code...
+Now we’re going
+to put all the behavior of a
+state into one class. That way,
+we’re localizing the behavior and
+making things a lot easier to
+change and understand.
+
+---
+
+The Gumball Machine provides a good
+example: when the gumball machine is in the NoQuarterState and you insert a quarter, you get
+different behavior (the machine accepts the quarter) than if you insert a quarter when it’s in the
+HasQuarterState (the machine rejects the quarter).
+
+
+---
+
+The Gumball Machine now holds an
+instance of each State class
+
+The current state of the machine is always one of
+these class instances.
+
+When an action is called, it is delegated to the current state.
+
+
+---
+
+By structurally changing the implemention, you’ve:
+
+- Localized the behavior of each state into its own class.
+- Removed all the troublesome if statements that would have been difficult to maintain.
+- Closed each state for modification, and yet left the Gumball Machine open to extension by adding new state classes (and we’ll do this in a second).
+- Created a code base and class structure that maps much more closely to the Mighty Gumball diagram and is easier to read and understand.
+
+---
+
+We’ve got a lot of duplicate code in the Sold and Winning
+states and we might want to clean those up. How would we
+do it? We could make State into an abstract class and build
+in some default behavior for the methods; after all, error
+messages like, “You already inserted a quarter,” aren’t going
+to be seen by the customer. So all “error response” behavior
+could be generic and inherited from the abstract State class.
+� The dispense() method always gets called, even if the crank is
+turned when there is no quarter. While the machine operates
+correctly and doesn’t dispense unless it’s in the right state, we
+could easily fix this by having turnCrank() return a boolean
+or by introducing exceptions. Which do you think is a better
+solution?
+� All of the intelligence for the state transitions is in the State
+classes. What problems might this cause? Would we want to
+move that logic into the GumballMachine? What would be
+the advantages and disadvantages of that?
+� Will you be instantiating a lot of GumballMachine objects?
+If so, you may want to move the state instances into static
+instance variables and share them. What changes would this
+require to the GumballMachine and the States?
+-->
+
+
+<h3>Resources</h3>
+
+<ul>
+
+</ul>

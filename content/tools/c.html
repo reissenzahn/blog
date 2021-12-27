@@ -1,0 +1,588 @@
+---
+title: "C"
+date: 2021-07-07
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#hello-world">Hello World</a>
+  </li>
+  <li>
+    <a href="#primitive-types">Primitive Types</a>
+  </li>
+  <li>
+    <a href="#control-flow">Control Flow</a>
+  </li>
+  <li>
+    <a href="#arrays">Arrays</a>
+  </li>
+  <li>
+    <a href="#functions">Functions</a>
+  </li>
+  <li>
+    <a href="#variadic-functions">Variadic Functions</a>
+  </li>
+  <li>
+    <a href="#pointers">Pointers</a>
+  </li>
+  <li>
+    <a href="#function-pointers">Function Pointers</a>
+  </li>
+  <li>
+    <a href="#strings">Strings</a>
+  </li>
+  <li>
+    <a href="#enumerations">Enumerations</a>
+  </li>
+  <li>
+    <a href="#unions">Unions</a>
+  </li>
+  <li>
+    <a href="#bitfields">Bitfields</a>
+  </li>
+  <li>
+    <a href="#typedef">Typedef</a>
+  </li>
+  <li>
+    <a href="#bitwise-operators">Bitwise Operators</a>
+  </li>
+  <li>
+    <a href="#sizeof">Sizeof</a>
+  </li>
+  <li>
+    <a href="#constants">Constants</a>
+  </li>
+  <li>
+    <a href="#static">Static</a>
+  </li>
+  <li>
+    <a href="#pointer-arithmetic">Pointer Arithmetic</a>
+  </li>
+  <li>
+    <a href="#heap-allocation">Heap Allocation</a>
+  </li>
+  <li>
+    <a href="#assertions">Assertions</a>
+  </li>
+  <li>
+    <a href="#error-handling">Error Handling</a>
+  </li>
+  <li>
+    <a href="#gcc">GCC</a>
+  </li>
+  <li>
+    <a href="#makefile">Makefile</a>
+  </li>
+</ul>
+
+
+<h3 id="hello-world">Hello World</h3>
+
+
+<h3 id="primitive-types">Primitive Types</h3>
+
+
+<h3 id="control-flow">Control Flow</h3>
+
+
+<h3 id="arrays">Arrays</h3>
+
+
+<h3 id="functions">Functions</h3>
+
+
+<h3 id="variadic-functions">Variadic Functions</h3>
+
+
+<h3 id="pointers">Pointers</h3>
+
+
+<h3 id="function-pointers">Function Pointers</h3>
+
+
+<h3 id="strings">Strings</h3>
+
+
+<h3 id="enumerations">Enumerations</h3>
+
+
+<h3 id="structures">Structures</h3>
+
+
+<h3 id="unions">Unions</h3>
+
+
+<h3 id="bitfields">Bitfields</h3>
+
+
+<h3 id="typedef">Typedef</h3>
+
+
+<h3 id="bitwise-operators">Bitwise Operators</h3>
+
+
+<h3 id="sizeof">Sizeof</h3>
+
+
+<h3 id="constants">Constants</h3>
+
+
+<h3 id="static">Static</h3>
+
+
+<h3 id="pointer-arithmetic">Pointer Arithmetic</h3>
+
+
+<h3 id="heap-allocation">Heap Allocation</h3>
+
+
+<h3 id="assertions">Assertions</h3>
+
+
+<h3 id="error-handling">Error Handling</h3>
+
+
+<h3 id="gcc">GCC</h3>
+
+{{% code text %}}// compile single file into executable
+$ gcc -o hello hello.c
+$ ./hello
+
+// enable reporting of all compiler warnings
+$ gcc -Wall hello.c
+
+// specify include directory
+$ gcc -I../include hello.c
+
+// compile multiple files and link into executable
+$ gcc -c foo.c
+$ gcc -c bar.c
+$ gcc -c main.c
+$ gcc -o foobar foo.o bar.o main.o
+
+// compile with pthread option
+$ gcc -pthread hello.c{{% /code %}}
+
+
+
+<h3 id="makefile">Makefile</h3>
+
+{{% code makefile %}}TARGET   = hello
+
+CC       = gcc
+CFLAGS   = -std=c99 -Wall -I.
+LFLAGS   = -Wall -lm -I.
+
+SRCDIR   = src
+OBJDIR   = obj
+
+SOURCES  := $(wildcard $(SRCDIR)/*.c)
+INCLUDES := $(wildcard $(SRCDIR)/*.h)
+OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+
+$(TARGET): $(OBJECTS)
+  $(CC) $(OBJECTS) $(LFLAGS) -o $@
+
+$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
+  $(CC) $(CFLAGS) -c $< -o $@
+
+.PHONY: clean
+clean:
+  rm -f $(OBJECTS)
+
+.PHONY: remove
+remove: clean
+  rm $(TARGET){{% /code %}}
+
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.cppreference.com/w/">cppreference.com</a>
+  </li>
+  <li>
+    <a href="https://modernc.gforge.inria.fr/">Modern C</a>
+  </li>
+  <li>
+    <a href="http://c-faq.com/index.html">comp.lang.c FAQ</a>
+  </li>
+</ul>
+
+<!-- 
+  UP NEXT:
+
+  Understanding and Using C Pointers
+  5
+  8 - currently working on in casting.c
+-->
+
+<!--   
+  https://www.utopiamechanicus.com/article/data-splitting-union-and-struct-c/
+  
+  https://hackaday.com/2018/03/02/unionize-your-variables-an-introduction-to-advanced-data-types-in-c/
+ -->
+
+<!--
+  https://eli.thegreenplace.net/2009/10/21/are-pointers-and-arrays-equivalent-in-c
+
+  https://stackoverflow.com/questions/4622461/difference-between-pointer-index-and-pointer
+
+  https://stackoverflow.com/questions/1704407/what-is-the-difference-between-char-s-and-char-s
+-->
+
+<!-- 
+  // When a block of initialization values are used with an array, its values will be assigned to consecutive elements of the array.
+ -->
+
+<!-- 
+  When a C program is compiled, it works with three types of memory:
+
+  1. Static/Global: Statically declared variables are allocated to this type of memory. Global variables also use this region of memory. They are allocated when the program starts and remain in existence until the program terminates. While all functions have access to global variables, the scope of static variables is restricted to their defining function.
+  2. Automatic: These variables are declared within a function and are created when a function is called. Their scope is restricted to the function, and their lifetime is limited to the time the function is executing.
+  3. Dynamic: Memory is allocated from the heap and can be released as necessary. A pointer references the allocated memory. The scope is limited to the pointer or pointers that reference the memory. It exists until it is released.
+ -->
+
+<!-- 
+  STRUCTURE ALIGNMENT
+
+  // the amount of memory allocated to a structure is at minimum the sum of the sizes of its individual fields but is often larger due to padding resulting from the need to align certain data types on specific boundaries which this means pointer arithmetic must be used with care
+  struct _person {
+  char* firstName;
+  char* lastName;
+  char* title;
+  unsigned int age;
+  };
+
+  typedef struct _alternatePerson {
+    char* firstName;
+    char* lastName;
+    char* title;
+    short age;
+  } AlternatePerson;
+
+  Person person;
+  AlternatePerson otherPerson;
+
+  printf("%d\n",sizeof(Person)); // Displays 16
+  printf("%d\n",sizeof(AlternatePerson)); // Displays 16
+
+  // If we create an array of AlternatePerson, as shown below, there will be padding between the array’s elements.
+
+  AlternatePerson people[30];
+ -->
+
+<!--
+PRE-PROCESSOR
+
+// main.c
+#include <stdio.h>
+#include "hello.h"
+
+// hello.h
+#ifndef HELLO_H
+#define HELLO_H
+
+// ...
+
+#endif
+
+
+// define a symbolic name to be a string of characters; will be replaced by the corresponding replacement text
+#define LOWER 0
+#define UPPER 300
+#define STEP  2
+
+
+# STDIO.H
+
+%d print as decimal integer
+%6d print as decimal integer, at least 6 characters wide
+%f print as floating point
+%6f print as floating point, at least 6 characters wide
+%.2f print as floating point, 2 characters after decimal point
+%6.2f print as floating point, at least 6 wide and 2 after decimal point 
+
+Among others, printf also recognizes %o for octal, %x for hexadecimal, %c for character, %s for character string and %% for itself. The conversion specification %ld tells printf that the corresponding argument is a long integer. printf uses %f for both float and double.
+
+The %s format specification in printf expects the corresponding argument to be a string terminated by \0.
+
+
+
+The model of input and output supported by the standard library is very simple. Text input or output, regardless of where it originates or where it goes to, is dealt with as streams of characters. A text stream is a sequence of characters divided into lines; each line consists of zero or more characters followed by a newline character.
+
+The problem is distinguishing the end of input from valid data. The solution is that getchar returns EOF. We must declare c to be a type big enough to hold any value that getchar returns. We can't use char since c must be big enough to hold EOF in addition to any possible char. Therefore we use int. 
+
+int c;
+// read the next character
+while ((c = getchar()) != EOF) {
+  putchar(c);
+}
+
+// counting lines
+int c, nl;
+nl = 0;
+
+while ((c = getchar()) != EOF)
+  if (c == '\n')
+    ++nl;
+
+printf("%d\n", nl); 
+-->
+
+<!--
+  POINTER SUBTRACTION
+
+  When one pointer is subtracted from another, we get the difference between their addresses. This difference is not normally very useful except for determining the order of elements in an array.
+
+  int vector[] = {28, 41, 7};
+  int *p0 = vector;
+  int *p1 = vector+1;
+  int *p2 = vector+2;
+
+  printf("p2-p0: %d\n",p2-p0);  // p2-p0: 2
+  printf("p2-p1: %d\n",p2-p1);  // p2-p1: 1
+  printf("p0-p1: %d\n",p0-p1);  // p0-p1: -1
+
+  The type ptrdiff_t is a portable way to express the difference between two pointers. In the previous example, the result of subtracting two pointers is returned as a ptrdiff_t type. Since pointer sizes can differ, this type simplifies the task of working with their differences.
+  
+  Don’t confuse this technique with using the dereference operator to subtract two numbers. In the following example, we use pointers to determine the difference between the value stored in the array’s first and second elements:
+
+  printf("*p0-*p1: %d\n",*p0-*p1);  // *p0-*p1: -13
+-->
+
+<!-- 
+  POINTER PITFALLS
+
+  • Accessing arrays and other data structures beyond their bounds
+  • Referencing automatic variables after they have gone out of existence
+  • Referencing heap allocated memory after it has been released
+  • Dereferencing a pointer before memory has been allocated to it
+  • Be careful when using pointers to void. If you cast an arbitrary pointer to a pointer to void, there is nothing preventing you from casting it to a different pointer type.
+
+  TODO: a pointer to void will have the same representation and memory alignment as a pointer to char
+
+  char *names[] = {"Miller","Jones","Anderson"};
+  printf("%c\n",*(*(names+1)+2));
+  printf("%c\n",names[1][2]);
+
+  TODO: If a pointer is declared as global or static, it is initialized to NULL when the program starts.
+-->
+
+<!-- 
+  RESTRICT IN-DEPTH
+
+// When the compiler generates code for pointers, it has to assume that aliasing may occur
+// unless told otherwise. The use of aliasing imposes restrictions on compiler-generated
+// code. If two pointers reference the same location, either can potentially modify that
+// location. When the compiler generates code to read or write to that location, it is not
+// always able to optimize the code by storing the value in a register. It is forced to perform
+// machine-level load and store operations with each reference. The repeated load/store
+// sequence can be inefficient. In some situations, the compiler must also be concerned
+// about the order in which the operations are performed.
+
+ -->
+
+<!-- 
+  PTHREADS EXAMPLES
+
+  // Threads and Pointers
+
+typedef struct {
+ double *vectorA;
+ double *vectorB;
+ double sum;
+ int length;
+} VectorInfo;
+
+typedef struct {
+ VectorInfo *info;
+ int beginningIndex;
+} Product;
+
+pthread_mutex_t mutexSum;
+
+void dotProduct(void *prod) {
+ Product *product = (Product*)prod;
+ VectorInfo *vectorInfo = Product->info;
+ int beginningIndex = Product->beginningIndex;
+ int endingIndex = beginningIndex + vectorInfo->length;
+ double total = 0;
+ for (int i = beginningIndex; i < endingIndex; i++) {
+ total += (vectorInfo->vectorA[i] * vectorInfo->vectorB[i]);
+ }
+ pthread_mutex_lock(&mutexSum);
+ vectorInfo->sum += total;
+ pthread_mutex_unlock(&mutexSum);
+ pthread_exit((void*) 0);
+}
+
+#define NUM_THREADS 4
+void threadExample() {
+ VectorInfo vectorInfo;
+ double vectorA[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
+ 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0};
+ double vectorB[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
+ 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0};
+ double sum;
+ vectorInfo.vectorA = vectorA;
+ vectorInfo.vectorB = vectorB;
+ vectorInfo.length = 4;
+ pthread_t threads[NUM_THREADS];
+ void *status;
+ pthread_attr_t attr;
+ pthread_mutex_init(&mutexSum, NULL);
+ pthread_attr_init(&attr);
+ pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+ int returnValue;
+ int threadNumber;
+ for (threadNumber = 0; threadNumber < NUM_THREADS; threadNumber++) {
+ Product *product = (Product*) malloc(sizeof(Product));
+ product->beginningIndex = threadNumber * 4;
+ product->info = &vectorInfo;
+ returnValue = pthread_create(&threads[threadNumber], &attr,
+ dotProduct, (void *) (void*) (product));
+ if (returnValue) {
+ printf("ERROR; Unable to create thread: %d\n", returnValue);
+ exit(-1);
+ }
+ }
+ pthread_attr_destroy(&attr);
+ for (int i = 0; i < NUM_THREADS; i++) {
+ pthread_join(threads[i], &status);
+ }
+ pthread_mutex_destroy(&mutexSum);
+ printf("Dot Product sum: %lf\n", vectorInfo.sum);
+ pthread_exit(NULL);
+}
+
+
+
+typedef struct _factorialData {
+ int number;
+ int result;
+ void (*callBack)(struct _factorialData*);
+} FactorialData;
+
+void factorial(void *args) {
+ FactorialData *factorialData = (FactorialData*) args;
+ void (*callBack)(FactorialData*); // Function prototype
+ int number = factorialData->number;
+ callBack = factorialData->callBack;
+ int num = 1;
+ for(int i = 1; i<=number; i++) {
+ num *= i;
+ }
+ factorialData->result = num;
+ callBack(factorialData);
+ pthread_exit(NULL);
+}
+
+void startThread(FactorialData *data) {
+ pthread_t thread_id;
+ int thread = pthread_create(&thread_id, NULL, factorial, (void *) data);
+}
+
+void callBackFunction(FactorialData *factorialData) {
+ printf("Factorial is %d\n", factorialData->result);
+}
+ FactorialData *data =
+ (FactorialData*) malloc(sizeof(FactorialData));
+ if(!data) {
+ printf("Failed to allocate memory\n");
+ return;
+ }
+ data->number = 5;
+ data->callBack = callBackFunction;
+ startThread(data);
+ Sleep(2000);
+
+
+ -->
+
+<!-- 
+  THE STACK
+
+The program stack is an area of memory that supports the execution of functions. 
+
+The stack holds stack frames which each consist of the address in the program where the function is to return upon completion, memory allocated for local variables, memory allocated for the function parameters and the stack and base pointers.
+
+The stack and base pointers are used by the runtime system to manage the stack. A stack pointer usually points to the top of the stack. A stack base pointer (frame pointer) is often present and points to an address within the stack frame and assists in accessing the stack frame elements.
+
+As functions are called, their stack frames are pushed onto the stack and the stack grows. When a function terminates, its stack frame is popped off the program stack and the stack shrinks. The memory used by the stack frame is not cleared and may eventually be overridden by another stack frame when it is pushed onto the program stack.
+
+When the stack frame is created, the parameters are pushed onto the frame in the opposite order of their declaration, followed by the local variables. Typically, the return address for the function call is pushed next, followed by the local variables. They are pushed in the opposite order in which they were listed.
+
+Block statements are treated as “mini” functions and will push and pop them as appropriate.
+
+As stack frames are pushed onto the program stack, the system may run out of memory. This condition is called stack overflow and generally results in the program terminating abnormally.
+ -->
+
+<!-- 
+
+// Casting Function Pointers
+
+// a pointer to a function can be cast to another type
+
+// it is also possible to cast a function pointer to a different function pointer and then back; The resulting pointer will be equal to the original pointer.
+
+typedef int (*fptrToSingleInt)(int);
+typedef int (*fptrToTwoInts)(int,int);
+int add(int, int);
+
+fptrToTwoInts fptrFirst = add;
+fptrToSingleInt fptrSecond = (fptrToSingleInt)fptrFirst;
+fptrFirst = (fptrToTwoInts)fptrSecond;
+printf("%d\n",fptrFirst(5,6));
+
+//  This sequence, when executed, will display 11 as its output.
+// Conversion between function pointers and pointers to data is not guar‐
+// anteed to work.
+// The use of void* is not guaranteed to work with function pointers. That is, we should
+// not assign a function pointer to void* as shown below:
+//  void* pv = add;
+// However, when interchanging function pointers, it is common to see a “base” function
+// pointer type as declared below. This declares fptrBase as a function pointer to a func‐
+// tion, which is passed void and returns void:
+//  typedef void (*fptrBase)();
+// The following sequence demonstrate the use of this base pointer, which duplicates the
+// previous example:
+//  fptrBase basePointer;
+//  fptrFirst = add;
+//  basePointer = (fptrToSingleInt)fptrFirst;
+//  fptrFirst = (fptrToTwoInts)basePointer;
+//  printf("%d\n",fptrFirst(5,6));
+// A base pointer is used as a placeholder to exchange function pointer values.
+// Always make sure you use the correct argument list for function point‐
+// ers. Failure to do so will result in indeterminate behavior.
+
+ -->
+
+<!-- 
+  Buffer overflow occurs when memory outside the object’s bounds is overwritten. This memory may be part of the program’s address space or another process. When the memory is outside of the program address space, most operating systems will issue a segmentation fault and terminate the program. If the buffer overflow occurs within the application’s address space, then it can result in unauthorized access to data and/or the transfer of control to another segment of code, thereby potentially compromising the system.
+
+  A dangling pointer occurs when a pointer is freed but still references that memory. If an attempt is made to access this memory later, then its contents may well have changed. A write operation
+against this memory may corrupt memory, and a read operation may return invalid data. Either could potentially result in the termination of the program.
+ -->
+
+<!-- 
+  COMPOUND LITERALS
+
+  A compound literal is a C construct that consists of what appears to be a cast operator followed by an initializer list enclosed in braces.
+
+  (const int) {100}
+  (int[3]) {10, 20, 30}
+
+  int (*(arr1[])) = {
+  (int[]) {0, 1, 2},
+
+  (int[]) {3, 4, 5},
+  (int[]) {6, 7, 8}};
+
+  int (*(arr2[])) = {
+  (int[]) {0, 1, 2, 3},
+  (int[]) {4, 5},
+  (int[]) {6, 7, 8}};
+ -->

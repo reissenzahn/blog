@@ -1,0 +1,63 @@
+---
+title: "Time"
+date: 2021-11-24
+draft: false
+---
+
+
+
+<h3>Real Time and CPU Time</h3>
+
+<p>
+  We may be interested in two kinds of time:
+</p>
+
+<ul>
+  <li>
+    Real time: Time as measured either from some standard point (calendar time) or from some fixed point (typically the start) in the life of a process (elapsed or wall clock time).
+  </li>
+  <li>
+    Process time: The amount of CPU time used by a process.
+  </li>
+</ul>
+
+<p>
+  Regardless of geographic location, UNIX systems represent time internally as a measure of seconds since the Epoch; that is, since midnight on the morning of 1 January 1970, Universal Coordinated Time (UTC, previously known as Greenwich Mean Time, or GMT). Calendar time is stored in variables of type <code>time_t</code>.
+</p>
+
+
+<h3>Calendar Time</h3>
+
+{{% code c %}}#include <sys/time.h>
+
+struct timeval {
+  time_t tv_sec;        // seconds since 00:00:00, 1 Jan 1970 UTC
+  suseconds_t tv_usec;  // additional microseconds
+};
+
+int gettimeofday(struct timeval *tv, struct timezone *tz);{{% /code %}}
+
+<p>
+  The <code>gettimeofday()</code> call returns the calendar time in the buffer pointed to by <code>tv</code>. The <code>tz</code> argument is a historical artifact and should always be specified as <code>NULL</code>. It returns <code>0</code> on success or <code>-1</code> on error.
+</p>
+
+{{% code c %}}#include <time.h>
+
+time_t time(time_t *timep);{{% /code %}}
+
+<p>
+  The <code>time()</code> system call returns the number of seconds since the Epoch (i.e., the same value that <code>gettimeofday()</code> returns in the <code>tv_sec</code> field of its <code>tv</code> argument). If the <code>timep</code> argument is not <code>NULL</code> then number of seconds since the Epoch is also placed in the location to which <code>timep</code> points. The only possible error that can occur is to give an invalid address in the <code>timep</code> argument in which case <code>(time_t) -1</code> is returned.
+</p>
+
+
+<h3>Converting to Printable Form</h3>
+
+{{% code c %}}#include <time.h>
+
+char *ctime(const time_t *timep);{{% /code %}}
+
+<p>
+  The <code>ctime()</code> function provides a simple method of converting a <code>time_t</code> value into printable form which accounts for local timezone and DST settings. It returns a pointer to statically allocated string terminated by a newline and <code>\0</code> on success or <code>NULL</code> on error. Future calls to <code>ctime()</code> will overwrite the statically allocated string.
+</p>
+
+<!-- TODO: 188 -->

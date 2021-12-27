@@ -1,0 +1,103 @@
+---
+title: "Memory Allocation"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  Many programs need to be able to allocate additional memory for dynamic data structures whose size depends on information that is available only at run time.
+</p>
+
+
+<h3>Adjusting the Program Break</h3>
+
+<p>
+  The heap is a variable-size segment of contiguous memory that begins just after the uninitialized data segment of a process. The size of the heap grows and shrinks as a process allocates and releases memory. The current limit of the heap is called the program break.
+</p>
+
+<p>
+  Resizing the heap then amounts to telling the kernel to adjust its idea of where the program break is. After the program break is increased, the program may access any address in the newly allocated area, but no physical memory pages are allocated yet. The kernel automatically allocates new physical pages on the first attempt by the process to access addresses in those pages.
+</p>
+
+{{% code c %}}#include <unistd.h>
+
+int brk(void *end_data_segment);
+
+void *sbrk(intptr_t increment);{{% /code %}}
+
+<p>
+  The brk() system call sets the program break to the location specified by end_data_segment. Since virtual memory is allocated in units of pages, end_data_segment is effectively rounded up to the next page boundary.
+</p>
+
+<p>
+  A call to sbrk() adjusts the program break by adding increment to it. On success, sbrk() returns the previous address of the program break. In other words, if we have increased the program break, then the return value is a pointer to the start of the newly allocated block of memory. The call sbrk(0) returns the current setting of the program break without changing it.
+</p>
+
+
+<h3>Allocating and Freeing Memory on the Heap</h3>
+
+{{% code c %}}#include <stdlib.h>
+
+void *malloc(size_t size);
+
+void free(void *ptr);{{% /code %}}
+
+<p>
+  The malloc family of functions is used to allocate and deallocate memory on the heap. The malloc() function allocates size bytes from the heap and returns a pointer to the start of the newly allocated block of memory. The allocated memory is not initialized. Because malloc() returns void *, we can assign it to any type of C pointer. After we allocate a block of memory, we should be careful not to touch any bytes outside the range of that block. If memory could not be allocated then malloc() returns NULL.
+</p>
+
+<p>
+  The free() function deallocates the block of memory pointed to by its ptr argument. Making any use of ptr after the call to free() 9 such as passing it to free() a second time) is an error that can lead to unpredictable results. If the argument given to free() is a NULL pointer, then the call does nothing. We should ensure that we deallocate any memory after we have finished using it to avoid memory leaks.
+</p>
+
+
+<h3>Other Memory Allocation Functions</h3>
+
+{{% code c %}}#include <stdlib.h>
+
+void *calloc(size_t numitems, size_t size);
+
+void *realloc(void *ptr, size_t size);{{% /code %}}
+
+<p>
+  The calloc() function allocates memory for an array of identical items. The numitems argument specifies how many items to allocate, and size specifies their size. After allocating a block of memory of the appropriate size, calloc() returns a pointer to the start of the block (or NULL if the memory could not be allocated). Unlike malloc(), calloc() initializes the allocated memory to 0.
+</p>
+
+<!-- 
+  struct { /* Some field definitions */ } myStruct;
+struct myStruct *p;
+p = calloc(1000, sizeof(struct myStruct));
+if (p == NULL)
+ errExit("calloc");
+
+ nptr = realloc(ptr, newsize);
+if (nptr == NULL) {
+ /* Handle error */
+} else { /* realloc() succeeded */
+ ptr = nptr;
+}
+ -->
+
+<p>
+  The realloc() function is used to resize (usually enlarge) a block of memory previously allocated by one of the malloc family of functions. The ptr argument is a pointer to the block of memory that is to be resized. The size argument specifies the desired new size of the block. On success, realloc() returns a pointer to the location of the resized block. This may be different from its location before the call. The new allocated bytes are not initialized. On error, realloc() returns NULL and leaves the block pointed to by ptr untouched.
+</p>
+
+<p>
+  Because realloc() may move the block of memory, any pointers that referred to locations inside the block before the realloc() call may no longer be valid after the call. The only type of reference to a location within the block that is guaranteed to remain valid is one formed by adding an offset to the pointer to the start of the block.
+</p>
+
+
+<h3>Allocating Memory on the Stack</h3>
+
+<p>
+  The alloca() function allocates memory dynamically by obtaining memory from the stack by increasing the size of the stack frame. This is possible because the calling function is necessarily the one whose stack frame is on the top of the stack. Thus there is space above the frame for expansion which can be accomplished by modifying the value of the stack pointer.
+</p>
+
+
+{{% code c %}}#include <alloca.h>
+
+void *alloca(size_t size);{{% /code %}}
+
+<p>
+  The size argument specifies the number of bytes to allocate on the stack. The alloca() function returns a pointer to the allocated memory as its function result. We must not call free to deallocate this memory.
+</p>

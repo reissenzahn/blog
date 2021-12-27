@@ -1,0 +1,119 @@
+---
+title: "Dijkstra's Algorithm"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  Dijkstra's algorithm is a single source shortest path algorithm for graphs with non-negative edge weights. The algorithm proceeds in a greedy manner by selecting the next most promising node at each step. The constraint of not having any negative edge weights ensures that, once a node has been visited, its optimal distance cannot be improved. It can also be used for finding the shortest paths from a single node to a single destination node by stopping the algorithm once the shortest path to the destination node has been determined.
+</p>
+
+
+<h3>Procedure</h3>
+
+<p>
+  The algorithm proceeds as follows:
+</p>
+
+<ol>
+  <li>
+    Mark each node as unvisited.
+  </li>
+  <li>
+    Initialize an array to keep track of the current shortest distance to ever node. Set each distance to positive infinity except for the start node which we know to be zero.
+  </li>
+  <li>
+    Initialize a priority queue of (node index, distance) pairs where the shortest distance corresponds to the highest priority. Insert (start node index, 0) into the priority queue.
+  </li>
+  <li>
+    Enter a loop and repeatedly dequeue the next pair from the priority queue and mark it as visited until the priority queue is empty.
+  </li>
+  <li>
+    At each iteration, consider each of the edges outwards from the node to unvisited adjacent nodes. If the distance to that node plus the weight of the edge to the adjacent node is less than the current value in the distance array then replace the value in the distance array and add enqueue the (adjacent node index, new distance) pair.
+  </li>
+</ol>
+
+<figure>
+  <img src="/img/theory/graph-algorithms/dijkstras-algorithm.svg" height="100%" width="100%" style="max-width: 500px;">
+  <caption>dist[2] + 2 = 1 + 2 = 3 < 4 and dist[2] + 5 = 1 + 5 = 6 < ∞</caption>
+</figure>
+
+
+<h3>Some Optimizations</h3>
+
+<p>
+  The above lazy implementation results in stale (node index, distance) pairs accumulating in the priority queue. As such, when we queue the next pair, we can check if the current shortest distance to that node in the distance array is less than the distance in that pair. If so, we can start the next iteration of the loop without considering the edges as we have already a better path through other nodes anyway.
+</p>
+
+<p>
+  Further, If we only need the optimal distance to a particular node, it is possible to stop early once the destination node has been visited. This is a consequence of the fact that the algorithm processes each next most promising node in order so if the destination node has been visited then its shortest distance will not change as other nodes are visited.
+</p>
+
+
+<h3>Reconstructing Paths</h3>
+
+<p>
+  While the distance array will yield the shortest paths, reconstructing the optimal path requires us to keep track of the index previous node used to get to a given node. This is achieved using a previous array which is updated whenever a value in the distance array is updated so that the previous node index for the adjacent node is the index of the node whose edges we are currently considering.
+</p>
+
+
+<h3>Complexity</h3>
+
+<p>
+  Dijkstra's algorithm uses a data structure for storing and querying partial solutions sorted by distance from the start.  The original algorithm uses a min-priority queue and runs in time O((n + m)log(n)) where n is the number of nodes and m is the number of edges. Using a Fibonacci heap min-priority queue it is possible to optimize the time complexity to O(m + nlog(n)).
+</p>
+
+
+<h3>Pseudocode</h3>
+
+{{% code text %}}procedure dijkstras-algorithm(graph, n, startIndex):
+  vis = new Array(n)
+  dist = new Array(n)
+  prev = new Array(n)
+
+  vis = [false, false, ..., false]
+  dist = [∞, ∞, ..., ∞]
+  prev = [-1, -1, ..., -1]
+
+  queue = new PriorityQueue()
+
+  dist[startIndex] = 0
+  queue.enqueue((startIndex, 0))
+
+  while queue.size() != 0:
+    (nodeIndex, currDist) = queue.dequeue()
+
+    vis[nodeIndex] = true
+
+    if dist[nodeIndex] < currDist:
+      continue
+    
+    for edge in g[nodeIndex]:
+      if vis[edge.to]:
+        continue
+      
+      newDist = dist[nodeIndex] + edge.weight
+
+      if newDist < dist[edge.to]:
+        dist[edge.to] = newDist
+        prev[edge.to] = nodeIndex
+        queue.enqueue((edge.to, newDist))
+
+  return (dist, prev){{% /code %}}
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/theory/graph-algorithms/Dijkstra.java" lang="java" %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=pSqmAO-m7Lk">Dijkstra's Algorithm (William Fiset)</a>
+  </li>
+  <li>
+    <a href="http://blog.cleancoder.com/uncle-bob/2016/10/26/DijkstrasAlg.html">Implementing Dijkstra's Algorithm with TDD</a>
+  </li>
+</ul>

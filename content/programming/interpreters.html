@@ -1,0 +1,623 @@
+
+
+
+
+
+<h3>Scanning</h3>
+
+<p>
+  A scanner (or lexer) takes in a linear stream of characters and chunks them together into a series of tokens. Our job is to scan through the list of characters and group them together into the smallest sequences that still represent something. Each of these blobs of characters is called a lexeme.
+</p>
+
+<p>
+  The lexemes are only the raw substrings of the source code. However, in the process of grouping character sequences into lexemes, we also stumble upon some other useful information. When we take the lexeme and bundle it together with that other data, the result is a token.
+</p>
+
+<p>
+  There are lexemes for literal values—numbers and strings and the like. Since the scanner has to walk each character in the literal to correctly identify it, it can also convert that textual representation of a value to the living runtime object that will be used by the interpreter later.
+</p>
+
+<p>
+  The core of the scanner is a loop. Starting at the first character of the source code, the scanner figures out what lexeme the character belongs to, and consumes it and any following characters that are part of that lexeme. When it reaches the end of that lexeme, it emits a token. Then it loops back and does it again, starting from the very next character in the source code. It keeps doing that, eating characters and occasionally, uh, excreting tokens, until it reaches the end of the input.
+</p>
+
+<p>
+  The rules that determine how a particular language groups characters into lexemes are called its lexical grammar. In Lox, as in most programming languages, the rules of that grammar are simple enough for the language to be classified a regular language. That’s the same “regular” as in regular expressions.
+
+You very precisely can recognize all of the different lexemes for Lox using regexes if you want to, and there’s a pile of interesting theory underlying why that is and what it means. Tools like Lex or Flex are designed expressly to let you do this—throw a handful of regexes at them, and they give you a complete scanner back.
+</p>
+
+<!-- The first step in any compiler or interpreter is scanning. The scanner takes in raw source code as a series of characters and groups it into a series of chunks we call tokens.
+
+var language = "lox"; -> [var] [language] [=] ["lox"] [;]
+-->
+
+
+
+
+<h3>Parsing</h3>
+
+<p>
+  A parser takes the flat sequence of tokens and builds a parse tree (or abstract syntax tree) while reporting any syntax errors.
+</p>
+
+<p>
+  In particular, we’re defining an abstract syntax tree (AST). In a parse tree, every single grammar production becomes a node in the tree. An AST elides productions that aren’t needed by later phases.
+</p>
+
+
+<p>Static Analysis</p>
+
+
+<p>
+  The first step of static analysis is typically binding (or resolution). For each identifier, we find where that name is defined. Scope (i.e. the region of source code where a certain name can be used to refer to a certain declaration) must also be considered. If the language is statically typed then this is where we type check and report any type errors.
+</p>
+
+<p>
+  The results of static analysis can be stored in a variety of places:
+</p>
+
+<ul>
+  <li>
+    In attributes on the syntax tree itself (i.e. extra fields in the nodes that are not initialized during parsing but get filled in later).
+  </li>
+  <li>
+    In a lookup table called a symbol table that maps identifiers (i.e. names of variables and declarations) with what those identifiers refer to.
+  </li>
+</ul>
+
+<p>
+  The most powerful bookkeeping tool is to transform the tree into an entirely new data structure that more directly expresses the semantics of the code.
+</p>
+
+
+<h3>Intermediate Representations</h3>
+
+<p>
+  A compiler acts like a pipeline where the front end is specific to the source language the program is written in. ad the back end is concerned with the final architecture where the program will run. In the middle, the code may be stored in some intermediate representation (IR) that is not tightly tied to either the source or destination forms but acts as an interface between these two languages. You write one front end for each source language that produces the IR. Then one back end for each target architecture.
+</p>
+
+
+<h3>Optimization</h3>
+
+<p>
+  Optimization involves swapping a user program out for a different program that has the same semantics but more efficient implementation.
+</p>
+
+<p>
+  For instance, constant folding involves taking an expression that always evaluates to the exact same value and performing that evaluation at compile time and replacing the expression with the result.
+</p>
+
+
+<h3>Code Generation</h3>
+
+<p>
+  The last step is code generation where we produce machine code. We can either generate instructions for a real CPU or a virtual one. If we generate real machine code, we get an executable that the OS can load directly onto the chip. Native code is lightning fast but also means your compiler is tied to a specific architecture. Alternatively, we can produce virtual machine code. This can be thought of like a dense binary encoding of the low-level language operations. We typically call this bytecode because each instruction is often a single byte long.
+</p>
+
+
+<h3>Virtual Machine</h3>
+
+<p>
+  If your compiler produces bytecode, you can write a little mini-compiler for each target architecture that converts the bytecode to native code for that machine in which case you are essentially using your bytecode as an intermediate representation.The basic principle here is that the farther down the pipeline you push the architecture-specific work, the more of the earlier phases you can share across architectures. There is a tension, though. Many optimizations, like register allocation and instruction selection, work best when they know the strengths and capabilities of a specific chip.
+</p>
+
+<p>
+  Or you can write a virtual machine (VM), a program that emulates a hypothetical chip supporting your virtual architecture at runtime. Running bytecode in a VM is slower than translating it to native code ahead of time. In return, you get simplicity and portability. Implement your VM in, say, C, and you can run your language on any platform that has a C compiler.
+</p>
+
+
+<h3>Runtime</h3>
+
+<p>
+  The last step is running our program. If we compiled it to machine code, we simply tell the operating system to load the executable and off it goes. If we compiled it to bytecode, we need to start up the VM and load the program into that. In both cases, for all but the basest of low-level languages, we usually need some services that our language provides while the program is running. For example, if the language automatically manages memory, we need a garbage collector going in order to reclaim unused bits. This is called the runtime. In a fully compiled language, the code implementing the runtime gets inserted directly into the resulting executable. If the language is run inside an interpreter or VM, then the runtime lives there.
+</p>
+
+
+<h3>Single-pass Compilers</h3>
+
+<p>
+  Some simple compilers interleave parsing, analysis, and code generation so that they produce output code directly in the parser, without ever allocating any syntax trees or other IRs. These single-pass compilers restrict the design of the language. You have no intermediate data structures to store global information about the program, and you don’t revisit any previously parsed part of the code. That means as soon as you see some expression, you need to know enough to correctly compile it. Pascal and C were designed around this limitation.
+</p>
+
+
+<h3>Tree-walk Interpreters</h3>
+
+<p>
+  Some programming languages begin executing code right after parsing it to an AST (with maybe a bit of static analysis applied). To run the program, the interpreter traverses the syntax tree one branch and leaf at a time, evaluating each node as it goes. This implementation style is not widely used for general-purpose languages since it tends to be slow.
+</p>
+
+
+<h3>Transpilers</h3>
+
+<p>
+  A transpilers treats some other source language as if it were an intermediate representation. You write a front end for your language and then produce a string of valid source code for some other language. The scanner and parser of a transpiler looks like other compilers. Then, if the source language is only a simple syntactic skin over the target language, it may skip analysis entirely and go straight to outputting the analogous syntax in the destination language. If the two languages are more semantically different, you’ll see more of the typical phases of a full compiler including analysis and possibly even optimization.
+</p>
+
+
+<h3>Just-in-Time Compilation</h3>
+
+<p>
+  The fastest way to execute code is by compiling it to machine code, but you might not know what architecture your end user’s machine supports. As such, when the program is loaded, you compile it to native code for the architecture their computer supports. Naturally enough, this is called just-in-time compilation. The most sophisticated JITs insert profiling hooks into the generated code to see which regions are most performance critical and what kind of data is flowing through them. Then, over time, they will automatically recompile those hot spots with more advanced optimizations.
+</p>
+
+
+<h3>Compilers and Interpreters</h3>
+
+<p>
+  Compiling is an implementation technique that involves translating a source language to some other (usually lower-level) form. When we say a language implementation is a compiler, we mean it translates source code to some other form but doesn’t execute it. The user has to take the resulting output and run it themselves. Conversely, when we say an implementation is an interpreter, we mean it takes in source code and executes it immediately.
+</p>
+
+
+
+<h3>Managing Memory</h3>
+
+<p>
+  There are two main techniques for managing memory: reference counting and tracing garbage collection (usually just called garbage collection or GC).
+</p>
+
+
+<h3>Context-Free Grammars</h3>
+
+<p>
+  In the last chapter, the formalism we used for defining the lexical grammar—the rules for how characters get grouped into tokens—was called a regular language. That was fine for our scanner, which emits a flat sequence of tokens. But regular languages aren’t powerful enough to handle expressions which can nest arbitrarily deeply.
+
+  We need a bigger hammer, and that hammer is a context-free grammar (CFG). It’s the next heaviest tool in the toolbox of formal grammars. A formal grammar takes a set of atomic pieces it calls its “alphabet”. Then it defines a (usually infinite) set of “strings” that are “in” the grammar. Each string is a sequence of “letters” in the alphabet.
+
+  I’m using all those quotes because the terms get a little confusing as you move from lexical to syntactic grammars. In our scanner’s grammar, the alphabet consists of individual characters and the strings are the valid lexemes—roughly “words”. In the syntactic grammar we’re talking about now, we’re at a different level of granularity. Now each “letter” in the alphabet is an entire token and a “string” is a sequence of tokens—an entire expression.
+
+
+  Terminology		Lexical grammar	Syntactic grammar
+  The “alphabet” is . . .	→ 	Characters	Tokens
+  A “string” is . . .	→ 	Lexeme or token	  Expression
+  It’s implemented by the . . .	→ 	Scanner	  Parser
+
+  A formal grammar’s job is to specify which strings are valid and which aren’t. If we were defining a grammar for English sentences, “eggs are tasty for breakfast” would be in the grammar, but “tasty breakfast for are eggs” would probably not.
+</p>
+
+<p>
+  How do we write down a grammar that contains an infinite number of valid strings? We obviously can’t list them all out. Instead, we create a finite set of rules. You can think of them as a game that you can “play” in one of two directions.
+
+  If you start with the rules, you can use them to generate strings that are in the grammar. Strings created this way are called derivations because each is derived from the rules of the grammar. In each step of the game, you pick a rule and follow what it tells you to do. Most of the lingo around formal grammars comes from playing them in this direction. Rules are called productions because they produce strings in the grammar.
+
+  Each production in a context-free grammar has a head—its name—and a body, which describes what it generates. In its pure form, the body is simply a list of symbols. Symbols come in two delectable flavors:
+
+  Restricting heads to a single symbol is a defining feature of context-free grammars. More powerful formalisms like unrestricted grammars allow a sequence of symbols in the head as well as in the body.
+
+  A terminal is a letter from the grammar’s alphabet. You can think of it like a literal value. In the syntactic grammar we’re defining, the terminals are individual lexemes—tokens coming from the scanner like if or 1234.
+
+  These are called “terminals”, in the sense of an “end point” because they don’t lead to any further “moves” in the game. You simply produce that one symbol.
+
+  A nonterminal is a named reference to another rule in the grammar. It means “play that rule and insert whatever it produces here”. In this way, the grammar composes.
+
+  There is one last refinement: you may have multiple rules with the same name. When you reach a nonterminal with that name, you are allowed to pick any of the rules for it, whichever floats your boat.
+
+  To make this concrete, we need a way to write down these production rules. People have been trying to crystallize grammar all the way back to Pāṇini’s Ashtadhyayi, which codified Sanskrit grammar a mere couple thousand years ago. Not much progress happened until John Backus and company needed a notation for specifying ALGOL 58 and came up with Backus-Naur form (BNF). Since then, nearly everyone uses some flavor of BNF, tweaked to their own tastes.
+
+  I tried to come up with something clean. Each rule is a name, followed by an arrow (→), followed by a sequence of symbols, and finally ending with a semicolon (;). Terminals are quoted strings, and nonterminals are lowercase words.
+</p>
+
+<p>
+breakfast  → protein "with" breakfast "on the side" ;
+breakfast  → protein ;
+breakfast  → bread ;
+
+protein    → crispiness "crispy" "bacon" ;
+protein    → "sausage" ;
+protein    → cooked "eggs" ;
+
+crispiness → "really" ;
+crispiness → "really" crispiness ;
+
+cooked     → "scrambled" ;
+cooked     → "poached" ;
+cooked     → "fried" ;
+
+bread      → "toast" ;
+bread      → "biscuits" ;
+bread      → "English muffin" ;
+5 . 1 . 2Enhancing our notation
+Stuffing an infinite set of strings in a handful of rules is pretty fantastic, but let’s take it further. Our notation works, but it’s tedious. So, like any good language designer, we’ll sprinkle a little syntactic sugar on top—some extra convenience notation. In addition to terminals and nonterminals, we’ll allow a few other kinds of expressions in the body of a rule:
+
+Instead of repeating the rule name each time we want to add another production for it, we’ll allow a series of productions separated by a pipe (|).
+
+bread → "toast" | "biscuits" | "English muffin" ;
+Further, we’ll allow parentheses for grouping and then allow | within that to select one from a series of options within the middle of a production.
+
+protein → ( "scrambled" | "poached" | "fried" ) "eggs" ;
+Using recursion to support repeated sequences of symbols has a certain appealing purity, but it’s kind of a chore to make a separate named sub-rule each time we want to loop. So, we also use a postfix * to allow the previous symbol or group to be repeated zero or more times.
+
+crispiness → "really" "really"* ;
+This is how the Scheme programming language works. It has no built-in looping functionality at all. Instead, all repetition is expressed in terms of recursion.
+
+A postfix + is similar, but requires the preceding production to appear at least once.
+
+crispiness → "really"+ ;
+A postfix ? is for an optional production. The thing before it can appear zero or one time, but not more.
+
+breakfast → protein ( "with" breakfast "on the side" )? ;
+With all of those syntactic niceties, our breakfast grammar condenses down to:
+
+breakfast → protein ( "with" breakfast "on the side" )?
+          | bread ;
+
+protein   → "really"+ "crispy" "bacon"
+          | "sausage"
+          | ( "scrambled" | "poached" | "fried" ) "eggs" ;
+
+bread     → "toast" | "biscuits" | "English muffin" ;
+
+
+</p>
+
+
+<h3>Lox</h3>
+
+<!--
+// Your first Lox program!
+print "Hello, world!";
+
+
+// types
+
+// booleans
+true;  // Not false.
+false; // Not *not* false.
+
+// numbers (double-precision floating point)
+1234;  // An integer.
+12.34; // A decimal number.
+
+// strings
+"I am a string";
+"";    // The empty string.
+
+// null
+Nil;
+
+
+// expressions
+
+// arithmetic
+add + me;
+subtract - me;
+multiply * me;
+divide / me;
+-negateMe;
+
+// concatenation
+"abc" + "def";
+
+// comparison
+less < than;
+lessThan <= orEqual;
+greater > than;
+greaterThan >= orEqual;
+
+// equality
+1 == 2;         // false
+"cat" != "dog"; // true
+314 == "pi"; // false (values of different types are never equivalent)
+123 == "123"; // false
+
+// logical operators
+!true;  // false.
+!false; // true.
+true and false; // false.
+true and true;  // true.
+false or false; // false.
+true or false;  // true.
+
+
+The and and or operators really are control flow constructs in the guise of expressions. An and expression determines if two values are both true. It returns the left operand if it’s false, or the right operand otherwise. And an or expression determines if either of two values (or both) are true. It returns the left operand if it is true and the right operand otherwise.
+
+The reason and and or are like control flow structures is that they short-circuit. Not only does and return the left operand if it is false, it doesn’t even evaluate the right one in that case. Conversely, if the left operand of an or is true, the right is skipped.
+
+
+// statements
+print "Hello, world!";
+
+"some expression";
+
+{
+  print "One statement.";
+  print "Two statements.";
+}
+
+An expression followed by a semicolon (;) promotes the expression to statement-hood. This is called an expression statement.
+
+
+// variables
+
+var imAVariable = "here is my value";
+var iAmNil;
+
+var breakfast = "bagels";
+print breakfast; // "bagels".
+breakfast = "beignets";
+print breakfast; // "beignets".
+
+
+// control flow
+
+if (condition) {
+  print "yes";
+} else {
+  print "no";
+}
+
+var a = 1;
+while (a < 10) {
+  print a;
+  a = a + 1;
+}
+
+for (var a = 1; a < 10; a = a + 1) {
+  print a;
+}
+
+
+// functions
+
+makeBreakfast(bacon, eggs, toast);
+makeBreakfast();
+
+fun printSum(a, b) {
+  print a + b;
+}
+
+fun returnSum(a, b) {
+  return a + b;
+}
+
+If execution reaches the end of the block without hitting a return, it implicitly returns nil.
+
+
+// first class functions
+
+fun addPair(a, b) {
+  return a + b;
+}
+
+fun identity(a) {
+  return a;
+}
+
+print identity(addPair)(1, 2); // Prints "3".
+
+Functions are first class in Lox, which just means they are real values that you can get a reference to, store in variables, pass around, etc.
+
+
+// closures
+
+fun outerFunction() {
+  fun localFunction() {
+    print "I'm local!";
+  }
+
+  localFunction();
+}
+
+fun returnFunction() {
+  var outside = "outside";
+
+  fun inner() {
+    print outside;
+  }
+
+  return inner;
+}
+
+var fn = returnFunction();
+fn();
+
+Here, inner() accesses a local variable declared outside of its body in the surrounding function. For that to work, inner() has to “hold on” to references to any surrounding variables that it uses so that they stay around even after the outer function has returned. We call functions that do this closures.
+
+As you can imagine, implementing these adds some complexity because we can no longer assume variable scope works strictly like a stack where local variables evaporate the moment the function returns.
+
+
+// classes
+
+class Breakfast {
+  cook() {
+    print "Eggs a-fryin'!";
+  }
+
+  serve(who) {
+    print "Enjoy your breakfast, " + who + ".";
+  }
+}
+
+// Store it in variables.
+var someVariable = Breakfast;
+
+// Pass it to functions.
+someFunction(Breakfast);
+
+In class-based languages, there are two core concepts: instances and classes. Instances store the state for each object and have a reference to the instance’s class. Classes contain the methods and inheritance chain. To call a method on an instance, there is always a level of indirection. You look up the instance’s class and then you find the method there:
+
+In a statically typed language like C++, method lookup typically happens at compile time based on the static type of the instance, giving you static dispatch. In contrast, dynamic dispatch looks up the class of the actual instance object at runtime. This is how virtual methods in statically typed languages and all methods in a dynamically typed language like Lox work.
+
+
+// instantiation
+
+var breakfast = Breakfast();
+print breakfast; // "Breakfast instance".
+
+breakfast.meat = "sausage";
+breakfast.bread = "sourdough";
+
+class Breakfast {
+  serve(who) {
+    print "Enjoy your " + this.meat + " and " +
+        this.bread + ", " + who + ".";
+  }
+
+  // ...
+}
+
+Lox, like other dynamically typed languages, lets you freely add properties onto objects. Assigning to a field creates it if it doesn’t already exist.
+
+
+// initialization
+
+class Breakfast {
+  init(meat, bread) {
+    this.meat = meat;
+    this.bread = bread;
+  }
+
+  // ...
+}
+
+var baconAndToast = Breakfast("bacon", "toast");
+baconAndToast.serve("Dear Reader");
+
+Part of encapsulating data within an object is ensuring the object is in a valid state when it’s created. To do that, you can define an initializer. If your class has a method named init(), it is called automatically when the object is constructed. Any parameters passed to the class are forwarded to its initializer.
+
+
+// inheritance
+
+class Brunch < Breakfast {
+  drink() {
+    print "How about a Bloody Mary?";
+  }
+}
+
+class Brunch < Breakfast {
+  init(meat, bread, drink) {
+    super.init(meat, bread);
+    this.drink = drink;
+  }
+}
+
+var benedict = Brunch("ham", "English muffin");
+benedict.serve("Noble Reader");
+
+Every method defined in the superclass is also available to its subclasses. Even the init() method gets inherited. In practice, the subclass usually wants to define its own init() method too. But the original one also needs to be called so that the superclass can maintain its state. We need some way to call a method on our own instance without hitting our own methods. As in Java, you use super for that.
+
+// standard library
+clock()
+-->
+
+
+<h3>PART II</h3>
+
+<!--
+  SCANNER
+
+  The start and current fields are offsets that index into the string. The start field points to the first character in the lexeme being scanned, and current points at the character currently being considered. The line field tracks what source line current is on so we can produce tokens that know their location.
+
+  Note also that we keep scanning. There may be other errors later in the program. It gives our users a better experience if we detect as many of those as possible in one go. Otherwise, they see one tiny error and fix it, only to have the next error appear, and so on. Syntax error Whac-A-Mole is no fun.
+
+  We have single-character lexemes working, but that doesn’t cover all of Lox’s operators. What about !? It’s a single character, right? Sometimes, yes, but if the very next character is an equals sign, then we should instead create a != lexeme. Note that the ! and = are not two independent operators. You can’t write ! = in Lox and have it behave like an inequality operator. That’s why we need to scan != as a single lexeme. Likewise, <, >, and = can all be followed by = to create the other equality and comparison operators.
+
+  We’re still missing one operator: / for division. That character needs a little special handling because comments begin with a slash too. This is similar to the other two-character operators, except that when we find a second /, we don’t end the token yet. Instead, we keep consuming characters until we reach the end of the line.
+
+  This is our general strategy for handling longer lexemes. After we detect the beginning of one, we shunt over to some lexeme-specific code that keeps eating characters until it sees the end.
+
+  For no particular reason, Lox supports multi-line strings. There are pros and cons to that, but prohibiting them was a little more complex than allowing them, so I left them in. That does mean we also need to update line when we hit a newline inside a string.
+
+  Finally, the last interesting bit is that when we create the token, we also produce the actual string value that will be used later by the interpreter. Here, that conversion only requires a substring() to strip off the surrounding quotes. If Lox supported escape sequences like \n, we’d unescape those here.
+
+  Consider what would happen if a user named a variable orchid. The scanner would see the first two letters, or, and immediately emit an or keyword token. This gets us to an important principle called maximal munch. When two lexical grammar rules can both match a chunk of code that the scanner is looking at, whichever one matches the most characters wins.
+
+  That rule states that if we can match orchid as an identifier and or as a keyword, then the former wins. This is also why we tacitly assumed, previously, that <= should be scanned as a single <= token and not < followed by =.
+
+  Maximal munch means we can’t easily detect a reserved word until we’ve reached the end of what might instead be an identifier. After all, a reserved word is an identifier, it’s just one that has been claimed by the language for its own use. That’s where the term reserved word comes from.
+-->
+
+
+<!-- 
+  PARSER
+
+  1 + 2 * 3 - 4
+
+  One way to visualize that precedence is using a tree. Leaf nodes are numbers, and interior nodes are operators with branches for each of their operands.
+
+  In order to evaluate an arithmetic node, you need to know the numeric values of its subtrees, so you have to evaluate those first. That means working your way from the leaves up to the root—a post-order traversal:
+
+
+
+  A Grammar for Lox expressions
+
+  expression     → literal
+               | unary
+               | binary
+               | grouping ;
+
+literal        → NUMBER | STRING | "true" | "false" | "nil" ;
+grouping       → "(" expression ")" ;
+unary          → ( "-" | "!" ) expression ;
+binary         → expression operator expression ;
+operator       → "==" | "!=" | "<" | "<=" | ">" | ">="
+               | "+"  | "-"  | "*" | "/" ;
+There’s one bit of extra metasyntax here. In addition to quoted strings for terminals that match exact lexemes, we CAPITALIZE terminals that are a single lexeme whose text representation may vary. NUMBER is any number literal, and STRING is any string literal. Later, we’ll do the same for IDENTIFIER.
+
+
+
+   Given a string—a series of tokens—we map those tokens to terminals in the grammar to figure out which rules could have generated that string.
+
+   The “could have” part is interesting. It’s entirely possible to create a grammar that is ambiguous, where different choices of productions can lead to the same string. When you’re using the grammar to generate strings, that doesn’t matter much. Once you have the string, who cares how you got to it?
+
+  When parsing, ambiguity means the parser may misunderstand the user’s code. As we parse, we aren’t just determining if the string is valid Lox code, we’re also tracking which rules match which parts of it so that we know what part of the language each token belongs to.
+
+  The way mathematicians have addressed this ambiguity since blackboards were first invented is by defining rules for precedence and associativity.
+
+Precedence determines which operator is evaluated first in an expression containing a mixture of different operators. Precedence rules tell us that we evaluate the / before the - in the above example. Operators with higher precedence are evaluated before operators with lower precedence. Equivalently, higher precedence operators are said to “bind tighter”.
+
+Associativity determines which operator is evaluated first in a series of the same operator. When an operator is left-associative (think “left-to-right”), operators on the left evaluate before those on the right. Since - is left-associative, this expression:
+
+5 - 3 - 1
+is equivalent to:
+
+(5 - 3) - 1
+Assignment, on the other hand, is right-associative. This:
+
+a = b = c
+is equivalent to:
+
+a = (b = c)
+While not common these days, some languages specify that certain pairs of operators have no relative precedence. That makes it a syntax error to mix those operators in an expression without using explicit grouping.
+
+Without well-defined precedence and associativity, an expression that uses multiple operators is ambiguous—it can be parsed into different syntax trees, which could in turn evaluate to different results. 
+
+Name	Operators	Associates
+Equality	== !=	Left
+Comparison	> >= < <=	Left
+Term	- +	Left
+Factor	/ *	Left
+Unary	! -	Right
+
+Right now, the grammar stuffs all expression types into a single expression rule. That same rule is used as the non-terminal for operands, which lets the grammar accept any kind of expression as a subexpression, regardless of whether the precedence rules allow it.
+
+We fix that by stratifying the grammar. We define a separate rule for each precedence level.
+
+expression     → ...
+equality       → ...
+comparison     → ...
+term           → ...
+factor         → ...
+unary          → ...
+primary        → ...
+
+Instead of baking precedence right into the grammar rules, some parser generators let you keep the same ambiguous-but-simple grammar and then add in a little explicit operator precedence metadata on the side in order to disambiguate.
+
+Each rule here only matches expressions at its precedence level or higher. For example, unary matches a unary expression like !negated or a primary expression like 1234. And term can match 1 + 2 but also 3 * 4 / 5. The final primary rule covers the highest-precedence forms—literals and parenthesized expressions.
+e use the same structure for all of the other binary operator precedence levels, giving us this complete expression grammar:
+
+expression     → equality ;
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           → factor ( ( "-" | "+" ) factor )* ;
+factor         → unary ( ( "/" | "*" ) unary )* ;
+unary          → ( "!" | "-" ) unary
+               | primary ;
+primary        → NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")" ;
+
+ -->
+
+
+
+

@@ -1,0 +1,246 @@
+---
+title: "Visitor Pattern"
+date: 2020-09-29
+draft: false
+---
+
+
+<h3>Description</h3>
+
+<!--
+  Use the Visitor Pattern when you want to
+add capabilities to a composite of objects
+and encapsulation is not important.
+
+
+-->
+
+
+<h3>Aside: Dynamic Dispatch</h3>
+
+<!--
+class SpaceShip {
+  public string getShipType() {
+    return "SpaceShip";
+  }
+}
+
+class ApolloSpaceCraft extends ShapeShip {
+  public String getShipType() {
+    return "ApolloSpaceShip";
+  }
+}
+
+SpaceShip ship = new ApolloSpaceCraft();
+System.out.println(ship.getShipType());  // ApolloSpaceCraft
+
+- The actual method implementation to be called is chosen at runtime based solely on the actual type of ship. So, only the type of a single object is used to select the method, hence the name single dispatch.
+- “Single dispatch” is one form of “dynamic dispatch”, i.e. the method is chosen at runtime. If the method is chosen at compile time (true for all non-virtual methods), it’s called “static dispatch”.
+
+public class Asteroid {
+  public void CollideWith(SpaceShip ship) {
+    System.out.println("Asteroid hit a SpaceShip");
+  }
+
+  public void CollideWith(ApolloSpacecraft ship) {
+    System.out.println("Asteroid hit an ApolloSpacecraft");
+  }
+};
+ 
+public class ExplodingAsteroid extends Asteroid {
+  public override void CollideWith(SpaceShip ship) {
+    System.out.println("ExplodingAsteroid hit a SpaceShip");
+  }
+
+  public override void CollideWith(ApolloSpacecraft ship) {
+    System.out.println("ExplodingAsteroid hit an ApolloSpacecraft");
+  }
+};
+
+Asteroid theAsteroid = new Asteroid();
+ExplodingAsteroid theExplodingAsteroid = new ExplodingAsteroid();
+SpaceShip theSpaceShip = new SpaceShip();
+ApolloSpacecraft theApolloSpacecraft = new ApolloSpacecraft();
+
+theAsteroid.CollideWith(theSpaceShip); 
+theAsteroid.CollideWith(theApolloSpacecraft);
+theExplodingAsteroid.CollideWith(theSpaceShip); 
+theExplodingAsteroid.CollideWith(theApolloSpacecraft);
+
+Asteroid hit a SpaceShip
+Asteroid hit an ApolloSpacecraft
+ExplodingAsteroid hit a SpaceShip
+ExplodingAsteroid hit an ApolloSpacecraft
+
+
+Asteroid theExplodingAsteroidRef = new ExplodingAsteroid();
+SpaceShip theApolloSpacecraftRef = new ApolloSpacecraft();
+theExplodingAsteroidRef.CollideWith(theApolloSpacecraftRef);
+
+The desired result here would be “ExplodingAsteroid hit an ApolloSpacecraft” but instead we get “ExplodingAsteroid hit a SpaceShip“.
+
+The problem is that C# (and Java, C++, …) only supports single dispatch, but not double dispatch. The method chosen is only based on theExplodingAsteroidRef, but not on theExplodingAsteroidRef and theApolloSpacecraftRef (which would be double dispatch).
+-->
+
+<!--
+- Dynamic dispatch is the process of selecting which implementation of a method to call at runtime when the types of the object on which the method was invoked and the passed parameters are known.
+- This contrasts with static dispatch in which the implementation is selected at compile time.
+- The choice of which version of a method to call may be based either on a single object (single dispatch) or on a combination of objects (multiple dispatch).
+
+// single dispatch
+
+interface Animal {
+
+  void speak();
+  
+  void speak(Dog dog);
+
+  void speak(Cat cat);
+}
+
+class Dog {
+
+  public void speak() {
+    System.out.println("woof");
+  }
+
+  public void speak(Dog dog) {
+    System.out.println("dog barks at dog");
+  }
+
+  public void speak(Cat cat) {
+    System.out.println("dog barks at cat");
+  }
+}
+
+class Cat {
+
+  public void speak() {
+    System.out.println("meow");
+  }
+
+  public void speak(Dog dog) {
+    System.out.println("cat meows at dog");
+  }
+
+  public void speak(Cat cat) {
+    System.out.println("cat meows at cat");
+  }
+}
+
+Animal dog = new Dog();
+Animal cat = new Cat();
+
+dog.speak();  // woof
+
+dog.speak(cat);  // error
+cat.speak(cat);  // error
+
+- Most object-oriented languages support single dispatch which is to say they select the method implementation solely based on the type of the object on which the method was invoked and not the arguments.
+
+
+
+
+
+-->
+
+
+
+
+
+<h3>Example</h3>
+
+
+interface CreditCard {
+  
+  String getName();
+  void accept(OfferVisitor visitor);
+}
+
+class BronzeCreditCard implements CreditCard {
+
+  public String getName() {
+    return "bronze";
+  }
+  
+  public void accept(OfferVisitor visitor) {
+    visitor.visitBronzeCreditCard(this);
+  }
+}
+
+class SilverCreditCard implements CreditCard {
+
+  public String getName() {
+    return "silver";
+  }
+
+  public void accept(OfferVisitor visitor) {
+    visitor.visitSilverCreditCard(this);
+  }
+}
+
+class GoldCreditCard implements CreditCard {
+
+  public String getName() {
+    return "gold";
+  }
+
+  public void accept(OfferVisitor visitor) {
+    visitor.visitGoldCreditCard(this);
+  }
+}
+
+interface OfferVisitor {
+
+  void visitBronzeCreditCard(BronzeCreditCard bronzeCreditCard);
+  void visitSilverCreditCard(SilverCreditCard silverCreditCard);
+  void visitGoldCreditCard(GoldCreditCard goldCreditCard);
+}
+
+class GasOfferVisitor implements OfferVisitor {
+  public void visitBronzeCreditCard(BronzeCreditCard bronzeCreditCard) {
+    System.out.println("Computing gas offer for bronze credit card");
+  }
+
+  public void visitSilverCreditCard(SilverCreditCard silverCreditCard) {
+    System.out.println("Computing gas offer for bronze credit card");
+  }
+
+  public void visitGoldCreditCard(GoldCreditCard goldCreditCard) {
+    System.out.println("Computing gas offer for bronze credit card");
+  }
+}
+
+class HotelOfferVisitor implements OfferVisitor {
+  public void visitBronzeCreditCard(BronzeCreditCard bronzeCreditCard) {
+    System.out.println("Computing hotel offer for bronze credit card");
+  }
+
+  public void visitSilverCreditCard(SilverCreditCard silverCreditCard) {
+    System.out.println("Computing hotel offer for bronze credit card");
+  }
+
+  public void visitGoldCreditCard(GoldCreditCard goldCreditCard) {
+    System.out.println("Computing hotel offer for bronze credit card");
+  }
+}
+
+public class Example {
+
+  public static void main(String[] args) {
+
+    CreditCard creditCard = new GoldCreditCard();
+    OfferVisitor offerVisitor = new GasOfferVisitor();
+
+    creditCard.accept(offerVisitor);
+  }
+}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href=""></a>
+  </li>
+</ul>

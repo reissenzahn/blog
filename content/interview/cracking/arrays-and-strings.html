@@ -1,0 +1,86 @@
+---
+title: "Arrays and Strings"
+date: 2021-12-09
+draft: false
+---
+
+
+
+<h3>1.1 Is Unique</h3>
+
+<p>
+  Question: Implement an algorithm to determine if a string has all unique characters.
+</p>
+
+<p>
+  Clarification: Is the string ASCII or unicode?
+</p>
+
+<p>
+  Follow up: What if you cannot use additional data structures?
+</p>
+
+<p>
+  We would then compare every character of the string to every other character of the string. This would take O(n^2) time and O(1) space.
+</p>
+
+<p>
+  Alternatively, if we can modify the input string then we could sort in the string in O(nlog(n)) time and then linearly check the string for neighboring characters that are identical.
+</p>
+
+
+<h3>1.2 Check Permutation</h3>
+
+<p>
+  Question: Given two strings, write a method to decide if one is a permutation of the other.
+</p>
+
+<p>
+  Clarification: Is the permutation comparison case-sensitive? Is whitespace significant.
+</p>
+
+<h3>1.3 URLify</h3>
+
+<p>
+  Question: Write a method to replace all spaces in a string with '%20'. You may assume that the string has sufficient space at the end to hold the additional characters, and that you are given the "true" length of the string.
+</p>
+
+
+<h3>1.4 Palindrome Permutation</h3>
+
+<p>
+  Question: Given a string, write a function to check if it is a permutation of a palindrome. The palindrome does not need to be limited to just dictionary words. 
+</p>
+
+
+
+<!-- 
+  Picture an integer like 00010000. We could of course shift the integer repeatedly to check that there's only a single 1. Alternatively, if we subtract 1 from the number, we'll get 00001111. What's notable about this is that there is no overlap between the numbers (as opposed to say 00101000, which, when we subtract 1 from, we get 00100111.) So, we can check to see that a number has exactly one 1 because if we subtract 1 from it and then AND it with the new number, we should get 0.
+
+  00010000 - 1 = 00001111
+  00010000 & 00001111 = 0 
+ -->
+
+
+<h3>1.5 One Away</h3>
+
+<p>
+  There are three types of edits that can be performed on strings: insert a character, remove a character, or replace a character. Given two strings, write a function to check if they are one edit (or zero edits) away. 
+</p>
+
+
+
+<h3>1.6 String Compression</h3>
+
+<p>
+  Question: Implement a method to perform basic string compression using the counts of repeated characters. For example, the string aabcccccaaa would become a2blc5a3. If the "compressed" string would not become smaller than the original string, your method should return the original string. You can assume the string has only uppercase and lowercase letters (a - z).
+</p>
+
+
+<h3>1.7 Rotate Matrix</h3>
+
+<p>
+  Question: Given an image represented by an NxN matrix, where each pixel in the image is 4 bytes, write a method to rotate the image by 90 degrees. Can you do this in place?
+</p>
+
+

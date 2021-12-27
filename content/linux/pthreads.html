@@ -1,0 +1,133 @@
+---
+title: "Pthreads"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  A single process can contain multiple threads all of which are independently and concurrently executing the same program. Threads have their own stack but share the same global memory including the initialized data, uninitialized data and heap segments. On a multi-processor system, multiple threads can execute in parallel.
+</p>
+
+<!-- 
+  In a multithreaded process, multiple threads are concurrently executing the same
+program. All of the threads share the same global and heap variables, but each
+thread has a private stack for local variables. The threads in a process also share a number of other attributes, including process ID, open file descriptors, signal dispositions, current working directory, and resource limits.
+ -->
+
+
+<h3>Thread Creation</h3>
+
+<p>
+  When a program is started, the resulting process consists of a single thread called the main thread. The pthread_create() function creates a new thread which commences execution by calling the function identified by start with the argument arg. The thread that calls pthread_create() continues execution with the next statement that follows the call. Typically, arg points to a global or heap variable, but it can also be specified as NULL.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start)(void *), void *arg);{{% /code %}}
+
+<p>
+  The thread argument points to a buffer of type pthread_t into which the unique identifier for this thread is copied before pthread_create() returns. This identifier can be used in later Pthreads calls to refer to the thread. The attr argument is a pointer to a pthread_attr_t object that specifies various attributes for the new thread. If attr is specified as NULL, then the thread is created with various default attributes.
+</p>
+
+
+<h3>Thread Identifiers</h3>
+
+<p>
+  Each thread within a process is uniquely identified by a thread ID which is returned by pthread_create(). A thread can obtain its own ID using pthread_self(). The pthread_equal() function allows us check whether two thread IDs are the same. This returns a nonzero value if t1 and t2 are equal and otherwise 0.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+pthread_t pthread_self(void);
+
+int pthread_equal(pthread_t t1, pthread_t t2);{{% /code %}}
+
+
+<h3>Thread Termination</h3>
+
+<p>
+  The execution of a thread terminates if the start function performs a return specifying a return value for the thread. Equivalently, the thread can call pthread_exit() with the return value specified by the retval argument. The value used as the return value should not be located on the stack of the thread as the contents of that stack become undefined on thread termination. Finally, if any thread calls exit() or the main thread performs a return this causes all threads to terminate immediately.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+void pthread_exit(void *retval);{{% /code %}}
+
+
+<h3>Joining with a Terminated Thread</h3>
+
+<p>
+  The pthread_join() function waits for the thread identified by thread to terminate. if that thread has already terminated then pthread_join() returns immediately. If retval is a non-NULL pointer then it receives a copy of the return value of the terminated thread. If a thread is not detached then we must join with it using pthread_join(). If we fail to do this, then, when the thread terminates, it produces the thread equivalent of a zombie process.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_join(pthread_t thread, void **retval);{{% /code %}}
+
+
+<h3>Detaching a Thread</h3>
+
+<p>
+  By default, a thread is joinable meaning that when it terminates another thread can join with it using pthread_join(). If we simply want the system to automatically clean up and remove the thread when it terminates we can call pthread_detach() to mark it as detached. Once a thread has been detached it is no longer possible to join with it.
+</p>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_detach(pthread_t thread);{{% /code %}}
+
+
+<h3></h3>
+
+<!-- 
+  Mutexes allow threads to synchronize
+their use of a shared resource, so that, for example, one thread doesn’t try to access
+a shared variable at the same time as another thread is modifying it. Condition variables perform a complementary task: they allow threads to inform each other that a
+shared variable (or other shared resource) has changed state.
+
+A mutex has two states: locked and unlocked. At any moment, at most one
+thread may hold the lock on a mutex. Attempting to lock a mutex that is already
+locked either blocks or fails with an error, depending on the method used to place
+the lock.
+When a thread locks a mutex, it becomes the owner of that mutex. Only the
+mutex owner can unlock the mutex. This property improves the structure of code
+that uses mutexes and also allows for some optimizations in the implementation of
+mutexes. Because of this ownership property, the terms acquire and release are
+sometimes used synonymously for lock and unlock.
+ -->
+
+
+<h3>Return Values and errno with Threads</h3>
+
+<p>
+  In threaded programs, each thread has it sown errno value and so error reporting is unchanged. Indeed, the traditional method of returning status from system calls is to return 0 on success and -1 on error, with errno being set to indicate the error. However, all Pthreads functions return 0 on success or a positive value on failure. The failure value is one of the same values that can be placed in errno by traditional system calls.
+</p>
+
+
+
+<!-- 
+  Asynchronous: Any two operations are asynchronous when they can proceed independently of each other.
+
+  Concurrency: Used to refer to things that appear to happen at the same time but which may occur serially. Concurrent operations may be arbitrarily interleaved so that they make progress independently.
+
+  Parallelism: Concurrent sequences that proceed simultaneously. True parallelism can occur only on a multiprocessor system but concurrency can occur on both uniprocessor and multiprocessor systems.
+
+  Thread-safe: Code can be called from multiple threads without destructive results. Functions can be made thread-safe by serializing the entire function so that only one thread can truly perform the function at a time. More usefully, thread-safe functions can be broken down into smaller critical sections. That allows more than one thread to execute within the function although not within the same part.
+
+  Reentrant: Sometimes used to mean efficiently thread-safe. That is, the code was made thread-safe by some more sophisticated measures than converting it into a single serial region.
+
+  Synchronization: Provides mechanisms for concurrent execution contexts to coordinate their use of shared resources. A mutex provides a mechanism to prevent threads from colliding unexpectedly, and a condition variable allows a thread, once it has avoided such a collision, to wait until it is safe to proceed.
+ -->
+
+ <!-- 
+  pthread_create creates a thread running the routine specified in the third argument (alarm_thread), returning an identifier for the new thread to the variable referenced by thread.
+
+  pthread_detach allows Pthreads to reclaim the thread’s resources as soon as it terminates.
+  
+  pthread_exit terminates the calling thread.
+  
+  pthread_self returns the calling thread’s identifier.
+-->
+
+
+
+

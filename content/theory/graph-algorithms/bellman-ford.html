@@ -1,0 +1,122 @@
+---
+title: "Bellman-Ford Algorithm"
+date: 2021-11-24
+draft: false
+---
+
+<p>
+  The Bellman–Ford algorithm computes the shortest paths from a single source vertex to all of the other vertices in a weighted digraph. While it has worse time complexity than Dijkstra's algorithm, it is capable of handling graphs in which there are negative edge weights.
+</p>
+
+
+<h3>Procedure</h3>
+
+<p>
+  The algorithm proceeds by repeatedly replacing approximations to the correct distance with better approximations until they eventually reach the solution. In each of these repetitions, the number of vertices with correctly calculated distances grows, from which it follows that eventually all vertices will have their correct distances.
+</p>
+
+<ol>
+  <li>
+    Initialize a distance array with the distance to all nodes set to infinity. Set the distance to the start node to 0.
+  </li>
+  <li>
+    Iterate over each edge in the graph n - 1 times where n is the number of vertices in the graph.
+  </li>
+  <li>
+    When considering each edge (u, v), if the distance from u plus the weight of the edge is less than the current distance to v then set the distance to v as the sum of the distance to u plus the weight of the edge.
+  </li>
+  <li>
+    Loop over all the edges a final time and if any distance is updated then a path of length n edges has been found which can only occur if at least one negative cycle exists in the graph.
+  </li>
+</ol>
+
+<!-- TODO: think about this -->
+<p>
+  Notice that on the i-th time all the edges are scanned, the algorithm finds all shortest paths of at most length i edges (and possibly some paths longer than i edges). Since the longest possible path without a cycle can be n - 1 edges, the edges must be scanned n - 1 times to ensure the shortest path has been found for all nodes.
+</p>
+
+
+
+<h3>Negative Cycles</h3>
+
+<p>
+  If a graph contains a negative cycle (i.e. a cycle whose edges sum to a negative value) that is reachable from the source then there is no least cost path as any path that has a point on the negative cycle can be made cheaper by one more walk around the negative cycle. In such a case, the Bellman-Ford algorithm terminates which allows it to be used for detecting such negative cycles.
+</p>
+
+
+<h3>Complexity</h3>
+
+<p>
+  The Bellman–Ford algorithm has worst-case time complexity of O(nm) where n is the number of vertices in the graph and m is the number of edges. The worst-case space complexity is O(n).
+</p>
+
+
+<h3>Pseudocode</h3>
+
+{{% code text %}}procedure bellman-ford(graph, n, start):
+  dist = new Array(n)
+  dist = [∞, ∞, ..., ∞]
+
+  dist[start] = 0
+
+  for i = 1 to n - 1:
+    for edge in graph.edges:
+      if (dist[edge.from] + edge.weight < dist[edge.to]):
+        dist[edge.to] = dist[edge.from] + edge.weight
+  
+  for i = 1 to n - 1:
+    for edge in graph.edges:
+      if (dist[edge.from] + edge.weight < dist[edge.to]):
+        throw new Error("negative cycle detected!")
+        return
+  
+  return dist{{% /code %}}
+
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/theory/graph-algorithms/BellmanFord.java" lang="java" %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm">Bellman-Ford Algorithm (Wikipedia)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=lyw4FaxrwHg">Bellman-Ford Algorithm (William Fiset)</a>
+  </li>
+</ul>
+
+
+<!-- 
+// int n = 9;
+// List<List<Edge>> graph = new ArrayList<>(9);
+
+// for (int i = 0; i < n; i++) {
+//   graph.add(new ArrayList<>());
+// }
+
+// graph.get(0).add(new Edge(0, 1, 1));
+// graph.get(1).add(new Edge(1, 2, 1));
+// graph.get(2).add(new Edge(2, 4, 1));
+// graph.get(4).add(new Edge(4, 3, -3));
+// graph.get(3).add(new Edge(3, 2, 1));
+// graph.get(1).add(new Edge(1, 5, 4));
+// graph.get(1).add(new Edge(1, 6, 4));
+// graph.get(5).add(new Edge(5, 6, 5));
+// graph.get(6).add(new Edge(6, 7, 4));
+// graph.get(5).add(new Edge(5, 7, 3));
+
+// Output:
+// The cost to get from node 0 to 0 is 0.00
+// The cost to get from node 0 to 1 is 1.00
+// The cost to get from node 0 to 2 is -Infinity
+// The cost to get from node 0 to 3 is -Infinity
+// The cost to get from node 0 to 4 is -Infinity
+// The cost to get from node 0 to 5 is 5.00
+// The cost to get from node 0 to 6 is 5.00
+// The cost to get from node 0 to 7 is 8.00
+// The cost to get from node 0 to 8 is Infinity
+ -->

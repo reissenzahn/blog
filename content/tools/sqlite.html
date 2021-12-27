@@ -1,0 +1,676 @@
+---
+title: "SQLite"
+date: 2021-09-29
+draft: false
+---
+
+<!-- 
+  NEXT UP
+
+  - Learning SQL
+  - https://github.com/jpwhite3/northwind-SQLite3
+  - https://dataedo.com/asset/img/blog/sakila_database_erd.png
+  - https://www.tutorials24x7.com/uploads/2019-11-29/files/tutorials24x7-blog-database.png
+  - https://stackoverflow.com/questions/13565089/sql-many-to-many-select-help-needed
+-->
+
+<ul>
+  <li>
+    <a href="#terminology">Terminology</a>
+  </li>
+  <li>
+    <a href="#commands">Commands</a>
+  </li>
+  <li>
+    <a href="#data-types">Data Types</a>
+  </li>
+  <li>
+    <a href="#tables">Tables</a>
+  </li>
+  <li>
+    <a href="#contraints">Constraints</a>
+  </li>
+  <li>
+    <a href="insert-update-delete">Insert, Update and Delete</a>
+  </li>
+  <li>
+    <a href="queries">Queries</a>
+  </li>
+  <li>
+    <a href="operators">Operators</a>
+  </li>
+</ul>
+
+
+<!-- #region terminology -->
+<h3 id="terminology">Terminology</h3>
+
+<ul>
+  <li>
+    Data is organized into tables that represent a collection of particular entities.
+  </li>
+  <li>
+    The columns of a table represent the attributes of the entity that table represents.
+  </li>
+  <li>
+    Each row in the table represents an individual entity and the values in the row correspond to the attributes of that entity.
+  </li>
+  <li>
+    A primary key consists of one or more columns that can be used to uniquely identify each row in a table.
+  </li>
+  <li>
+    A primary key that is composed of two or more columns is called a compound key.
+  </li>
+  <li>
+    A foreign key consists of one or more columns that can be used to identify a row in another table.
+  </li>
+  <li>
+    Normalization is the process of refining a database design to ensure that each independent piece of information (apart from foreign keys) is in only one place.
+  </li>
+  <li>
+    Null is used to indicate the absence of a value and is used when a value is not applicable, unknown or undefined. 
+  </li>
+</ul>
+<!-- #endregion -->
+
+
+<!-- #region commands -->
+<h3 id="commands">Commands</h3>
+
+{{% code text %}}$ sqlite3
+> .open chinook.sqlite
+> .databases
+> .tables
+> .schema Customer
+> .indexes
+> .indexes Customer
+> .headers on
+> .mode table
+> .read commands.sql
+> VACUUM;
+> .quit{{% /code %}}
+<!-- #endregion -->
+
+
+<!-- #region data-types -->
+<h3 id="data-types">Data Types</h3>
+
+{{% code sql %}}SELECT typeof(1), typeof(1.0), typeof('abc'), typeof(x'1000'), typeof(NULL);{{% /code %}}
+
+<ul>
+  <li>
+    {{% inline-code %}}INTEGER{{% /inline-code %}}: signed integer. Use 1 for true and 0 for false. 
+  </li>
+  <li>
+    {{% inline-code %}}REAL{{% /inline-code %}}: floating point value stored as an 8-byte IEEE floating point number.
+  </li>
+  <li>
+    {{% inline-code %}}TEXT{{% /inline-code %}}: text string stored using the database encoding.
+  </li>
+  <li>
+    {{% inline-code %}}BLOB{{% /inline-code %}}: arbitrary binary object.
+  </li>
+  <li>
+    {{% inline-code %}}NULL{{% /inline-code %}}: missing, unknown or undefined value. It is not equal to anything (including itself).
+  </li>
+</ul>
+<!-- #endregion -->
+
+
+<!-- #region tables -->
+<h3 id="tables">Tables</h3>
+
+{{% code sql %}}-- create film table
+CREATE TABLE film (
+  film_id INTEGER PRIMARY KEY NOT NULL,
+  title TEXT NOT NULL,
+  release_year INTEGER,
+  language_id INTEGER,
+  rental_duration INTEGER DEFAULT 3 NOT NULL,
+  rental_rate REAL DEFAULT 4.99 NOT NULL,
+  length INTEGER,
+  rating TEXT CHECK (rating in ('G','PG','PG-13','R','NC-17')),
+  FOREIGN KEY (language_id) REFERENCES language (language_id)
+);
+
+-- add description column
+ALTER TABLE film ADD COLUMN description TEXT;
+
+-- rename column from title to name
+ALTER TABLE film RENAME COLUMN title TO name;
+
+-- drop length column
+ALTER TABLE film DROP COLUMN length;
+
+-- rename table from film to movie
+ALTER TABLE film RENAME TO movie;
+
+-- drop film table
+DROP TABLE IF EXISTS film;
+
+-- drop language table preventing constraint failed error being caused by foreign keys in film table
+PRAGMA foreign_keys = OFF;
+DROP TABLE language;
+UPDATE film SET language_id = NULL;
+PRAGMA foreign_keys = ON;{{% /code %}}
+<!-- #endregion -->
+
+
+<!-- #region constraints -->
+<h3 id="contraints">Constraints</h3>
+
+<ul>
+  <li>
+    {{% inline-code %}}PRIMARY KEY{{% /inline-code %}}: defines a column or group of columns as being used to uniquely identify rows in the table.
+  </li>
+  <li>
+    {{% inline-code %}}NOT NULL{{% /inline-code %}}: values in the column may not be {{% inline-code %}}NULL{{% /inline-code %}}.
+  </li>
+  <li>
+    {{% inline-code %}}UNIQUE{{% /inline-code %}}: values in the column or a group of columns are unique. A unique column can still have multiple NULL values.
+  </li>
+  <li>
+    {{% inline-code %}}DEFAULT{{% /inline-code %}}: Default value to be used when NULL inserted.
+  </li>
+  <li>
+    {{% inline-code %}}CHECK{{% /inline-code %}}: Specify condition to check when a row is inserted or updated.
+  </li>
+  <li>
+    {{% inline-code %}}FOREIGN KEY{{% /inline-code %}}: Specify foreign key constraint.
+  </li>
+</ul>
+<!-- #endregion -->
+
+
+<!-- #region insert-update-delete -->
+<h3 id="insert-update-delete">Insert, Update and Delete</h3>
+
+{{% code sql %}}-- insert row into actor table
+INSERT INTO actor (first_name, last_name)
+VALUES ('Christian', 'Bale');
+
+-- update existing rows in actor table by actor_id
+UPDATE TABLE actor
+SET first_name = 'Nicolas', last_name = 'Cage'
+WHERE actor_id = 3;
+
+-- if a unique or primary key constraint violation occurs then delete the existing row that caused the violation and insert the new row
+INSERT OR REPLACE INTO actor (actor_id, first_name, last_name)
+VALUES (3, 'Nicolas', 'Cage');
+
+-- delete rows by actor_id
+DELETE FROM actor WHERE actor_id = 3;{{% /code %}}
+<!-- #endregion -->
+
+
+<!-- #region queries-->
+<h3 id="queries">Queries</h3>
+
+{{% code sql %}}-- select all columns from film table
+SELECT * FROM film;
+
+-- select list of columns from film table
+SELECT title, description, release_year FROM film;
+
+-- select list of columns with column aliases
+SELECT title, description AS desc, release_year AS year FROM film;
+
+-- select expressions from film table
+SELECT upper(title), rental_rate / 2 AS sale_rate FROM film;
+
+-- select distinct rows from film table
+SELECT DISTINCT * FROM film;
+
+-- select rows ordered by the title column in ascending order
+SELECT * FROM film
+ORDER BY title ASC;
+
+-- rows with the same value for the first column can be further ordered by the additional columns
+SELECT * FROM film
+ORDER BY title ASC, length DESC;
+
+-- constrain number of rows returned to 10
+SELECT * FROM film
+LIMIT 10;
+
+-- constrain rows to 10 starting from offset 5
+SELECT * FROM film
+LIMIT 10 OFFSET 5;
+
+-- filter results based on rating and rental_duration columns
+SELECT * FROM film
+WHERE rating = 'PG' AND rental_duration >= 7;{{% /code %}}
+<!-- #endregion -->
+
+
+<!-- #region sub-queries -->
+<h3 id="sub-queries">Sub-queries</h3>
+
+{{% code sql %}}-- a subquery is a query contained within another query
+SELECT c.last_name || ', ' || c.first_name AS full_name FROM
+  (SELECT first_name, last_name, email
+   FROM customer
+   WHERE first_name = 'JESSIE') c;
+
+-- select all films with a rating that matches any film with PET in the title
+SELECT * FROM film
+WHERE rating in (SELECT rating FROM film WHERE title LIKE '%PET%');
+{{% /code %}}
+<!-- #endregion -->
+
+
+<!-- #region operators -->
+<h3 id="operators">Operators</h3>
+
+{{% code sql %}}-- comparison operators (=, !=, <, >, <=, >=)
+SELECT * FROM customer
+WHERE active = 0;
+
+-- logical operators (AND, OR, NOT)
+SELECT * FROM customer
+WHERE first_name = 'ANDY' OR last_name = 'MARTIN';
+
+-- comparisons involving null (IS NULL, IS NOT NULL)
+SELECT * FROM customer
+WHERE email IS NULL;
+
+-- set and range inclusion (IN, BETWEEN)
+SELECT * FROM customer
+WHERE first_name IN ('ANDY', 'SANDRA', 'ERICA');
+SELECT * FROM customer
+WHERE date(create_date) BETWEEN '2006-02-14' AND '2006-02-15';
+
+-- match case-insensitive pattern (LIKE)
+SELECT * FROM customer
+WHERE last_name LIKE '_A_T%S';{{% /code %}}
+
+<p>
+  In patterns, the % wildcard stands for zero or more characters and the _ wildcard stands for any single character.
+</p>
+<!-- #endregion -->
+
+
+<h3 id="set-operators">Set Operators</h3>
+
+{{% code sql %}}-- 
+{{% /code %}}
+
+<!-- 
+  When performing set operations, the result sets must have the same number of columns and each of these columns must have the same data types.
+ -->
+
+
+
+<h3>Functions</h3>
+
+{{% code sql %}}
+-- count number of rows
+SELECT count(*) FROM table_name;
+
+-- count number of distinct values in column_name
+SELECT count(DISTINCT column_name) FROM table_name;
+
+-- maximum and minimum value of column_name
+SELECT max(column_name), min(column_name) FROM table_name;
+
+-- sum of values in column_name
+SELECT SUM(column_name) FROM table_name;
+
+-- average of values in column_name
+SELECT AVG(column_name) FROM table_name;
+
+-- custom calculations
+SELECT SUM(column_name) * 1.0 / COUNT(*) FROM table_name;
+
+-- uppercase
+SELECT upper(first_name || ' ' || last_name) AS full_name FROM actor;
+
+{{% /code %}}
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- #region joins -->
+<h3>Joins</h3>
+
+{{% code sql %}}-- inner join to match addresses to customers
+SELECT c.first_name, c.last_name, a.address and filter results by postal code
+FROM customer AS c
+  INNER JOIN address AS a
+  ON c.address_id = a.address_id;
+WHERE a.postal_code = 52137;
+
+-- inner join to find all customers who rented a film on 2005-05-31
+SELECT c.first_name, c.last_name, time(r.rental_date) AS rental_time
+FROM customer AS c
+  INNER JOIN rental AS r
+  ON c.customer_id = r.customer_id
+WHERE date(r.rental_date) = '2005-05-31';
+
+-- inner join to find all of the customers who have rented 40 or more films
+SELECT c.first_name, c.last_name, count(*)
+FROM customer AS c
+  INNER JOIN rental AS r
+  ON c.customer_id = r.customer_id
+GROUP BY c.first_name, c.last_name
+HAVING count(*) >= 40;
+
+-- three table join to obtain city names for addresses of customers
+SELECT c.first_name, c.last_name, ct.city
+FROM customer AS c
+  INNER JOIN address AS a
+  ON c.address_id = a.address_id
+  INNER JOIN city AS ct
+  ON a.city_id = ct.city_id;
+
+-- inner join using sub-query to find all addresses
+that are in California and then return information about the customers living there
+SELECT c.first_name, c.last_name, ad.address, ad.city
+FROM customer AS c
+  INNER JOIN (
+    SELECT a.address_id, a.address, ct.city
+    FROM address AS a
+      INNER JOIN city AS ct
+      ON a.city_id = ct.city_id
+    WHERE a.district = 'California'
+  ) AS ad
+  ON c.address_id = ad.address_id;
+
+-- join same table multiple times to find all of the films in which either of two specific actors appear
+SELECT f.title
+FROM film as f
+  INNER JOIN film_actor AS fa
+  ON f.film_id = fa.film_id
+  INNER JOIN actor AS a
+  ON fa.actor_id = a.actor_id
+  WHERE ((a.first_name = 'CATE' AND a.last_name = 'MCQUEEN')
+    OR (a.first_name = 'CUBA' AND a.last_name = 'BIRCH'));
+
+-- join same table multiple times to find all of the films in which two specific actors appear together
+SELECT f.title
+FROM film AS f
+  INNER JOIN film_actor AS fa1
+  ON f.film_id = fa1.film_id
+  INNER JOIN actor AS a1
+  ON fa1.actor_id = a1.actor_id
+  INNER JOIN film_actor AS fa2
+  ON f.film_id = fa2.film_id
+  INNER JOIN actor AS a2
+  ON fa2.actor_id = a2.actor_id
+  WHERE (a1.first_name = 'CATE' AND a1.last_name = 'MCQUEEN')
+    AND (a2.first_name = 'CUBA' AND a2.last_name = 'BIRCH');
+{{% /code %}}
+
+<!-- {{% code sql %}}- left join
+SELECT table_table.column_name, table_table.column_name, ...
+FROM table_name
+LEFT JOIN table_name
+  ON table_name.column_name = table_name.column_name;{{% /code %}} -->
+<!-- #endregion -->
+
+
+
+
+
+<!-- #region transactions -->
+<h3>Transactions</h3>
+
+<p>
+  SQLite guarantees all the transactions are ACID compliant:
+</p>
+
+<ul>
+  <li>
+    Atomic: A transaction cannot be broken into smaller units and so is either applied in its entirety or not at all.
+  </li>
+  <li>
+    Consistent: A transaction can only change the database from one valid state to another.
+  </li>
+  <li>
+    Isolation: A pending transaction performed by a session must only be visible to the current session.
+  </li>
+  <li>
+    Durable: If a transaction is successfully committed then the changes must be permanent in the database regardless of scenarios like crashes or power failures.
+  </li>
+</ul>
+
+{{% code sql %}}-- start transaction
+BEGIN TRANSACTION;
+
+-- create savepoint
+SAVEPOINT save;
+
+-- rollback to savepoint
+ROLLBACK TO save;
+
+-- remove savepoint
+RELEASE save;
+
+-- rollback transaction
+ROLLBACK;
+
+-- commit transaction
+COMMIT;{{% /code %}}
+
+<p>
+  Releasing a save-point will not commit any modifications to disk, nor will it make those changes available to other database connections accessing the same database. Changes bounded by a released save-point may still be lost if the transaction is rolled back to a prior save-point or if the whole transaction is rolled back.
+</p>
+
+<!-- 
+CREATE TABLE SAVE_POINT(i INTEGER);
+BEGIN;
+INSERT INTO SAVE_POINT VALUES(1);
+SAVEPOINT a;
+INSERT INTO SAVE_POINT VALUES(2);
+SAVEPOINT b;
+INSERT INTO SAVE_POINT VALUES(3);
+
+sqlite> ROLLBACK TO b;
+sqlite> SELECT * FROM SAVE_POINT;
+i
+----------
+1
+2
+
+sqlite> RELEASE a;
+sqlite> ROLLBACK;
+sqlite> SELECT * FROM SAVE_POINT;
+sqlite>
+-->
+<!-- #endregion -->
+
+
+<h3>Indexes</h3>
+
+{{% code sql %}}-- create index on column
+CREATE INDEX index_name ON table_name(column_name);
+
+-- create index on multiple columns
+CREATE INDEX index_name ON table_name(column_name, column_name, ...);
+
+-- create unique index (ensures values in one or more columns are unique)
+CREATE UNIQUE INDEX index_name ON table_name(column_name);
+
+-- check if index is being used
+EXPLAIN QUERY PLAN
+SELECT * FROM table_name WHERE column_name = value;
+
+-- drop index
+DROP INDEX IF EXISTS index_name;
+({{% /code %}}
+
+
+<!-- 
+  In the same way that a person uses an index to find words within a publication, a
+database server uses indexes to locate rows in a table. Indexes are special tables that,
+unlike normal data tables, are kept in a specific order. Instead of containing all of the
+data about an entity, however, an index contains only the column (or columns) used
+to locate rows in the data table, along with information describing where the rows are
+physically located. Therefore, the role of indexes is to facilitate the retrieval of a subset
+of a table’s rows and columns without the need to inspect every row in the table. 
+
+
+ -->
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://a-gentle-introduction-to-sql.readthedocs.io/en/latest/index.html">A Gentle Introduction to SQL</a>
+  </li>
+  <li>
+    <a href="https://joins.spathon.com/">Visual Join</a>
+  </li>
+  <li>
+    <a href="https://www.sqlite.org/faq.html">Sqlite FAQ</a>
+  </li>
+  <li>
+    <a href="https://vladmihalcea.com/database-table-relationships/">A Beginner's Guide to Database Table Relationships</a>
+  </li>
+  <li>
+    <a href="http://www.padjo.org/tutorials/">Public Affairs Data Journalism I</a>
+  </li>
+  <li>
+    <a href="https://news.ycombinator.com/item?id=16809620">Ask HN: Raw SQL vs. ORM?</a>
+  </li>
+</ul>
+
+<!-- 5, 6, 8, 9, 10, 11, 13, 14, 16 -->
+
+
+<!-- <h3>Table Relationships</h3>
+
+<ul>
+  <li>
+    One-to-one: A single record in the first table is associated with zero or one record in the second table.
+  </li>
+  <li>
+    Many-to-one: A single record in the first table is associated with zero or more records in the second table.
+  </li>
+  <li>
+    Many-to-many: One or more records in the first table are related to one or more records in another table.
+  </li>
+</ul> -->
+
+<!-- 
+  How do I create an AUTOINCREMENT field?
+
+Short answer: A column declared INTEGER PRIMARY KEY will autoincrement.
+
+Longer answer: If you declare a column of a table to be INTEGER PRIMARY KEY, then whenever you insert a NULL into that column of the table, the NULL is automatically converted into an integer which is one greater than the largest value of that column over all other rows in the table, or 1 if the table is empty. Or, if the largest existing integer key 9223372036854775807 is in use then an unused key value is chosen at random. For example, suppose you have a table like this:
+
+CREATE TABLE t1(
+  a INTEGER PRIMARY KEY,
+  b INTEGER
+);
+With this table, the statement
+
+INSERT INTO t1 VALUES(NULL,123);
+is logically equivalent to saying:
+
+INSERT INTO t1 VALUES((SELECT max(a) FROM t1)+1,123);
+There is a function named sqlite3_last_insert_rowid() which will return the integer key for the most recent insert operation.
+
+Note that the integer key is one greater than the largest key that was in the table just prior to the insert. The new key will be unique over all keys currently in the table, but it might overlap with keys that have been previously deleted from the table. To create keys that are unique over the lifetime of the table, add the AUTOINCREMENT keyword to the INTEGER PRIMARY KEY declaration. Then the key chosen will be one more than the largest key that has ever existed in that table. If the largest possible key has previously existed in that table, then the INSERT will fail with an SQLITE_FULL error code.
+
+
+
+ Does SQLite support foreign keys?
+
+As of version 3.6.19 (2009-10-14), SQLite supports foreign key constraints. But enforcement of foreign key constraints is turned off by default (for backwards compatibility). To enable foreign key constraint enforcement, run PRAGMA foreign_keys=ON or compile with -DSQLITE_DEFAULT_FOREIGN_KEYS=1.
+ -->
+
+
+<!-- 
+-- concatenation
+SELECT column_name || column_name FROM table_name;
+
+
+ -->
+
+<!-- 
+-- multi-column primary key
+PRIMARY KEY (column_name, column_name, ...),
+
+-- multi-column unique
+UNIQUE (column_name, column_name, ...),
+ -->
+
+<!-- 
+  {{% code sql %}}-- partition records into groups based on values of column and calculate aggregates for those groups
+SELECT column_name, SUM(column_name) FROM table_name GROUP BY column_name;
+
+-- group by combination of columns
+
+{{% /code %}}
+ -->
+
+ <!-- 
+
+
+# 3. SELECT
+
+1. Retrieve the actor ID, first name, and last name for all actors. Sort by last name and then by first name.
+
+SELECT actor_id, first_name, last_name
+FROM actor
+ORDER BY last_name, first_name;
+
+2. Retrieve the actor ID, first name, and last name for all actors whose last name equals 'WILLIAMS' or 'DAVIS'.
+
+SELECT actor_id, first_name, last_name
+FROM actor
+WHERE last_name IN ('WILLIAMS','DAVIS');
+
+3. Returns the IDs of the customers who rented a film on 2005-07-05. Include a single row for each distinct customer ID.
+
+SELECT DISTINCT customer_id
+FROM rental
+WHERE date(rental_date) = '2005-07-05';
+
+4. Return the email addresses and return dates of all the customers who rented a film on 2005-06-14 ordered by the return time in descending order of return date.
+
+SELECT c.email, r.return_date
+FROM customer AS c
+  INNER JOIN rental AS r
+  ON c.customer_id = r.customer_id
+WHERE date(r.rental_date) = '2005-06-14'
+ORDER BY return_date DESC;
+
+
+# 4. WHERE
+
+3. Construct a query that retrieves all rows from the payment table where the amount is either 1.98, 7.98, or 9.98.
+
+SELECT * FROM payment
+WHERE amount IN (1.98, 7.98, 9.98);
+
+4. Construct a query that finds all customers whose last name contains an A in the second position and a W anywhere after the A.
+
+SELECT * FROM customer
+WHERE last_name LIKE '_A%W%';
+
+
+# 5. INNER JOIN
+
+2. Write a query that returns the title of every film in which an actor with the first name JOHN appeared.
+
+SELECT f.title
+FROM film AS f
+  INNER JOIN film_actor AS fa
+    ON f.film_id = fa.film_id
+  INNER JOIN actor AS a
+    ON fa.actor_id = a.actor_id
+WHERE a.first_name = 'JOHN';
+
+  -->

@@ -1,0 +1,340 @@
+---
+title: "Template Method Pattern"
+date: 2020-09-29
+draft: false
+---
+
+<p>
+  The Template Method Pattern defines the skeleton
+  of an algorithm in a method, deferring some steps to
+  subclasses. Template Method lets subclasses redefine
+  certain steps of an algorithm without changing the
+  algorithm’s structure.
+</p>
+
+<!-- 
+  The Template Method defines the steps of an algorithm and allows
+subclasses to provide the implementation for one or more steps.
+ -->
+
+
+<h3>Description</h3>
+
+<!-- 
+We’re going to get down to encapsulating
+pieces of algorithms so that subclasses can hook themselves right into a
+computation anytime they want.
+
+This pattern is all about creating a template for an algorithm. What’s a template?
+As you’ve seen it’s just a method; more specifically, it’s a method that defines an
+algorithm as a set of steps. One or more of these steps is defined to be abstract and
+implemented by a subclass. This ensures the algorithm’s structure stays unchanged,
+while subclasses provide some part of the implementation.
+
+
+---
+
+The AbstractClass
+contains the template
+method...
+...and abstract versions
+of the operations
+used in the template
+method.
+
+The template method makes use of the
+primitive operations to implement an
+algorithm. It is decoupled from the actual
+implementation of these operations.
+
+The ConcreteClass implements
+the abstract operations,
+which are called when the templateMethod() needs them.
+
+There may be many
+ConcreteClasses, each
+implementing the full set of
+operations required by the
+template method.
+
+We also have a concrete operation
+defined in the abstract class. This
+could be overridden by subclasses, or we
+could prevent overriding by declaring
+concreteOperation() as final. More about
+this in a bit...
+
+---
+
+A hook is a method that is declared in the
+abstract class, but only given an empty or default
+implementation. This gives subclasses the ability to
+“hook into” the algorithm at various points, if they
+wish; a subclass is also free to ignore the hook. 
+-->
+
+<!-- 
+  Q: When I’m creating a template method, how do I know when
+to use abstract methods and when to use hooks?
+A: Use abstract methods when your subclass MUST provide an
+implementation of the method or step in the algorithm. Use hooks
+when that part of the algorithm is optional. With hooks, a subclass
+may choose to implement that hook, but it doesn’t have to.
+Q: What are hooks really supposed to be used for?
+A: There are a few uses of hooks. As we just said, a hook may
+provide a way for a subclass to implement an optional part of an
+algorithm, or if it isn’t important to the subclass’s implementation, it
+can skip it. Another use is to give the subclass a chance to react to
+some step in the template method that is about to happen or just
+happened. For instance, a hook method like justReorderedList()
+allows the subclass to perform some activity (such as redisplaying an
+onscreen representation) after an internal list is reordered. As you’ve
+seen, a hook can also provide a subclass with the ability to make a
+decision for the abstract class.
+Q: Does a subclass have to implement all the abstract
+methods in the AbstractClass?
+A: Yes, each concrete subclass defines the entire set of abstract
+methods and provides a complete implementation of the undefined
+steps of the template method’s algorithm.
+Q: It seems like I should keep my abstract methods small in
+number; otherwise, it will be a big job to implement them in the
+subclass.
+A: That’s a good thing to keep in mind when you write template
+methods. Sometimes you can do this by not making the steps of
+your algorithm too granular. But it’s obviously a tradeoff: the less
+granularity, the less flexibility.
+Remember, too, that some steps will be optional, so you can
+implement these as hooks rather than abstract methods, easing the
+burden on the subclasses of your abstract class.
+ -->
+
+
+
+<h3>Example</h3>
+
+<ul>
+  <li>
+    We consider the case of a coffee shop with standardized recipes for making coffee and tea.
+  </li>
+  <li>
+    The coffee recipe is: 1) Boil some water, 2) Brew coffee in boiling water, 3) Pour coffee in cup, 4) Add sugar and milk. The tea recipe is similar: 1) Boil some water, 2) Steep tea in boiling water, 3) Pour tea in cup, 4) Add lemon.
+  </li>
+  <li>
+    We create Coffee and Tea classes and in each class we implement each preparation step as a separate method as well as a prepareRecipe() method that invokes these methods.
+  </li>
+  <li>
+    We notice that there are boilWater() and pourInCup() methods that are duplicated across the classes and so we define an abstract CaffeineBeverage class that declares an abstract prepareRecipe() method and provides implementations for the duplicated methods. The Coffee and Tea classes can then subclass CaffeineBeverage, include their specific methods and override prepareRecipe().
+  </li>
+  <li>
+    However, there is another commonality which is that both recipes essentially follow the same algorithm. As such, we move to abstracting prepareRecipe() from each subclass.
+  </li>
+  <li>
+    The Coffee class uses brewCoffeeGrinds() and addSugarAndMilk() methods while the Tea class uses steepTeaBag() and addLemon() methods. Steeping and brewing are pretty analogous so we will use a new brew() method in either case. Similarly, we will replace addSugarAndMilk() and addLemon() with addCondiments().
+  </li>
+  <li>
+    Then, we add the generalized brew() and addCondiments() to the CaffeineBeverage class and also move the prepareRecipe() method to CaffeineBeverage with an implementation that invokes the generalized methods. We declare the prepareRecipe() method as final to prevent it from being overridden.
+  </li>
+  <li>
+    As such, we have recognized that the two recipes are essentially the same although some o the steps require different implementations. So we have generalized the recipe and TODO
+
+    Caffeine Beverage knows and controls the steps of the recipe, and performs steps 1 and 3 itself, but relies on Tea or Coffee to do steps 2 and 4.
+  </li>
+</ul>
+
+
+<!-- 
+ In the template, each
+step of the algorithm is
+represented by a method.
+prepareRecipe() is our
+template method. Why?
+Because:
+ (1) It is a method, after all.
+ (2) It serves as a template for an algorithm—in this case, an algorithm for making caffeinated beverages.
+Some methods are
+handled by this class...
+...and some are handled
+by the subclass.
+The methods that need to
+be supplied by a subclass are
+declared abstract.
+
+ -->
+
+
+<!--
+Initially, code was duplicated across Coffee and Tea and changes to the algorithm required opening the subclasses and making multiple changes.
+
+Now, the CaffeineBeverage class maximizes reuse among the subclasses. The algorithm lives in one place and code changes only need to be made there.
+
+The CaffeineBeverage class
+concentrates knowledge about the
+algorithm and relies on subclasses to
+provide complete implementations.
+
+The Template Method Pattern provides
+a framework that other caffeine
+beverages can be plugged into. New
+caffeine beverages only need to
+implement a couple of methods.
+ -->
+
+<!--
+  We’ve added a little conditional
+statement that bases its
+success on a concrete method,
+customerWantsCondiments(). If the
+customer WANTS condiments, only then
+do we call addCondiments().
+
+Here we’ve defined a method with a (mostly) empty default implementation. This method just returns true and does nothing else.
+This is a hook because the
+subclass can override this
+method, but doesn’t have to.
+
+To use the hook, we override it in our subclass. Here, the hook controls whether
+the CaffeineBeverage class evaluates a certain part of the algorithm—that is,
+whether it adds a condiment to the beverage.
+How do we know whether the customer wants the condiment? Just ask!
+-->
+
+
+
+<h3>Principle: Hollywood Principle</h3>
+
+<p>
+  <i>Don't call use, we'll call you.</i>
+</p>
+
+
+<!-- 
+The Hollywood Principle gives us a way to prevent “dependency rot.” 
+
+Dependency rot happens when you have high-level components depending on low-level components depending on high-level components depending on sideways components depending on low-level components, and so on. When rot sets in, no one can easily understand the way a system is designed.
+
+With the Hollywood Principle, we allow low-level components to hook themselves into a system, but the high-level components determine when they are needed, and how.
+
+In other words, the high-level components give the low-level components the “don’t call us, we’ll call you” treatment.
+
+
+Low-level components can participate in the computation but the high-level components control when and how. A low-level component never calls a high-level component directly.
+
+
+For instance, the CaffeineBeverage is the high-level component.  It has control over the algorithm for the recipe, and calls on the subclasses only when they’re needed for an implementation of a method.
+
+Tea and Coffee never call the abstract class directly without being “called” first.
+
+Clients of beverages will depend
+on the CaffeineBeverage
+abstraction rather than a
+concrete Tea or Coffee, which
+reduces dependencies in the
+overall system
+How does the Hollywood Principle relate to the
+Dependency Inversion Principle that we learned a few chapters
+back?
+
+
+The Hollywood Principle is a technique for building
+frameworks or components so that lower-level components can be
+hooked into the computation, but without creating dependencies
+between the lower-level components and the higher-level layers.
+
+A low-level component will often end up
+calling a method defined above it in the inheritance hierarchy purely
+through inheritance. But we want to avoid creating explicit circular
+dependencies between the low-level component and the high-level
+ones.
+
+
+---
+
+Q: Is this really the Template Method Pattern, or are you
+trying too hard?
+A: The pattern calls for implementing an algorithm and letting
+subclasses supply the implementation of the steps—and the Arrays
+sort() is clearly not doing that! But, as we know, patterns in the
+wild aren’t always just like the textbook patterns. They have to be
+modified to fit the context and implementation constraints.
+The designers of the Arrays sort() method had a few constraints. In
+general, you can’t subclass a Java array and they wanted the sort to
+be used on all arrays (and each array is a different class). So they
+defined a static method and deferred the comparison part of the
+algorithm to the items being sorted.
+So, while it’s not a textbook template method, this implementation is
+still in the spirit of the Template Method Pattern. Also, by eliminating
+the requirement that you have to subclass Arrays to use this
+algorithm, they’ve made sorting in some ways more flexible and
+useful.
+Q: This implementation of sorting actually seems more like
+the Strategy Pattern than the Template Method Pattern. Why do
+we consider it Template Method?
+A: You’re probably thinking that because the Strategy Pattern uses
+object composition. You’re right in a way—we’re using the Arrays
+object to sort our array, so that’s similar to Strategy. But remember,
+in Strategy, the class that you compose with implements the
+entire algorithm. The algorithm that Arrays implements for sort() is
+incomplete; it needs a class to fill in the missing compareTo() method.
+So, in that way, it’s more like Template Method.
+Q: Are there other examples of template methods in the Java
+API?
+A: Yes, you’ll find them in a few places. For example, java.io has a
+read() method in InputStream that subclasses must implement and is
+used by the template method read(byte b[], int off, int len).
+
+
+---
+
+Hey, that does sound a lot like what I do. But my
+intent’s a little different from yours; my job is to
+define the outline of an algorithm, but let my
+subclasses do some of the work. That way, I can
+have different implementations of an algorithm’s
+individual steps, but keep control over the
+algorithm’s structure. Seems like you have to give up
+control of your algorithms.
+
+---
+
+ A template method defines the
+steps of an algorithm, deferring to
+subclasses for the implementation
+of those steps.
+ The Template Method Pattern
+gives us an important technique
+for code reuse.
+ The template method’s abstract
+class may define concrete
+methods, abstract methods, and
+hooks.
+ Abstract methods are
+implemented by subclasses.
+ Hooks are methods that do
+nothing or default behavior in
+the abstract class, but may be
+overridden in the subclass.
+ To prevent subclasses from
+changing the algorithm in the
+template method, declare the
+template method as final.
+ The Hollywood Principle guides us
+to put decision making in highlevel modules that can decide
+how and when to call low-level
+modules.
+ You’ll see lots of uses of the
+Template Method Pattern in
+real-world code, but (as with any
+pattern) don’t expect it all to be
+designed “by the book.”
+ The Strategy and Template
+Method Patterns both encapsulate
+algorithms, the first by composition
+and the other by inheritance.
+ Factory Method is a specialization
+of Template Method.
+-->
+
+
+<h3>Resources</h3>
+
+

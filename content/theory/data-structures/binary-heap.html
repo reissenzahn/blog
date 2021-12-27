@@ -4,6 +4,7 @@ date: 2021-11-24
 draft: false
 ---
 
+
 <p>
   A binary heap is binary tree where each node stores a key with two additional constraints:
 </p>
@@ -25,6 +26,9 @@ draft: false
   <img src="/img/data-structures/binary-heap.svg" height="100%" width="100%" style="max-width: 500px;">
 </figure>
 
+
+<h3>Array Representation</h3>
+
 <p>
   Since a binary heap is complete, we can represent it implicitly using an array. Then, given a node at index i, we can find the indices of its children and parent as follows:
 </p>
@@ -45,6 +49,9 @@ draft: false
   Finding the maximum is as simple as returning the root located in the first position in the array.
 </p>
 
+
+<h3>Insertion</h3>
+
 <p>
   To insert a key into the heap, we start by inserting it as a leaf in the next available position and then "heapify up". This consists of comparing the inserted node to its parent. If the parent is greater than or equal to the node we are finished; otherwise, we swap the node with its parent and repeat the process up the tree.
 </p>
@@ -53,9 +60,15 @@ draft: false
   <img src="/img/data-structures/binary-heap-insert.svg" height="100%" width="100%" style="max-width: 500px;">
 </figure>
 
+
+<h3>Deletion</h3>
+
 <p>
   Deleting the root is performed by swapping the root node with the rightmost left node and then deleting that rightmost leaf node. Finally, we need to "heapify down". This consists of comparing the root to its children. If the root is greater than or equal to both children we are done; otherwise, we swap the root with the larger child and repeat the process down the tree.
 </p>
+
+
+<h3>BuildHeap</h3>
 
 <figure>
   <img src="/img/data-structures/binary-heap-delete.svg" height="100%" width="100%" style="max-width: 500px;">
@@ -66,21 +79,72 @@ draft: false
 </p>
 
 
-<!--
-Given that the height of a binary heap with n nodes is O(log n) we have the following time complexities:
+<p>Priority Queues</p>
 
-Algorithm		Average	  Worst case
-Insert		  O(1)	    O(log n)
-Find-min		O(1)	    O(1)
-Delete-min	O(log n)	O(log n)
-Space		    O(n)	    O(n)
--->
+<p>
+  A priority queue is a queue-like data structure in which elements are enqueued with an associated priority. The dequeue operation removes and returns the element from the queue that has the highest priority. A min-priority queue considers lower values to have higher priority while a max-priority queue considers higher values to have higher priority.
+</p>
+
+<p>
+  A priority queue can be implemented using a binary heap. For a min-priority queue, we use a min-heap. The enqueue operation can be achieved by inserting the element into the heap using its priority while the dequeue operation can be achieved by removing the minimum element in the heap.
+</p>
 
 
-<!-- 
-  https://www.youtube.com/watch?v=WCm3TqScBM8
-  https://en.wikipedia.org/wiki/Binary_heap
+<h3>Complexity</h3>
 
-  https://leetcode.com/problems/kth-largest-element-in-a-stream/
--->
+<table>
+  <thead>
+    <tr>
+      <th></th><th>Average</th><th>Worst case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Find max</td><td>O(1)</td><td>O(1)</td>
+    </tr>
+    <tr>
+      <td>Insert</td><td>O(1)</td><td>O(log(n))</td>
+    </tr>
+    <tr>
+      <td>Delete max</td><td>O(log(n))</td><td>O(log(n))</td>
+    </tr>
+    <tr>
+      <td>BuildHeap</td><td>O(n)</td><td>O(n)</td>
+    </tr>
+    <tr>
+      <td>Space</td><td>O(n)</td><td>O(n)</td>
+    </tr>
+  </tbody>
+</table>
 
+
+<h3>Implementation</h3>
+
+{{% code-file file="/static/code/theory/data-structures/BinaryHeap.java" lang="java" %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=WCm3TqScBM8">Introduction to Binary Heaps (Algorithms with Attitude)</a>
+  </li>
+</ul>
+
+
+<h3>Problems</h3>
+
+<p>
+  When solving problems involving heaps in Java, one can use the <code>PriorityQueue</code> class.
+</p>
+
+{{% code java %}}PriorityQueue<Integer> minHeap = new PriorityQueue<Integer>();
+
+PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());{{% /code %}}
+
+
+<ul>
+  <li>
+    <a href="/leetcode/703">703. Kth Largest Element in a Stream</a>
+  </li>
+</ul>

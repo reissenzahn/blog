@@ -1,0 +1,987 @@
+---
+title: "Java"
+date: 2020-09-29
+draft: false
+---
+
+<ul>
+  <li>
+    <a href="#hello-world">Hello World</a>
+  </li>
+  <li>
+    <a href="#resources">Resources</a>
+  </li>
+</ul>
+
+
+<h3 id="hello-world">Hello World</h3>
+
+
+
+<h3 id="variables">Variables</h3>
+
+
+<h3 id="primitive-types">Primitive Types</h3>
+
+{{% code-file file="/static/code/tools/java/PrimitiveTypes.java" lang="java" %}}
+
+
+<h3 id="operators">Operators</h3>
+
+
+<h3 id="arrays">Arrays</h3>
+
+
+<h3 id="conditionals">Conditionals</h3>
+
+
+<h3 id="loops">Loops</h3>
+
+
+<h3 id="classes">Classes</h3>
+
+<pre><code class="java">class Account {
+
+  private String code;
+  private long balance;
+  private boolean enabled;
+  
+  public Account() {
+  }
+
+  public Account(String code, long balance, boolean enabled) {
+    this.code = code;
+    this.balance = balance;
+    this.enabled = enabled;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+
+    // getters or setters can contain a more sophisticated logic
+    if (code != null) {
+      this.code = code;
+    }
+  }
+
+  public long getBalance() {
+    return balance;
+  }
+
+  public void setBalance(long balance) {
+    this.balance = balance;
+  }
+
+  // a getter for a boolean field start with is
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+}
+
+// ...
+
+Account account = new Account();
+ 
+account.setCode("62968503812");
+account.setBalance(100_000_000);
+account.setEnabled(true);
+ 
+account.getCode()     // 62968503812
+account.getBalance()  // 100000000
+account.isEnabled()   // true</code></pre>
+
+<!-- 
+  public class Point {
+ // The coordinates of the point
+ public double x, y;
+ public Point(double x, double y) { // A constructor that
+ this.x = x; this.y = y; // initializes the fields
+ }
+ public double distanceFromOrigin() { // A method that operates
+ return Math.sqrt(x*x + y*y); // on the x and y fields
+ }
+}
+
+Point p = new Point(2.0, -3.5);
+double x = p.x; // Read a field of the object
+p.y = p.x * p.x; // Set the value of a field
+double d = p.distanceFromOrigin(); // Access a method of the object
+ -->
+
+
+<h3 id="access-modifiers">Access Modifiers</h3>
+
+
+<h3 id="inheritance">Inheritance</h3>
+
+
+
+<h3 id="abstract-classes">Abstract Classes</h3>
+
+<pre><code class="java">public abstract class Pet {
+  
+  // an abstract class can contain fields and non-abstract methods
+  protected String name;
+  protected int age;
+  
+  // an abstract class can contain constructors
+  protected Pet(String name, int age) {
+    this.name = name;
+    this.age = age;
+  }
+ 
+  // an abstract class can contain abstract methods that must be implemented in non-abstract subclasses
+  public abstract void say();
+}
+
+// abstract classes cannot be instantiated
+Pet pet = new Pet("Unnamed", 5);  // error
+
+
+// below are two concrete subclasses of Pet
+class Cat extends Pet {
+
+  public Cat(String name, int age) {
+    super(name, age);
+  }
+ 
+  @Override
+  public void say() {
+    System.out.println("Meow!");
+  }
+}
+ 
+class Dog extends Pet {
+ 
+  public Dog(String name, int age) {
+    super(name, age);
+  }
+ 
+  @Override
+  public void say() {
+    System.out.println("Woof!");
+  }
+}
+
+Dog dog = new Dog("Boss", 5);
+Cat cat = new Cat("Tiger", 2);
+        
+dog.say();  // Woof!
+cat.say();  // Meow!</code></pre>
+
+
+
+<h3 id="interfaces">Interfaces</h3>
+
+
+<h3 id="enumerations">Enumerations</h3>
+
+
+<h3 id="exceptions">Exceptions</h3>
+
+
+<h3 id="variable-arguments">Variable Arguments</h3>
+
+
+<h3 id="imports">Imports</h3>
+
+{{% code-file file="/static/code/tools/java/Imports.java" lang="java" %}}
+
+
+<h3 id="commands">Commands</h3>
+
+<!--
+# compile source file to class file(s)
+$ javac Main.java
+
+# run class
+$ java Main
+
+# specify where to look for the classes need by the program
+$ java -classpath /bin/classes Main
+
+# run jar
+$ java -jar file.jar
+-->
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+
+</ul>
+
+
+<!-- 
+  SYNCHRONIZED, TRANSIENT, VOLATILE
+
+  synchronized Method The method makes nonatomic modifications to the class or instance, so
+care must be taken to ensure that two threads cannot modify the class
+or instance at the same time. For a static method, a lock for the
+class is acquired before executing the method. For a non-static
+method, a lock for the specific object instance is acquired. See Chapter 5
+for more details.
+transient Field The field is not part of the persistent state of the object and should not
+be serialized with the object. Used with object serialization; see
+java.io.ObjectOutputStream.
+volatile Field The field can be accessed by unsynchronized threads, so certain
+optimizations must not be performed on it. This modifier can
+sometimes be used as an alternative to synchronized. See
+Chapter 5 for more details.
+-->
+
+<!--
+PACKAGES
+
+// a package is a named collection of classes, interfaces, and other reference types
+
+// packages serve to group related classes and define a namespace for the classes they contain
+
+// every class has both a simple name and a fully qualified name which includes the name of its containing package
+
+A package that has been loaded is always accessible to code
+defined within the same package. Whether it is accessible to
+code from other packages depends on the way the package is
+deployed on the host system. When the class files that com‐
+prise a package are stored in a directory, for example, a user
+must have read access to the directory and the files within it in
+order to have access to the package.
+-->
+
+<!-- 
+TYPE LITERALS
+
+The second type that supports its own special object literal syntax is the class named
+Class. Instances of the Class class represent a Java data type, and contain metadata
+about the type that is referred to. To include a Class object literally in a Java pro‐
+gram, follow the name of any data type with .class. For example:
+Class<?> typeInt = int.class;
+Class<?> typeIntArray = int[].class;
+Class<?> typePoint = Point.class;  
+ -->
+
+<!-- 
+REFERENCE TYPES
+
+classes, arrays, enumerations, interfaces and annotations
+
+Reference types are user-defined
+
+Reference types are aggregate types that hold zero or more primitive values or objects
+
+memory to store an object is dynamically allocated on the heap when the object is created and this memory is automatically garbage collected when the object is no longer needed
+
+When an object is assigned to a variable or passed to a method, the memory that represents the object is not copied; only a reference to that memory is stored in the variable or passed to the method
+
+
+Point p = new Point(1.0, 2.0);
+Point q = p;
+
+After this code runs, the variable q holds a copy of the reference held in the variable p. There is still only one copy of the Point object in the VM, but there are now two
+copies of the reference to that object.
+
+System.out.println(p.x); // Print out the x coordinate of p: 1.0
+q.x = 13.0; // Now change the X coordinate of q
+System.out.println(p.x); // Print out p.x again; this time it is 13.
+
+A similar difference in behavior between primitive types and reference types occurs when arguments are passed to methods. Consider the following method:
+
+void changePrimitive(int x) {
+ while(x > 0) {
+ System.out.println(x--);
+ }
+}
+
+
+void changeReference(Point p) {
+ while(p.x > 0) {
+ System.out.println(p.x--);
+ }
+}
+
+Point q = new Point(3.0, 4.5); // A point with an x coordinate of 3
+changeReference(q); // Prints 3,2,1 and modifies the Point
+System.out.println(q.x); // The x coordinate of q is now 0!
+
+When the changeReference() method is invoked, it is passed a copy of the reference held in variable q. Now both the variable q and the method parameter p hold references to the same object
+
+
+When used with primitive values, the
+equality operator (==) simply tests whether two values are identical (i.e., whether
+they have exactly the same bits). With reference types, however, == compares refer‐
+ences, not actual objects. In other words, == tests whether two references refer to the
+same object; it does not test whether two objects have the same content. Here’s an
+example:
+String letter = "o";
+String s = "hello"; // These two String objects
+String t = "hell" + letter; // contain exactly the same text.
+if (s == t) System.out.println("equal"); // But they are not equal!
+byte[] a = { 1, 2, 3 };
+// A copy with identical content.
+byte[] b = (byte[]) a.clone();
+if (a == b) System.out.println("equal"); // But they are not equal!
+When working with reference types, keep in mind there are two kinds of equality:
+equality of reference and equality of object. It is important to distinguish between
+these two kinds of equality. One way to do this is to use the word “identical” when
+92 | Chapter 2: Java Syntax from the Ground Up
+talking about equality of references and the word “equal” when talking about two
+distinct objects that have the same content. To test two nonidentical objects for
+equality, pass one of them to the equals() method of the other:
+String letter = "o";
+String s = "hello"; // These two String objects
+String t = "hell" + letter; // contain exactly the same text.
+if (s.equals(t)) { // And the equals() method
+ System.out.println("equal"); // tells us so.
+}
+All objects inherit an equals() method (from Object), but the default implementa‐
+tion simply uses == to test for identity of references, not equality of content. A class
+that wants to allow objects to be compared for equality can define its own version of
+the equals() method. Our Point class does not do this, but the String class does,
+as indicated in the code example. You can call the equals() method on an array, but
+it is the same as using the == operator, because arrays always inherit the default
+equals() method that compares references rather than array content. You can com‐
+pare arrays for equality with the java.util.Arrays.equals() convenience method.
+Boxing and Unboxing Conversions
+Primitive types and reference types behave quite differently. It is sometimes useful
+to treat primitive values as objects, and for this reason, the Java platform includes
+wrapper classes for each of the primitive types. Boolean, Byte, Short, Character,
+Integer, Long, Float, and Double are immutable, final classes whose instances each
+hold a single primitive value. These wrapper classes are usually used when you want
+to store primitive values in collections such as java.util.List:
+// Create a List-of-Integer collection
+List<Integer> numbers = new ArrayList<>();
+// Store a wrapped primitive
+numbers.add(new Integer(-1));
+// Extract the primitive value
+int i = numbers.get(0).intValue();
+Java allows types of conversions known as boxing and unboxing conversions. Box‐
+ing conversions convert a primitive value to its corresponding wrapper object and
+unboxing conversions do the opposite. You may explicitly specify a boxing or
+unboxing conversion with a cast, but this is unnecessary, as these conversions are
+automatically performed when you assign a value to a variable or pass a value to a
+method. Furthermore, unboxing conversions are also automatic if you use a wrap‐
+per object when a Java operator or statement expects a primitive value. Because Java
+performs boxing and unboxing automatically, this language feature is often known
+as autoboxing.
+Here are some examples of automatic boxing and unboxing conversions:
+Integer i = 0; // int literal 0 boxed to an Integer object
+Number n = 0.0f; // float literal boxed to Float and widened to Number
+Integer i = 1; // this is a boxing conversion
+Java Syntax
+Reference Types | 93
+int j = i; // i is unboxed here
+i++; // i is unboxed, incremented, and then boxed up again
+Integer k = i+2; // i is unboxed and the sum is boxed up again
+i = null;
+j = i; // unboxing here throws a NullPointerException
+Autoboxing makes dealing with collections much easier as well. Let’s look at an
+example that uses Java’s generics (a language feature we’ll meet properly in “Java
+Generics” on page 152) that allows us to restrict what types can be put into lists and
+other collections:
+List<Integer> numbers = new ArrayList<>(); // Create a List of Integer
+numbers.add(-1); // Box int to Integer
+int i = numbers.get(0); // Unbox Integer to int
+ -->
+
+<!--
+ANNOTATIONS
+
+
+Annotations
+Annotations are a specialized kind of interface that, as the name suggests, annotate
+some part of a Java program.
+For example, consider the @Override annotation. You may have seen it on some
+methods in some of the earlier examples, and may have asked the following ques‐
+tion: what does it do?
+The short, and perhaps surprising, answer is that it does nothing at all.
+The less short (and flippant) answer is that, like all annotations, it has no direct
+effect, but instead acts as additional information about the method that it annotates;
+in this case, it denotes that a method overrides a superclass method.
+This acts as a useful hint to compilers and integrated development environments
+(IDEs)—if a developer has misspelled the name of a method that she intended to be
+an override of a superclass method, then the presence of the @Override annotation
+on the misspelled method (which does not override anything) alerts the compiler to
+the fact that something is not right.
+Annotations, as originally conceived, were not supposed to alter program seman‐
+tics; instead, they were to provide optional metadata. In its strictest sense, this
+means that they should not affect program execution and instead should only pro‐
+vide information for compilers and other pre-execution phases.
+166 | Chapter 4: The Java Type System
+In practice, modern Java applications make heavy use of annotations, and this now
+includes many use cases that essentially render the annotated classes useless without
+additional runtime support.
+For example, classes bearing annotations such as @Inject, @Test, or @Autowired
+cannot realistically be used outside of a suitable container. As a result, it is difficult
+to argue that such annotations do not violate the “no semantic meaning” rule.
+The platform defines a small number of basic annotations in java.lang. The origi‐
+nal set were @Override, @Deprecated, and @SuppressWarnings—which were used
+to indicate that a method was overriden, deprecated, or that it generated some com‐
+piler warnings that should be suppressed.
+These were augmented by @SafeVarargs in Java 7 (which provides extended warn‐
+ing suppression for varargs methods) and @FunctionalInterface in Java 8.
+This last annotation indicates an interface can be used as a target for a lambda
+expression—it is a useful marker annotation although not mandatory, as we will see.
+Annotations have some special properties, compared to regular interfaces:
+• All (implicitly) extend java.lang.annotation.Annotation
+• May not be generic
+• May not extend any other interface
+• May only define zero-arg methods
+• May not define methods that throw exceptions
+• Have restrictions on the return types of methods
+• Can have a default return value for methods
+In practice, annotations do not typically have a great deal of functionality and
+instead are a fairly simple language concept.
+Defining Custom Annotations
+Defining custom annotation types for use in your own code is not that hard. The
+@interface keyword allows the developer to define a new annotation type, in much
+the same way that class or interface is used.
+The key to writing custom annotations is the use of “metaannotations.” These are special annotations that appear on the
+definition of new (custom) annotation types.
+Type
+System
+Enums and Annotations | 167
+The meta-annotations are defined in java.lang.annotation and allow the devel‐
+oper to specify policy for where the new annotation type is to be used, and how it
+will be treated by the compiler and runtime.
+There are two primary meta-annotations that are both essentially required when
+creating a new annotation type—@Target and @Retention. These both take values
+that are represented as enums.
+The @Target meta-annotation indicates where the new custom annotation can be
+legally placed within Java source code. The enum ElementType has the possible val‐
+ues TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE, ANNOTA
+TION_TYPE, PACKAGE, TYPE_PARAMETER, and TYPE_USE, and annotations can indicate
+that they intend to be used at one or more of these locations.
+The other meta-annotation is @Retention, which indicates how javac and the Java
+runtime should process the custom annotation type. It can have one of three values,
+which are represented by the enum RetentionPolicy:
+SOURCE
+Annotations with this retention policy are discarded by javac during
+compilation.
+CLASS
+This means that the annotation will be present in the class file, but will not nec‐
+essarily be accessible at runtime by the JVM. This is rarely used, but is some‐
+times seen in tools that do offline analysis of JVM bytecode.
+RUNTIME
+This indicates that the annotation will be available for user code to access at
+runtime (by using reflection).
+Let’s take a look at an example, a simple annotation called @Nickname, which allows
+the developer to define a nickname for a method, which can then be used to find the
+method reflectively at runtime:
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Nickname {
+ String[] value() default {};
+}
+This is all that’s required to define the annotation—a syntax element where the
+annotation can appear, a retention policy, and the name of the element. As we need
+to be able to state the nickname we’re assigning to the method, we also need to
+define a method on the annotation. Despite this, defining new custom annotations
+is a remarkably compact undertaking.
+In addition to the two primary meta-annotations, there are also the @Inherited and
+@Documented meta-annotations. These are much less frequently encountered in
+practice, and details on them can be found in the platform documentation.
+168 | Chapter 4: The Java Type System
+Type Annotations
+With the release of Java 8, two new values for ElementType were added—
+TYPE_PARAMETER and TYPE_USE. These new values allow the use of annotations in
+places where they were previously not legal, such as at any site where a type is used.
+This enables the developer to write code such as:
+@NotNull String safeString = getMyString();
+The extra type information conveyed by the @NotNull can then be used by a special
+type checker to detect problems (a possible NullPointerException, in this exam‐
+ple) and to perform additional static analysis. The basic Java 8 distribution ships
+with some basic pluggable type checkers, but also provides a framework for allow‐
+ing developers and library authors to create their own.
+In this section, we’ve met Java’s enum and annotation types. Let’s move on to con‐
+sider the next important part of Java’s type system: lambda expressions.
+-->
+
+<!--
+// Java floating-point types can handle overflow to infinity and
+// underflow to zero and have a special NaN value. This means
+// floating-point arithmetic never throws exceptions, even when
+// performing illegal operations, like dividing zero by zero or
+// taking the square root of a negative number.
+
+// The infinite floating-point values behave as you would expect. Adding or subtracting any finite value to or from infinity, for example, yields infinity. Negative zero
+// behaves almost identically to positive zero, and, in fact, the == equality operator
+// reports that negative zero is equal to positive zero. One way to distinguish negative
+// zero from positive, or regular, zero is to divide by it: 1.0/0.0 yields positive infinity,
+// but 1.0 divided by negative zero yields negative infinity. Finally, because NaN is Not
+// a Number, the == operator says that it is not equal to any other number, including
+// itself!
+// double NaN = 0.0/0.0; // Not a Number
+// NaN == NaN; // false
+// Double.isNaN(NaN); // true
+// To check whether a float or double value is NaN, you must use the Float.isNaN()
+// and Double.isNaN() methods.
+-->
+
+<!-- 
+Platform Tools
+
+
+$ javac Hello.java
+
+javac is the Java source code compiler—it produces bytecode (in the form of .class
+files) from .java source files.
+
+-classpath
+Supplies classes we need for compilation.
+
+-d some/dir
+Tells javac where to output class files.
+
+-Xlint
+Enable detail about warnings.
+
+
+$ java Hello
+$ java -jar hello.jar
+
+This method is run on the single application thread that is created by the JVM
+startup. The JVM process will exit once this method returns (and any additional
+nondaemon application threads that were started have terminated).
+If the form takes a JAR file rather than a class (the executable JAR form), the JAR
+file must contain a piece of metadata that tells the JVM which class to start from.
+This bit of metadata is the Main-Class: attribute, and it is contained in the MANI‐
+FEST.MF file in the META-INF/ directory. See the description of the jar tool for
+more details.
+Common switches
+-cp <classpath>
+Define the classpath to read from.
+-X, -?, -help
+Provide help about the java executable and its switches.
+-D<property=value>
+Sets a Java system property that can be retrieved by the Java program. Any
+number of such properties can be specified this way.
+-jar
+Run an executable JAR (see the entry for jar).
+376 | Chapter 13: Platform Tools
+-Xbootclasspath(/a or /p)
+Run with an alternative system classpath (very rarely used).
+-client, -server
+Select a HotSpot JIT compiler (see “Notes” for this entry).
+-Xint, -Xcomp, -Xmixed
+Control JIT compilation (very rarely used).
+-Xms<size>
+Set the minimum committed heap size for the JVM.
+-Xmx<size>
+Set the maximum committed heap size for the JVM.
+-agentlib:<agent>, -agentpath:<path to agent>
+Specify a JVM Tooling Interface (JVMTI) agent to attach to the process being
+started. Agents are typically used for instrumentation or monitoring.
+-verbose
+Generate additional output, sometimes useful for debugging.
+Notes
+The HotSpot VM contains two separate JIT compilers—known as the client (or C1)
+compiler and the server (or C2) compiler. These were designed for different
+purposes, with the client compiler offering more predictable performance and
+quicker startup, at the expense of not performing aggressive code optimization.
+Traditionally, the JIT compiler that a Java process used was chosen at process
+startup via the -client or -server switch. However, as hardware advances have
+made compilation ever cheaper, a new possibility has become available—to use the
+client compiler early on, while the Java process is warming up, and then to switch to
+the high-performance optimizations available in the server compiler when they are
+available. This scheme is called Tiered Compilation, and it is the default in Java 8.
+Most processes will no longer need explicit -client or -server switches.
+On the Windows platform, a slightly different version of the java executable is
+often used—javaw. This version starts up a Java Virtual Machine, without forcing a
+Windows console window to appear.
+In older Java versions, a number of different legacy interpreters and virtual machine
+modes were supported. These have now mostly been removed, and any remaining
+should be regarded as vestigial.
+Switches that start with -X were intended to be nonstandard switches. However, the
+trend has been to standardize a number of these switches (particularly -Xms and
+-Xmx). In parallel, Java versions have introduced an increasing number of -XX:
+switches. These were intended to be experimental and not for production use.
+Platform
+Tools
+Command-Line Tools | 377
+However, as the implementations have stabilized, some of these switches are now
+suitable for some advanced users (even in production deployments).
+In general, a full discussion of switches is outside the scope of this book. Configura‐
+tion of the JVM for production use is a specialist subject, and developers are urged
+to take care, especially when modifying any switches related to the garbage collec‐
+tion subsystem.
+jar
+Basic usage
+jar cvf my.jar someDir/
+Description
+The JAR utility is used to create and manipulate Java Archive (.jar) files. These are
+ZIP format files that contain Java classes, additional resources, and (usually) meta‐
+data. The tool has five major modes of operation—Create, Update, Index, List, and
+Extract—on a JAR file.
+These are controlled by passing a command option character (not a switch) to jar.
+Only one command character can be specified, but optional modifier characters can
+also be used.
+Command options
+• c: Create a new archive
+• u: Update archive
+• i: Index an archive
+• t: List an archive
+• x: Extract an archive
+Modiers
+• v: Verbose mode
+• f: Operate on a named file, rather than standard input
+• 0: Store, but do not compress, files added to the archive
+• m: Add the contents of the specified file to the jar metadata manifest
+• e: Make this jar executable, with the specified class as the entry point
+378 | Chapter 13: Platform Tools
+Notes
+The syntax of the jar command is intentionally very similar to that of the Unix tar
+command. This similarity is the reason why jar uses command options, rather than
+switches (as the other Java platform commands do).
+When you create a JAR file, the jar tool will automatically add a directory called
+META-INF that contains a file called MANIFEST.MF—this is metadata in the form
+of headers paired with values. By default, MANIFEST.MF contains just two headers:
+Manifest-Version: 1.0
+Created-By: 1.8.0 (Oracle Corporation)
+Using the m option allows additional metadata to be added into MANIFEST.MF at
+JAR creation time. One frequently added piece is the Main-Class: attribute, which
+indicates the entry point into the application contained in the JAR. A JAR with a
+specified Main-Class: can be directly executed by the JVM, via java -jar, or
+double-clicking the JAR in a graphical file browser.
+The addition of the Main-Class: attribute is so common that jar has the e option
+to create it directly in MANIFEST.MF, rather than having to create a separate text
+file for this purpose.
+javadoc
+Basic usage
+javadoc some.package
+Description
+javadoc produces documentation from Java source files. It does so by reading a spe‐
+cial comment format (known as Javadoc comments) and parsing it into a standard
+documentation format, which can then be output into a variety of document for‐
+mats (although HTML is by far the most common).
+For a full description of Javadoc syntax, refer to Chapter 7.
+Common switches
+-cp <classpath>
+Define the classpath to use
+-D <directory>
+Tell javadoc where to output the generated docs
+-quiet
+Suppress output except for errors and warnings
+Platform
+Tools
+Command-Line Tools | 379
+Notes
+The platform API docs are all written in Javadoc.
+javadoc is built on top of the same classes as javac, and uses some of the source
+compiler infrastructure to implement Javadoc features.
+The typical way to use javadoc is to run it against a whole package, rather than just
+a class.
+javadoc has a very large number of switches and options that can control many
+aspects of its behavior. Detailed discussion of all the options is outside the scope of
+this book.
+
+jdeps
+The jdeps tool is a static analysis tool for analyzing the dependencies of packages or
+classes. The tool has a number of usages, from identifying developer code that
+makes calls into the internal, undocumented JDK APIs (such as the sun.misc
+classes) to helping trace transitive dependencies.
+jdeps can also be used to confirm whether a JAR file can run under a Compact Pro‐
+file (see later in the chapter for more details on Compact Profiles).
+Basic usage
+jdeps com.me.MyClass
+Description
+jdeps reports dependency information for the classes it is asked to analyze. The
+classes can be specified as any class on the classpath, a file path, a directory, or a JAR
+file.
+Common switches
+-s, -summary
+Prints dependency summary only.
+-v, -verbose
+Prints all class-level dependencies.
+-verbose:package
+Prints package-level dependencies, excluding dependencies within the same
+archive.
+-verbose:class
+Prints class-level dependencies, excluding dependencies within the same
+archive.
+380 | Chapter 13: Platform Tools
+-p <pkg name>, -package <pkg name>
+Finds dependencies in the specified package. You can specify this option multi‐
+ple times for different packages. The -p and -e options are mutually exclusive.
+-e <regex>, -regex <regex>
+Finds dependencies in packages matching the specified regular expression pat‐
+tern. The -p and -e options are mutually exclusive.
+-include <regex>
+Restricts analysis to classes matching pattern. This option filters the list of
+classes to be analyzed. It can be used together with -p and -e.
+-jdkinternals
+Finds class-level dependencies in JDK internal APIs (which may change or dis‐
+appear in even minor platform releases).
+-apionly
+Restricts analysis to APIs—for example, dependencies from the signature of
+public and protected members of public classes including field type, method
+parameter types, returned type, and checked exception types.
+-R, -recursive
+Recursively traverses all dependencies.
+-h, -?, -help
+Prints help message for jdeps.
+Notes
+jdeps is a useful tool for making developers aware of their dependencies on the JRE
+not as a monolithic environment, but as something more modular.
+jps
+Basic usage
+jps jps <remote URL>
+Description
+jps provides a list of all active JVM processes on the local machine (or a remote
+machine, if a suitable instance of jstatd is running on the remote side).
+Platform
+Tools
+Command-Line Tools | 381
+Common switches
+-m
+Output the arguments passed to the main method
+-l
+Output the full package name for the application’s main class (or the full path
+name to the application’s JAR file)
+-v
+Output the arguments passed to the JVM
+Notes
+This command is not strictly necessary, as the standard Unix ps command could
+suffice. However, it does not use the standard Unix mechanism for interrogating the
+process, so there are circumstances where a Java process stops responding (and
+looks dead to jps) but is still listed as alive by the operating system.
+jstat
+Basic usage
+jstat <pid>
+Description
+This command displays some basic statistics about a given Java process. This is usu‐
+ally a local process, but can be located on a remote machine, provided the remote
+side is running a suitable jstatd process.
+Common switches
+-options
+Reports a list of report types that jstat can produce
+-class
+Report on classloading activity to date
+-compiler
+JIT compilation of the process so far
+-gcutil
+Detailed GC report
+-printcompilation
+More detail on compilation
+382 | Chapter 13: Platform Tools
+Notes
+The general syntax jstat uses to identify a process (which may be remote) is:
+[<protocol>://]<vmid>[@hostname][:port][/servername]
+The general syntax is used to specify a remote process (which is usually connected
+to via JMX over RMI), but in practice, the local syntax is far more common, which
+simply uses the VM ID, which is the operating system process ID (PID) on main‐
+stream platforms (Linux, Windows, Unix, macOS, etc.).
+jstatd
+Basic usage
+jstatd <options>
+Description
+jstatd provides a way of making information about local JVMs available over the
+network. It achieves this using RMI, and can make these otherwise-local capabilities
+accessible to JMX clients. This requires special security settings, which differ from
+the JVM defaults. To start jstatd, first we need to create the following file and
+name it jstatd.policy:
+grant codebase "file:${java.home}../lib/tools.jar {
+ permission java.security.AllPermission
+}
+This policy file grants all security permissions to any class loaded from the JDK’s
+tools.jar file.
+To launch jstatd with this policy, use this command line:
+jstatd -J-Djava.security.policy=<path to jstat.policy>
+Common switches
+-p <port>
+Look for an existing RMI registry on that port, and create one if not found
+Notes
+It is recommended that jstatd is always switched on in production environments,
+but not over the public internet. For most corporate and enterprise environments,
+this is nontrivial to achieve and will require the cooperation of Operations and Net‐
+work Engineering staff. However, the benefits of having telemetry data from pro‐
+duction JVMs, especially during outages, are difficult to overstate.
+Platform
+Tools
+Command-Line Tools | 383
+A full discussion of JMX and monitoring techniques is outside the scope of this
+book.
+jinfo
+Basic usage
+jinfo <PID> jinfo <core file>
+Description
+This tool displays the system properties and JVM options for a running Java process
+(or a core file).
+Common switches
+-flags
+Display JVM flags only
+-sysprops
+Display system properties only
+Notes
+In practice, this is very rarely used—although it can occasionally be useful as a san‐
+ity check that the expected program is actually what is executing.
+jstack
+Basic usage
+jstack <PID>
+Description
+The jstack utility produces a stack trace for each Java thread in the process.
+Common switches
+-F
+Force a thread dump
+-l
+Long mode (contains additional information about locks)
+384 | Chapter 13: Platform Tools
+javap
+Notes
+Producing the stack trace does not stop or terminate the Java process. The files that
+jstack produces can be very large, and some post-processing of the file is usually
+necessary.
+jmap
+Basic usage
+jmap <process>
+Description
+jmap provides a view of memory allocation for a running Java process.
+Common switches
+-histo
+Produces a histogram of the current state of allocated memory.
+-histo:live
+This version of the histogram only displays information for live objects.
+-heap
+Produces a heap dump from the running process.
+Notes
+The histogram forms walk the JVMs allocation list. This includes both live and dead
+(but not yet collected) objects. The histogram is organized by the type of objects
+using memory, and is ordered from greatest to least number of bytes used by a par‐
+ticular type. The standard form does not pause the JVM.
+The live form ensures that it is accurate, by performing a full, stop-the-world
+(STW) garbage collection before executing. As a result, it should not be used on a
+production system at a time when a full GC would appreciably impact users.
+For the -heap form, note that the production of a heap dump can be a timeconsuming process, and is STW. Note that for many processes, the resulting file may
+be extremely large.
+Basic usage
+javap <classname>
+Platform
+Tools
+Command-Line Tools | 385
+jaotc
+Description
+javap is the Java class disassembler—effectively a tool for peeking inside class files.
+It can show the bytecode that Java methods have been compiled into, as well as the
+“constant pool” information (which contains information similar to that of the sym‐
+bol table of Unix processes).
+By default, javap shows signatures of public, protected, and default methods. The
+-p switch will also show private methods.
+Common switches
+-c
+Decompile bytecode
+-v
+Verbose mode (include constant pool information)
+-p
+Include private methods
+Notes
+The javap tool will work with any class file, provided javap is from a JDK version
+the same as (or later than) the one that produced the file.
+Some Java language features may have surprising implementa‐
+tions in bytecode. For example, as we saw in Chapter 9, Java’s
+String class has effectively immutable instances and the JVM
+implements the string concatenation operator + in a different
+way in Java versions after 8 than previously. This difference is
+clearly visible in the disassembled bytecode shown by javap.
+Basic usage
+jaotc --output libStringHash.so StringHash.class
+Description
+jaotc is the ahead-of-time compiler for the Java platform—a tool for compiling Java
+class files or modules to native code. This can be used to create shared objects that
+can greatly reduce process startup time and provide lower memory footprint due to
+reduced dynamic class operations.
+Common switches
+--info
+Basic information about what’s being compiled
+386 | Chapter 13: Platform Tools
+jlink
+--verbose
+Verbose mode (full details)
+--help
+Full list of options (very useful)
+Notes
+The jaotc tool will work with class files, JARs, or modules and can support multiple
+linker backends. On macOS, the shared objects produced will be Mach .dylib files
+rather than Linux shared objects.
+Some Java language features (e.g., reflection, method handles)
+may have some restrictions when compiling to static code.
+Basic usage
+jlink [options] --module-path modulepath --add-modules module
+Description
+jlink is the custom runtime image linker for the Java platform—a tool for linking
+and packaging Java classes, modules, and their dependencies into a custom runtime
+image. The image created by the jlink tool will comprise a linked set of modules,
+along with their transitive dependences.
+Common switches
+--add-modules module [, module1]
+Adds modules to the root set of modules to be linked
+--endian {little|big}
+Specifies the endianness of the target architecture
+--module-path path
+Specify the path where the modules for linking can be found
+--save-opts file
+Saves the options to the linker in the specified file
+--help
+Print help information
+@filename
+Read options from filename instead of the command line
+Platform
+Tools
+Command-Line Tools | 387
+jmod
+Notes
+The jlink tool will work with any class file or module and linking will require the
+transitive dependencies of the code to be linked.
+Custom runtime images don’t have any support for automatic
+updates by default. This means that developers are responsible
+for rebuilding and updating their own applications in the field
+when necessary. Some Java language features may have some
+restrictions, as the runtime image may not include the full
+JDK; therefore reflection and other dynamic techniques may
+not be fully supported.
+Basic usage
+jmod create [options] my-new.jmod
+Description
+jmod prepares Java software components for use by the custom linker (jlink). The
+result is a .jmod file. This should be considered an intermediate file, not a primary
+artifact for distribution.
+Basic modes
+create
+Create a new JMOD file
+extract
+Extract all files from a JMOD file (explode it)
+list
+List all files from a JMOD file
+describe
+Print details about a JMOD file
+Common switches
+--module-path path
+Specify the module path where the core contents of the module can be found
+--libs path
+Specify the path where native libraries for inclusion can be found
+--help
+Print help information
+388 | Chapter 13: Platform Tools
+@filename
+Read options from filename instead of the command line
+Notes
+jmod reads and writes the JMOD format, but please note that this is different from
+the modular JAR format and is not intended as an immediate replacement for it.
+The jmod tool is only currently intended for modules that are
+intended to be linked into a runtime image (using the jlink
+tool). One other possible use case is for packaging modules
+that have native libraries or other configuration files that must
+be distributed along with the module.
+
+
+
+
+
+# start jshell repl
+$ jshell
+-->

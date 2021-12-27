@@ -1,0 +1,141 @@
+---
+title: "Strategy Pattern"
+date: 2020-09-29
+draft: false
+---
+
+<p>
+  The Strategy Pattern defines a family of algorithms, encapsulates each one and makes them interchangeable. The algorithms are able to vary independently from clients that use them.
+</p>
+
+
+<h3>Description</h3>
+
+<ul>
+  <li>
+    With the Strategy Pattern, rather than implementing a single algorithm directly where it is used, we define a family of algorithms
+  </li>
+  <li>
+    Particularly, we define a <code>Strategy</code> interface to represent our algorithm. This has various concrete implementations which define the algorithms.
+  </li>
+  <li>
+    At runtime, the <code>Context</code> object delegates to a particular <code>Strategy</code> object. Deferring the decision about which algorithm to use until runtime allows the calling code to be more flexible and reusable.
+  </li>
+  <li>
+    Further, this decouples the algorithms from the clients that use them which allows the algorithms to vary independently. We can change algorithms and add new algorithms.
+  </li>
+</ul>
+
+<!-- 
+In general, think of the Strategy Pattern as a flexible alternative to
+subclassing; if you use inheritance to define the behavior of a class,
+then you’re stuck with that behavior even if you need to change it.
+With Strategy you can change the behavior by composing with a
+different object.
+-->
+
+<figure>
+  <img src="/img/design-patterns/strategy.svg" height="100%" width="100%" style="max-width: 700px;">
+</figure>
+
+
+<h3>Example</h3>
+
+<ul>
+  <li>
+    We consider the case of a duck pond simulation that features a variety of duck species. There is one abstract <code>Duck</code> superclass from which all other duck types inherit.
+  </li>
+  <li>
+    The <code>Duck</code> class provides implementations for <code>quack()</code> and <code>swim()</code> though it makes the subclasses responsible for implementing their own <code>display()</code> method.
+  </li>
+  <li>
+    We need to implement flying behavior. We could add a <code>fly()</code> method in the <code>Duck</code> class but that would cause the undesirable result of instances of <code>RubberDuck</code> flying. Indeed, selectively overriding <code>fly()</code> is not satisfactory as then we would have to inspect and possibly override <code>fly()</code> for every new duck.
+  </li>
+  <li>
+    Also, while our program assumes that all ducks swim in the same way, this does not hold for quacking. The <code>quack()</code> methods in various <code>Duck</code> subclasses have ended up being overridden; sometimes resulting in code being copied between <code>Duck</code> subclasses with the same quacking behavior.
+  </li>
+  <li>
+    To address this, we separate out the flying and quacking behaviors into two separate sets of classes that implement the <code>FlyBehavior</code> and <code>QuackBehavior</code> interfaces respectively. This also for reuse of fly and quack behaviors while also allowing us to easily add new behaviors.
+  </li>
+  <li>
+    We add two instance variables of type <code>FlyBehavior</code> and <code>QuackBehavior</code> to <code>Duck</code> so we can assign particular behaviors to the instances of <code>Duck</code> in the constructors of the various <code>Duck</code> subclasses. We also include behavior setter methods so that we can change the behaviors at runtime.
+  </li>
+  <li>
+    We replace <code>fly()</code> and <code>quack()</code> with two similar methods, called
+    <code>performFly()</code> and <code>performQuack()</code> which delegate to the objects referenced by the two instance variables of type <code>FlyBehavior</code> and <code>QuackBehavior</code> respectively.
+  </li>
+</ul>
+
+{{% code-file file="/static/code/programming/design-patterns/Strategy.java" lang="java" %}}
+
+
+
+<h3>Principle: Encapsulate Change</h3>
+
+<p>
+  <i>Identify the aspects of your application that vary and separate them out from what stays the same.</i>
+</p>
+
+<ul>
+  <li>
+    If there is some aspect of our code that is changing (say with every new requirement) then we know to separate out that behavior from what does not change.
+  </li>
+  <li>
+    If we take the parts that vary and encapsulate them then we can alter or extend those parts without affecting the rest of our code. This way we have fewer unintended consequences from code changes and more flexibility.
+  </li>
+  <li>
+    In the example, we identified the flying and quacking behaviors are the parts that change and separated out these behaviors into their own sets of classes.
+  </li>
+</ul>
+
+
+
+<h3>Principle: Program to Interfaces</h3>
+
+<p>
+  <i>
+    Program to an interfaces rather than an implementation.
+  </i>
+</p>
+
+<ul>
+  <li>
+    The point here is to exploit polymorphism by programming to a supertype. That way, the class declaring the supertype does not need to be coupled to the actual object types used. Indeed, the objects assigned to those variables can be of any concrete implementations of the supertype.
+  </li>
+  <li>
+    In the example, the <code>Duck</code> subclasses do not need to know the implementation details of the behaviors as we program to the interfaces <code>FlyBehavior</code> and <code>QuackBehavior</code> rather than any particular implementations.
+  </li>
+</ul>
+
+
+<h3>Principle: Favor Composition</h3>
+
+<p>
+  <i>
+    Favor composition over inheritance.
+  </i>
+</p>
+
+<ul>
+  <li>
+    Composition involves putting classes together using the HAS-A relationship.
+  </li>
+  <li>
+    When behavior is inherited using subclassing, that behavior is set statically at compile time. In addition, all subclasses must inherit the same behavior. In contrast, if the behavior of an object is extended through composition then this can be done dynamically at runtime.
+  </li>
+  <li>
+    By dynamically composing objects, one can add new functionality by writing new code rather than altering existing code. This reduces the changes of introducing bugs or causing unintended side effects in pre-existing code.
+  </li>
+  <li>
+    In the example, ducks get their flying and quacking behavior through composition: each duck has a <code>FlyBehavior</code> and a <code>QuackBehavior</code> to which it delegates flying and quacking.
+  </li>
+</ul>
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=yjZsAl13trk">Change Behaviors with the Strategy Pattern (One Wheel Studio)</a>
+  </li>
+</ul>

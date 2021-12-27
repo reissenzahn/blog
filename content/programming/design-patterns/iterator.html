@@ -1,0 +1,210 @@
+---
+title: "Iterator Pattern"
+date: 2020-09-29
+draft: false
+---
+
+<p>
+  The Iterator Pattern provides a way to access the elements of an aggregate object sequentially without exposing its underlying representation.
+</p>
+
+
+<h3>Description</h3>
+
+<!-- 
+Having a common interface for your aggregates is handy for your client; it decouples your client from the implementation of your collection of objects.
+
+The ConcreteAggregate
+has a collection of
+objects and implements
+the method that
+returns an Iterator for
+its collection.
+
+The Iterator interface
+provides the interface
+that all iterators
+must implement, and
+a set of methods
+for traversing over elements of a collection. 
+
+Each
+ConcreteAggregate
+is responsible for
+instantiating a
+ConcreteIterator that
+can iterate over its
+collection of objects.
+
+The ConcreteIterator is
+responsible for managing
+the current position of
+the iteration.
+
+---
+
+  The hasNext() method returns a boolean indicating whether or not there are more elements to iterate over...
+To add an iterator to the DinerMenu, we first need to define the Iterator interface:
+...and the next() method
+returns the next element.
+
+
+You’ve already seen how to implement the Iterator
+Pattern with your very own iterator. You’ve also seen
+how Java supports iterators in some of its collectionoriented classes (ArrayList). Now it’s time to check out
+the official definition of the pattern:
+This makes a lot of sense: the pattern gives you a way
+to step through the elements of an aggregate without
+having to know how things are represented under the
+covers. You’ve seen that with the two implementations
+of Menus. But the effect of using iterators in your design
+is just as important: once you have a uniform way of
+accessing the elements of all your aggregate objects, you
+can write polymorphic code that works with any of these
+aggregates—just like the printMenu() method, which
+doesn’t care if the menu items are held in an Array or
+ArrayList (or anything else that can create an Iterator), as
+long as it can get hold of an Iterator.
+The other important impact on your design is that the
+Iterator Pattern takes the responsibility of traversing
+elements and gives that responsibility to the iterator
+object, not the aggregate object. This not only keeps
+the aggregate interface and implementation simpler,
+it removes the responsibility for iteration from the
+aggregate and keeps the aggregate focused on the
+things it should be focused on (managing a collection of
+objects), not on iteration.
+
+The Iterator Pattern
+allows traversal of the
+elements of an aggregate
+without exposing the
+underlying implementation.
+
+It also places the task
+of traversal on the
+iterator object, not
+on the aggregate,
+which simplifies the
+aggregate interface and
+implementation, and
+places the responsibility
+where it should be.
+
+-->
+
+
+
+
+<h3>Example</h3>
+
+<ul>
+  <li>
+    We consider the case of a restaurant with separate breakfast and lunch menus. The implementation of the breakfast menu uses an ArrayList to hold <code>MenuItem</code> instances while the lunch menu uses an array. We have too much dependent code to modify these implementations to use the same collection.
+  </li>
+  <li>
+    We want to implement an automated waitress that is able to print all menu items. Now, we could approach this by simply calling a <code>getMenuItems()</code> method on each menu and then using a loop to iterate over the <code>ArrayList</code> as well as a second loop to iterate over the array.
+  </li>
+  <li>
+    However, this would means we would be coding to the concrete <code>BreakfastMenu</code> and <code>LunchMenu</code> implementations and the <code>Waitress</code> would need to know how about the internal collections used by the menu classes which violates encapsulation. If the <code>BreakfastMenu</code> was modified to use a different collection then we would have to modify code in <code>Waitress</code>.
+  </li>
+  <li>
+    Instead, we will encapsulate the iteration by providing each menu class with a concrete iterator class which implements the <code>Iterator</code> interface. The menu classes have a <code>createIterator()</code> method which returns the suitable iterator instance. The iterators encapsulate the way we iterate through a collection of objects.
+  </li>
+  <li>
+    The <code>Waitress</code> class can then use <code>Iterator</code> interfaces rather than concrete classes which insulates it from the internal details of how <code>MenuItem</code> instances are maintained in the menu classes. It can also looping code that polymorphically handles any class that implements <code>Iterator</code>.
+  </li>
+</ul>
+
+<!--
+The Menu interfaces are now exactly
+the same and, uh oh, we still don’t
+have a common interface, which
+means the Waitress is still bound to
+two concrete Menu classes. We’d
+better fix that.
+-->
+
+
+
+
+<h3>Principle: Single Responsibility</h3>
+
+<p>
+  <i>
+    A class should have only one reason to change.
+  </i>
+</p>
+
+<ul>
+  <li>
+
+  </li>
+</ul>
+
+<!-- 
+What if we allowed our aggregates to implement their internal
+collections and related operations AND the iteration methods?
+Well, we already know that would expand the number of
+methods in the aggregate, but so what? Why is that so bad?
+Well, to see why, you first need to recognize that when we allow
+a class to not only take care of its own business (managing
+some kind of aggregate) but also take on more responsibilities
+(like iteration) then we’ve given the class two reasons to change.
+Two? Yup, two: it can change if the collection changes in some
+way, and it can change if the way we iterate changes. So once
+again our friend CHANGE is at the center of another design
+principle:
+
+
+We know we want to avoid change in our classes because
+modifying code provides all sorts of opportunities for
+problems to creep in. Having two ways to change increases
+the probability the class will change in the future, and when
+it does, it’s going to affect two aspects of your design.
+The solution? The principle guides us to assign each
+responsibility to one class, and only one class.
+That’s right, it’s as easy as that, and then again it’s not:
+separating responsibility in design is one of the most
+difficult things to do. Our brains are just too good at seeing
+a set of behaviors and grouping them together even when
+there are actually two or more responsibilities. The only
+way to succeed is to be diligent in examining your designs
+and to watch out for signals that a class is changing in more
+than one way as your system grows.
+
+Every responsibility of
+a class is an area of
+potential change. More
+than one responsibility
+means more than one area
+of change.
+This principle guides us to
+keep each class to a single
+responsibility.
+
+Cohesion is a term you’ll
+hear used as a measure of
+how closely a class or a
+module supports a single
+purpose or responsibility.
+We say that a module or
+class has high cohesion when it
+is designed around a set of related
+functions, and we say it has low
+cohesion when it is designed around a
+set of unrelated functions.
+Cohesion is a more general concept
+than the Single Responsibility Principle,
+but the two are closely related.
+Classes that adhere to the principle
+tend to have high cohesion and are
+more maintainable than classes that
+take on multiple responsibilities and
+have low cohesion.
+ -->
+
+
+<h3>Resources</h3>
+
+
