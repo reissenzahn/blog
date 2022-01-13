@@ -4,236 +4,132 @@ date: 2021-11-24
 draft: false
 ---
 
-<p>
-  Sockets are a method of IPC that allow data to be exchanged between applications running on either the same host or on different hosts connected by a network.
-</p>
-
-<!-- #region communication-domains -->
-<h3>Communication Domains</h3>
-
-<p>
-  A socket exists in a communication domain which determines the range of communication and the format of the address used to identify the socket. For instance:
-</p>
-
+<!-- #region introduction -->
 <ul>
   <li>
-    AF_UNIX: Allows communication between applications on the same host.
+    Sockets are a method of IPC that allow data to be exchanged between applications either on the same host or on different hosts connected by a network.
   </li>
   <li>
-    AF_INET: Allows communication between applications running on hosts connected via an IPv4 network.
+    Sockets exist in a communication domain which determines the address format and the range of communication. For example:
+    <ul>
+      <li>
+        <code>AF_UNIX</code>: Allows communication between applications on the same host.
+      </li>
+      <li>
+        <code>AF_INET</code>: Allows communication between applications running on hosts connected via an IPv4 network.
+      </li>
+      <li>
+        <code>AF_INET6</code>: Allows communication between applications running on hosts connected via an IPv6 network.
+      </li>
+    </ul>
   </li>
   <li>
-    AF_INET6: Allows communication between applications running on hosts connected via an IPv6 network.
+    Every sockets implementation provides at least two types of sockets:
+    <ul>
+      <li>
+         <code>SOCK_STREAM</code>: Stream sockets are connection-oriented and provide reliable and bidirectional byte-stream communication.
+      </li>
+      <li>
+        <code>SOCK_DGRAM</code>: Datagram sockets are connectionless and provide unreliable datagram communication.
+      </li>
+    </ul>
   </li>
 </ul>
 <!-- #endregion -->
 
-<!-- #region socket-types -->
-<h3>Socket Types</h3>
-
-<p>
-  Every sockets implementation provides at least two types of sockets:
-</p>
+<!-- #region sockets overview -->
+<h3>Sockets Overview</h3>
 
 <ul>
   <li>
-    SOCK_STREAM: Provides a connection-oriented, reliable, bi-directional, byte-stream communication channel between a connected pair of sockets (referred to the local and remote peers).
+    By default, a socket that has been created using <code>socket()</code> is active.
   </li>
   <li>
-    SOCK_DGRAM: Provides connectionless, unreliable, message-oriented exchange of datagrams where a socket does not need to be connected to another socket in order to be used.
+    An active socket can be used in a <code>connect()</code> call to establish a connection to a passive socket. This is referred to as performing an active open.
+  </li>
+  <li>
+    A passive socket is one that has been marked to allow incoming connections by calling <code>listen()</code>.
+  </li>
+  <li>
+    Accepting an incoming connection is referred to as performing a passive open.
   </li>
 </ul>
 
-<p>
-  In the Internet domain, stream sockets employ TCP and datagram sockets employ UDP. 
-</p>
+
+<h4>Stream Sockets</h4>
+
+<ul>
+  <li>
+    The server calls socket() to create a new stream socket and then calls bind() to bind it to an address.
+  </li>
+  <li>
+    The server then calls listen() to indicate its willingness to accept incoming connections.
+  </li>
+  <li>
+    A client calls socket() to create a new stream socket and then calls connect() with the address used by the server.
+  </li>
+  <li>
+    The server calls accept() to accept the connection from the client which returns a file descriptor for a new stream socket that is connected to the client socket.
+  </li>
+  <li>
+    Data can then be transmitted in both directions via calls to read() and write() or via socket-specific calls like send() and recv().
+  </li>
+  <li>
+    Finally, either side of the connection calls close() to close the connection.
+  </li>
+</ul>
+
+
+<h4>Datagram Sockets</h4>
+
+<ul>
+  <li>
+    The server calls socket() to create a new datagram socket and then calls bind() to bind it to an address.
+  </li>
+  <li>
+    A client creates a datagram socket with socket().
+  </li>
+  <li>
+    The client calls sendto() with the address of the server to send it a datagram.
+  </li>
+  <li>
+    The server calls recvfrom() to receive a datagram and to obtain the address of the sender.
+  </li>
+  <li>
+    The server calls sendto() with the address of the sender and the client calls recvfrom() to receive the response.
+  </li>
+  <li>
+    Finally, either application calls close() to close the socket.
+  </li>
+</ul>
 <!-- #endregion -->
 
+<!-- #region address structures -->
+<h3>Address Structures</h3>
 
-<h3>Socket Addresses</h3>
+<h4>sockaddr</h4>
 
 {{% code c %}}struct sockaddr {
-  sa_family_t sa_family;  // address family
+  sa_family_t sa_family;  // address family (AF_* constant)
   char sa_data[14];       // socket address
 };{{% /code %}}
 
-<p>
-  Each socket domain uses a different address format and so there are different structure types defined to store the various socket addresses. The generic address structure sockaddr is provided so that the various domain-specific address structures can be cast to a single type for use as arguments in system calls. Each of the address structures begins with a family field corresponding to the sa_family field of the sockaddr structure which is used to determine the size and format of the address stored in the remainder of the structure.
-</p>
-
-
-<h3>Socket Creation</h3>
-
-{{% code c %}}#include <sys/socket.h>
-
-int socket(int domain, int type, int protocol);{{% /code %}}
-
-<p>
-  The socket() system call creates a new socket. The domain argument specifies the communication domain for the socket and the type argument specifies the socket type. The protocol argument is typically specified as 0. A call returns a file descriptor used to refer to the newly created socket in subsequent system calls or -1 on error.
-</p>
-
-
-<h3>Binding a Socket to an Address</h3>
-
-{{% code c %}}#include <sys/socket.h>
-
-int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);{{% /code %}}
-
-<p>
-  The bind() system call binds the socket identified by the file descriptor sockfd to an address. The addr argument is a pointer to a structure specifying the address to which the socket is to be bound and addrlen specifies the size of this address structure. The type of address structure used depends on the communication domain. A call returns 0 on success or -1 on error.
-</p>
-
-
-<h3>Listening for Incoming Connections</h3>
-
-{{% code c %}}#include <sys/socket.h>
-
-int listen(int sockfd, int backlog);{{% /code %}}
-
-<p>
-  The listen() system call marks the stream socket specified by the file descriptor sockfd as passive. The socket will subsequently be used to accept connections from other active sockets. A call returns 0 on success or -1 on error.
-</p>
-
-<p>
-  Notice that a client may call connect() before the server calls accept(). For instance, the server may be bust handling other clients. This results in a pending connection for which the kernel must record some information. The backlog argument allows us to limit the number of such pending connections with further connection requests block until a pending connection is accepted. The upper limit on the value that can be specified is given by the SOMAXCONN constant. Linux allows this limit to be adjusted at run time via the /proc/sys/net/core/somaxconn file.
-</p>
-
-
-<h3>Accepting a Connection</h3>
-
-{{% code c %}}#include <sys/socket.h>
-
-int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);{{% /code %}}
-
-<p>
-  The accept() system call accepts an incoming connection on the listening stream socket referred to by the file descriptor sockfd. If there are no pending connections the call blocks until a connection request arrives. A call returns a file descriptor to a new socket that is connected to the peer socket that performed the connect() or -1 on error. The listening socket remains open and can be used to accept further connections.
-</p>
-
-<p>
-  The addr argument points to a structure that is used to return the address of the peer socket. Tje type of addr depends on the socket domain. The addrlen argument points to an integer that, prior to the call, must be initialized to the size of the buffer pointer to by addr. Upon return from accept(), addrlen is set to indicate the number of bytes of data were actually copied in the buffer. If we are not interested in the address of the peer socket then addr and addrlen should be specified as NULL and 0 respectively.
-</p>
-
-
-<h3>Connecting to a Socket</h3>
-
-{{% code c %}}#include <sys/socket.h>
-
-int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);{{% /code %}}
-
-<p>
-  The connect() system call connects the active socket referred to by sockfd to the listening socket whose address is specified by addr and addrlen which are specified in the same way as the corresponding arguments to bind(). A call returns 0 on success or -1 on error. If this fails we should close the socket, create a new socket and reattempt the connection with the new socket.
-</p>
-
-<p>
-  Calling connect() on a datagram socket causes the kernel to record a particular address as the peer of this socket. After a datagram socket has been connected datagrams can be sent through the socket using write() or send() and are automatically sent to the same peer socket. Also, only datagrams sent by the peer socket may be read on the socket. We can change the peer of a connected datagram socket by issuing a further connect() call and we can dissolve the peer association altogether by specifying an address structure in which the address family is specified as AF_UNSPEC.
-</p>
-
-
-<h3>Closing a Socket</h3>
-
-<p>
-  The usual way of terminating a stream socket connection is to call close().  If multiple file descriptors refer to the same socket then the connection is terminated when all of the descriptors are closed.
-</p>
-
-<p>
-  Afterward, when the peer application attempts to read from the other end of the connection, it receives EOF once all buffered data has been read. If the peer application attempts to write to its socket, it receives a SIGPIPE signal, and the system call fails with the error EPIPE. The usual way of dealing with this possibility is to ignore the SIGPIPE signal and find out about the closed connection via the EPIPE error.
-</p>
-
-
-<h3>Socket I/O</h3>
-
-<p>
-  To perform I/O on a stream socket, we can use read() and write() or the socket-specific send() and recv() system calls. Since sockets are bi-directional, both calls may be used on each end of the connection. By default, these calls block if the I/O operation cannot be completed immediately. Non-blocking I/O is enabled using fcntl() with the F_SETFL operation to enable the O_NONBLOCK open file status flag.
-</p>
-
-<!-- 
-  On Linux, we can call ioctl(fd, FIONREAD, &cnt) to obtain the number of
-unread bytes available on the stream socket referred to by the file descriptor
-fd. For a datagram socket, this operation returns the number of bytes in the
-next unread datagram (which may be zero if the next datagram is of zero
-length), or zero if there are no pending datagrams.
- -->
-
-
-<h3>Exchanging Datagrams</h3>
-
-{{% code c %}}#include <sys/socket.h>
-
-ssize_t recvfrom(int sockfd, void *buffer, size_t length, int flags, struct sockaddr *src_addr, socklen_t *addrlen);
-
-ssize_t sendto(int sockfd, const void *buffer, size_t length, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);{{% /code %}}
-
-<p>
-  The sendto() system call sends a datagram to the address specified by the dest_addr and addrlen arguments. The dest_addr argument is an address structure suitable for this communication domain. It is initialized with the address of the destination socket. The addrlen argument specifies the size of addr. A call returns the number of bytes sent or -1 on error
-</p>
-
-<p>
-  The recvfrom() system call receives a datagram on the socket identifier by the file descriptor sockfd into the buffer pointed to by buffer with length given by length. The flags argument is a bit mask controlling socket-specific I/O features and can be specified as 0 if we do not require these features. The src_addr and addrlen arguments are used to obtain the address of the peer socket as with accept(). recvfrom() retrieves exactly one message from a datagram socket which is silently truncated to length bytes if the size of that message exceeds length bytes. A call returns the number of received, 0 on EOF or -1 on error
-</p>
-
-
-<h3>Stream Sockets</h3>
-
-<p>
-  The operation of stream sockets proceeds as follows:
-</p>
-
-<ol>
+<ul>
   <li>
-    Each application creates a stream socket using socket().
+    Separate structure types are defined to store each of the various socket addresses.
   </li>
   <li>
-    One application calls bind() to bind the socket to a well-known address and then calls listen() to indicate it is willing to accept incoming connections.
+    A generic address structure <code>sockaddr</code> is provided to allow the various domain-specific address structures to be cast to a single type for use as arguments to system calls.
   </li>
   <li>
-    The other application establishes the connection by calling connect() with the address of the socket to which the connection is to be made.
+    Each of these address structures begins with a <code>family</code> field corresponding to the <code>sa_family</code> field of the <code>sockaddr</code> structure which is sufficient to determine the size and format of the address stored in the remainder of the structure.
   </li>
-  <li>
-    The application that called listen() then accepts the connection using accept().
-  </li>
-  <li>
-    Once the connection is established, data can be transmitted in both directions between the applications using the conventional read() and write() system calls or via a number of socket specific system calls such as send() and recv().
-  </li>
-  <li>
-    One application calls close() to close the connection.
-  </li>
-</ol>
-
-<p>
-  By default, a socket that has been created using socket() is active. An active socket can be used in a connect() call to establish a connection to a passive socket. A passive socket is one that has been marked to allow incoming connections by calling listen(). Accepting an incoming connection is referred to as performing a passive open. In a client-server scenario, the server performs the passive open and the client performs the active open.
-</p>
+</ul>
 
 
-<h3>Datagram Sockets</h3>
-
-<p>
-  The operation of datagram sockets proceeds as follows:
-</p>
-
-<ol>
-  <li>
-    Each application creates a datagram socket using socket().
-  </li>
-  <li>
-    One application uses bind() to bind its socket to a well-known address.
-  </li>
-  <li>
-    To send a datagram, an application calls sendto() which takes as one of its arguments the address of the socket to which the datagram is to be sent.
-  </li>
-  <li>
-    In order to receive a datagram, an application calls recvfrom() which may block if no datagram has yet arrived. Because recvfrom() allows us to obtain the address of the sender, we can send a reply if desired.
-  </li>
-  <li>
-    When the socket is no longer needed, the application closes it using close().
-  </li>
-</ol>
-
-
-<h3>Internet Socket Addresses</h3>
+<h4>sockaddr_in</h4>
 
 {{% code c %}}#include <netinet/in.h>
-
-#define __ss_aligntype uint32_t  // on 32-bit architectures
 
 struct in_addr {
   in_addr_t s_addr;  // unsigned 32-bit integer
@@ -243,193 +139,1325 @@ struct sockaddr_in {
   sa_family_t sin_family;   // address family (AF_INET)
   in_port_t sin_port;       // port number
   struct in_addr sin_addr;  // ipv4 address
-  unsigned char __pad[X];   // padding
-};
+  unsigned char __pad[X];   // pad to size of sockaddr struct
+};{{% /code %}}
 
-struct in6_addr {
-  uint8_t s6_addr[16];  // 16 bytes = 128 bits
- };
+<ul>
+  <li>
+    An IPv4 socket address is stored in a <code>sockaddr_in</code> structure.
+  </li>
+  <li>
+    The <code>sin_family</code> field in the is always set to <code>AF_INET</code>. The <code>sin_port</code> and <code>sin_addr</code> fields are the port number and the IP address (both in network byte order).
+  </li>
+  <li>
+    The <code>in_port_t</code> and <code>in_addr_t</code> types are unsigned integer types of length 16 and 32 bits  respectively.
+  </li>
+</ul>
+
+
+<h4>sockaddr_in6</h4>
+
+{{% code c %}}#include <netinet/in.h>
+
+struct in6_addr {       // ipv6 address structure
+  uint8_t s6_addr[16];  // 16 byte array
+};
 
 struct sockaddr_in6 {
-  sa_family_t sin6_family;   // address family (AF_INET6)
-  in_port_t sin6_port;       // port number
-  uint32_t sin6_flowinfo;    // ipv6 flow information
-  struct in6_addr sin6_addr; // ipv6 address
-  uint32_t sin6_scope_id;    // scope id
-};
+  sa_family_t sin6_family;    // address family (AF_INET6)
+  in_port_t sin6_port;        // port number
+  uint32_t sin6_flowinfo;     // ipv6 flow information
+  struct in6_addr sin6_addr;  // ipv6 address
+  uint32_t sin6_scope_id;     // scope identifier
+};{{% /code %}}
+
+<ul>
+  <li>
+    An IPv6 socket address is stored in a <code>sockaddr_in6</code> structure.
+  </li>
+  <li>
+    The <code>sin_family</code> field is set to <code>AF_INET6</code>. The <code>sin6_port</code> and <code>sin6_addr</code> fields are the port number and the IP address. The remaining fields can be set to 0 if they will not be used.
+  </li>
+  <li>
+    All of the fields in the <code>sockaddr_in6</code> structure are in network byte order.
+  </li>
+  <li>
+    The predefined variable <code>in6addr_any</code> is provided to initialize an IPv6 socket address structure using the wildcard address. Similarly, <code>in6addr_loopback</code> is provided for the loopback address. The values are in network byte order.
+  </li>
+</ul>
+
+
+<h4>sockaddr_storage</h4>
+
+{{% code c %}}#define __ss_aligntype uint32_t  // on 32-bit architectures
 
 struct sockaddr_storage {
   sa_family_t ss_family;
   __ss_aligntype __ss_align;      // force alignment
-  char __ss_padding[SS_PADSIZE];  // pad to 127 bytes
+  char __ss_padding[SS_PADSIZE];  // pad to 128 bytes
 };{{% /code %}}
 
-<p>
-  Internet domain socket addresses consist of an IP address and a port number. An IPv4 socket address is stored in a sockaddr_in structure. The sin_port and sin_addr fields are the port number and the IP address in network byte order. An IPv6 address is stored in a sockaddr_in6 structure. The sin6_flowinfo and sin6_scope_id are set to 0 when not being used. All fields in the sockaddr_in6 structure are in network byte order.
-</p>
+<ul>
+  <li>
+    The generic <code>sockaddr_storage</code> structure is defined to be large enough to hold any type of socket address.
+  </li>
+  <li>
+    Any type of socket address structure can be cast and stored in it. In particular, this structure allows us to transparently store either an IPv4 or an IPv6 socket address.
+  </li>
+</ul>
+<!-- #endregion -->
 
-<p>
-  The predefined in6addr_any and in6addr_loopback variables are provided for initializing an IPv6 socket address structure with the wildcard and loopback addresses respectively. This is necessary as an IPv6 address is stored in an array. Unlike their IPv4 counterparts, the IPv6 constant and variable initializers are in network byte order. 
-</p>
+<!-- #region socket system calls -->
+<h3>Socket System Calls</h3>
 
-<p>
-  The sockaddr_storage structure is defined to be large enough so that any type of socket address structure can be cast and stored in it.
-</p>
+<h4>socket()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int socket(int domain, int type, int protocol);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>socket()</code> system call creates a new socket.
+  </li>
+  <li>
+    The <code>domain</code> argument specifies the communication domain for the socket and the <code>type</code> argument specifies the socket type. The <code>protocol</code> argument is typically specified as 0.
+  </li>
+  <li>
+    A call to <code>socket()</code> returns a file descriptor used to refer to the newly created socket on success or -1 on error.
+  </li>
+</ul>
+
+
+<h4>bind()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>bind()</code> system call binds the socket identified by <code>sockfd</code> to an address.
+  </li>
+  <li>
+    The <code>addr</code> argument is a pointer to a structure specifying the address to which this socket is to be bound. The <code>addrlen</code> argument specifies the size of this address structure.
+  </li>
+  <li>
+    The type of the <code>addr</code> argument depends on the socket domain.
+  </li>
+  <li>
+    A call to <code>bind()</code> returns 0 on success or -1 on error.
+  </li>
+</ul>
+
+
+<h4>listen()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int listen(int sockfd, int backlog);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>listen()</code> system call marks the stream socket referred to by the file descriptor <code>sockfd</code> as passive. The socket will subsequently be used to accept connections from other (active) sockets.
+  </li>
+  <li>
+    We cannot apply <code>listen()</code> to a connected socket (i.e. a socket on which a <code>connect()</code> has been performed or a socket returned by a call to <code>accept()</code>).
+  </li>
+  <li>
+    Given that a client may call <code>connect()</code> before the server calls <code>accept()</code>, the kernel records information about pending connection requests.
+  </li>
+  <li>
+    The <code>backlog</code> argument allows us to limit the number of such pending connections. Connection requests up to this limit succeed immediately. Further connection requests block until a pending connection is accepted via <code>accept()</code>.
+  </li>
+</ul>
+
+
+<h4>accept()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>accept()</code> system call accepts an incoming connection on the listening stream socket identified by <code>sockfd</code>.
+  </li>
+  <li>
+    If there are no pending connections when <code>accept()</code> is called then the call blocks until a connection request arrives.
+  </li>
+  <li>
+    The call to <code>accept()</code> creates a new socket and it is this new socket that is connected to the peer socket that performed the <code>connect()</code>. The listening socket remains open and can be used to accept further connections.
+  </li>
+  <li>
+    The <code>addr</code> argument points to a structure that is used to return the address of the peer socket.
+  </li>
+  <li>
+    The <code>addrlen</code> argument points to an integer that must be initialized to the size of the buffer pointed to by <code>addr</code> and is set to indicate the number of bytes of data actually copied into the buffer.
+  </li>
+  <li>
+    If we are not interested in the address of the peer socket then <code>addr</code> and <code>addrlen</code> should be specified as <code>NULL</code> and <code>0</code>, respectively.
+  </li>
+  <li>
+    A call to <code>accept()</code> returns a file descriptor for the connected socket or -1 on error.
+  </li>
+</ul>
+
+
+<h4>connect()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>connect()</code> system call connects the active socket referred to by the file descriptor <code>sockfd</code> to the socket listening at the given address.
+  </li>
+  <li>
+    The <code>addr</code> argument is a pointer to a structure specifying the address to which this socket is to be bound. The <code>addrlen</code> argument specifies the size of this address structure.
+  </li>
+  <li>
+    If <code>connect()</code> fails and we wish to reattempt the connection then we should close the socket, create a new socket and reattempt the connection with the new socket.
+  </li>
+  <li>
+    Calling <code>connect()</code> on a datagram socket causes the kernel to record a particular address as the peer of the socket. After which, datagrams can be sent through the socket using <code>write()</code> or <code>send()</code> and are automatically sent to the same peer socket. Each <code>write()</code> call results in a separate datagram. Further, only datagrams sent by the peer socket may be read on the socket.
+  </li>
+  <li>
+    A call to <code>connect()</code> returns <code>0</code> on success or <code>-1</code> on error.
+  </li>
+</ul>
+
+
+<h4>send()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+ssize_t send(int sockfd, const void *buffer, size_t length, int flags);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>send()</code> system call provides socket-specific functionality that is not available with <code>write()</code>.
+  </li>
+  <li>
+    The <code>flags</code> argument is a bit mask. Some of the constants that may be ORed in include:
+    <ul>
+      <li>
+        <code>MSG_DONTWAIT</code>: If the data cannot be immediately transferred (because the socket send buffer is full) then, instead of blocking, fail with the error <code>EAGAIN</code>.
+      </li>
+      <li>
+        <code>MSG_NOSIGNAL</code>: When sending data on a connected stream socket, do not generate a <code>SIGPIPE</code> signal if the other end of the connection has been closed.
+      </li>
+      <li>
+        <code>MSG_OOB</code>: Send out-of-band data on a stream socket.
+      </li>
+    </ul>
+  </li>
+  <li>
+    A call to <code>send()</code> returns the number of bytes sent or <code>-1</code> on error.
+  </li>
+</ul>
+
+
+<h4>recv()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+ 
+ssize_t recv(int sockfd, void *buffer, size_t length, int flags);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>recv()</code> system call provides socket-specific functionality that is not available with <code>read()</code>.
+  </li>
+  <li>
+    The <code>flags</code> argument is a bit mask. Some of the constants that may be ORed in include:
+    <ul>
+      <li>
+        <code>MSG_DONTWAIT</code>: If no data is available then, instead of blocking, return immediately with the error <code>EAGAIN</code>.
+      </li>
+      <li>
+        <code>MSG_PEEK</code>: Retrieve a copy of the requested bytes from the socket buffer but do not actually remove them from the buffer.
+      </li>
+      <li>
+        <code>MSG_WAITALL</code>: Causes the system call to block until <code>length</code> bytes have been received. However, the call may return fewer bytes if a signal is caught, the peer on a stream socket terminated the connection, an out-of-band data byte was encountered, the received message from a datagram socket is less than length bytes or an error occurs.
+      </li>
+      <li>
+        <code>MSG_OOB</code>: Receive out-of-band data on the socket.
+      </li>
+    </ul>
+  </li>
+  <li>
+    A call to <code>recv()</code> returns number of bytes received, <code>0</code> on EOF, or <code>-1</code> on error.
+  </li>
+</ul>
+
+
+<h4>sendto()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+ssize_t sendto(int sockfd, const void *buffer, size_t length, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>sendto()</code> system call sends a datagram on a datagram socket.
+  </li>
+  <li>
+    The <code>flags</code> argument is a bit mask controlling socket-specific I/O features. If we do not require any of these features we can specify this argument as <code>0</code>.
+  </li>
+  <li>
+    The <code>dest_addr</code> argument is initialized with the address of the destination socket. The <code>addrlen</code> argument specifies the size of addr.
+  </li>
+  <li>
+    A call to <code>sendto()</code> returns the number of bytes sent or -1 on error.
+  </li>
+</ul>
+
+
+<h4>recvfrom()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+ssize_t recvfrom(int sockfd, void *buffer, size_t length, int flags, struct sockaddr *src_addr, socklen_t *addrlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>recvfrom()</code> system calls receives a datagrams from a datagram socket.
+  </li>
+  <li>
+    Regardless of the value specified for length, <code>recvfrom()</code> retrieves exactly one message from a datagram socket. If the size of that message exceeds <code>length</code> bytes then the message is silently truncated to <code>length</code> bytes.
+  </li>
+  <li>
+    The <code>src_addr</code> argument is a pointer to an address structure used to return the address of the remote socket. The <code>addrlen</code> argument should be initialized to the size of the structure pointed to by <code>src_addr</code> and is set to the number of bytes actually written to this structure.
+  </li>
+  <li>
+    If we are not interested in the address of the sender then we specify both <code>src_addr</code> and <code>addrlen</code> as <code>NULL</code>. In this case, <code>recvfrom()</code> is equivalent to using <code>recv()</code> to receive a datagram.
+  </li>
+  <li>
+    A call to recvfrom() returns the number of bytes received, <code>0</code> on EOF or <code>-1</code> on error.
+  </li>
+</ul>
+
+
+<h4>getsockopt()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>getsockopt()</code> system call retrieves the socket options of the socket referred to by <code>sockfd</code>.
+  </li>
+  <li>
+    The <code>level</code> argument specifies the protocol to which the socket option applies. For instance, <code>SOL_SOCKET</code> indicates an option that applies at the sockets API level.
+  </li>
+  <li>
+    The <code>optname</code> argument identifies the option whose value we wish to retrieve. The <code>optval</code> argument is a pointer to a buffer used to return the option value; this argument is a pointer to an integer or a structure, depending on the option.
+  </li>
+  <li>
+    The <code>optlen</code> argument specifies the size in bytes of the buffer pointed to by <code>optval</code>.
+  </li>
+  <li>
+    A call to <code>getsockopt()</code> returns <code>0</code> on success or <code>-1</code> on error.
+  </li>
+</ul>
 
 <!-- 
-  struct sockaddr_in6 addr;
-memset(&addr, 0, sizeof(struct sockaddr_in6));
-addr.sin6_family = AF_INET6;
-addr.sin6_addr = in6addr_any;
-addr.sin6_port = htons(SOME_PORT_NUM);
- -->
+- The socket file descriptor returned by a call to accept() inherits the values of settable socket options from the listening socket.
+- Socket options are associated with an open file description. This means that file descriptors duplicated as a consequence of dup() or fork() share the same set of socket options.
+-->
 
 
-<h3>Network Byte Order</h3>
+<h4>setsockopt()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>setsockopt()</code> system call retrieves the socket options of the socket referred to by <code>sockfd</code>.
+  </li>
+  <li>
+    The <code>level</code> argument specifies the protocol to which the socket option applies.
+  </li>
+  <li>
+    The <code>optname</code> argument identifies the option whose value we wish to set. The <code>optval</code> argument is a pointer to a buffer used to return the option value; this argument is a pointer to an integer or a structure, depending on the option.
+  </li>
+  <li>
+    The <code>optlen</code> argument specifies the size in bytes of the buffer pointed to by <code>optval</code> and it is set to the number of bytes actually written to that buffer.
+  </li>
+  <li>
+    A call to <code>setsockopt()</code> returns <code>0</code> on success or <code>-1</code> on error.
+  </li>
+</ul>
+
+
+<h4>sendfile()</h4>
+
+{{% code c %}}#include <sys/sendfile.h>
+
+ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>sendfile()</code> system call transfers bytes from the file referred to by the descriptor <code>in_fd</code> to the socket referred to by <code>out_fd</code>.
+  </li>
+  <li>
+    The <code>in_fd</code> argument must refer to a file to which <code>mmap()</code> can be applied.
+  </li>
+  <li>
+    If offset is <code>NULL</code> then bytes are transferred from <code>in_fd</code> starting at the current file offset and the file offset is updated to reflect the number of bytes transferred.
+  </li>
+  <li>
+    If offset is not <code>NULL</code> then it should point to an <code>off_t</code> value that specifies the starting file offset from which bytes should be transferred from <code>in_fd</code>. On return, it contains the offset of the next byte following the last byte that was transferred from <code>in_fd</code>. In this case, <code>sendfile()</code> does not change the file offset for <code>in_fd</code>.
+  </li>
+  <li>
+    The <code>count</code> argument specifies the number of bytes to be transferred. If EOF is encountered before count bytes are transferred then only the available bytes are transferred.
+  </li>
+  <li>
+    A call to <code>sendfile()</code> returns the number of bytes transferred or <code>-1</code> on error.
+  </li>
+</ul>
+
+<h4>getsockname()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>getsockname()</code> system call returns the local address to which a socket is bound.
+  </li>
+  <li>
+    The <code>sockfd</code> argument is a file descriptor referring to a socket and the <code>addr</code> argument is a pointer to a suitably sized buffer that is used to return a structure containing the socket address.
+  </li>
+  <li>
+    The <code>addrlen</code> argument is a value-result argument. Before the call, it should be initialized to the length of the buffer pointed to by addr; on return, it contains the number of bytes actually written to this buffer.
+  </li>
+  <li>
+    A call to <code>getsockname()</code> returns 0 on success or -1 on error.
+  </li>
+</ul>
+
+
+<h4>getpeername()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>getpeername()</code> system call returns the address of the peer socket to which the local socket is connected.
+  </li>
+  <li>
+    The <code>sockfd</code> argument is a file descriptor referring to a socket and the <code>addr</code> argument is a pointer to a suitably sized buffer that is used to return a structure containing the socket address.
+  </li>
+  <li>
+    The <code>addrlen</code> argument is a value-result argument. Before the call, it should be initialized to the length of the buffer pointed to by <code>addr</code>; on return, it contains the number of bytes actually written to this buffer.
+  </li>
+  <li>
+    A call to <code>getpeername()</code> returns 0 on success or -1 on error.
+  </li>
+</ul>
+
+
+<h4>shutdown()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+
+int shutdown(int sockfd, int how);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>shutdown()</code> system call closes one or both channels of the socket <code>sockfd</code> depending on the value of how, which is specified as one of the following:
+
+    <ul>
+      <li>
+        <code>SHUT_RD</code>: Close the reading half of the connection. Subsequent reads will return EOF. Data can still be written to the socket. This cannot be used meaningfully for TCP sockets.
+      </li>
+      <li>
+        <code>SHUT_WR</code>: Close the writing half of the connection. Once the peer application has read all outstanding data, it will see EOF. Subsequent writes to the local socket yield the <code>SIGPIPE</code> signal and an <code>EPIPE</code> error. Data written by the peer can still be read from the socket. In other words, this operation allows us to signal EOF to the peer while still being able to read data that the peer sends back to us.
+      </li>
+      <li>
+        <code>SHUT_RDWR</code>: Close both the read and the write halves of the connection. This is the same as performing a <code>SHUT_RD</code> followed by a <code>SHUT_WR</code>.
+      </li>
+    </ul>
+  </li>
+  <li>
+    The <code>shutdown()</code> differs from <code>close()</code> in that it closes the socket channel(s) regardless of whether there are other file descriptors referring to the socket. Note that <code>shutdown()</code> does not close the file descriptor, even if how is specified as <code>SHUT_RDWR</code>. To close the file descriptor, we must additionally call <code>close()</code>.
+  </li>
+  <li>
+    A call to <code>shutdown()</code> returns 0 on success or -1 on error.
+  </li>
+</ul>
+
+
+<h4>close()</h4>
+
+{{% code c %}}#include <unistd.h>
+
+int close(int fildes);{{% /code %}}
+
+<ul>
+  <li>
+    A socket may be closed using the close() system call or as a consequence of the application terminating. 
+  </li>
+  <li>
+    If multiple file descriptors refer to the same socket then the connection is terminated when all of the descriptors are closed.
+  </li>
+  <li>
+    Afterward, when the peer application attempts to read from the other end of the connection, it receives end-of-file (once all buffered data has been read).
+  </li>
+  <li>
+    If the peer application attempts to write to its socket, it receives a SIGPIPE signal and the system call fails with the error EPIPE. The usual way of dealing with this possibility is to ignore the SIGPIPE signal and find out about the closed connection via the EPIPE error.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region internet domain sockets -->
+<h3>Internet Domain Sockets</h3>
+
+- Internet domain stream sockets are implemented on top of TCP while Internet domain datagram sockets are implemented on top of UDP.
+
+<h4>htons()</h4>
 
 {{% code c %}}#include <arpa/inet.h>
 
 uint16_t htons(uint16_t host_uint16);
+
 uint32_t htonl(uint32_t host_uint32);
+
 uint16_t ntohs(uint16_t net_uint16);
+
 uint32_t ntohl(uint32_t net_uint32);{{% /code %}}
 
-<p>
-  IP addresses and port numbers are integer values and are thus represented according to the conventions of the host machine. Since port numbers and IP addresses must be transmitted between and understood by all hosts on a network, they must be converted to network byte order (big endian) before being stored in socket address structures. The htons(), htonl(), ntohs(), and ntohl() functions are provided for converting integers in either direction between host and network byte order.
-</p>
+<ul>
+  <li>
+    The <code>htons()</code>, <code>htonl()</code>, <code>ntohs()</code> and <code>ntohl()</code> functions are defined for converting integers in either direction between host and network byte order.
+  </li>
+</ul>
 
 
-<h3>Binary and Presentation Form Conversion</h3>
+<h4>inet_pton()</h4>
 
 {{% code c %}}#include <arpa/inet.h>
-#include <netinet/in.h>
 
-#define INET_ADDRSTRLEN 16
-#define INET6_ADDRSTRLEN 46
+int inet_pton(int domain, const char *src_str, void *addrptr);{{% /code %}}
 
-int inet_pton(int domain, const char *src_str, void *addrptr);
+<ul>
+  <li>
+    The <code>inet_pton()</code> function converts the presentation string contained in <code>src_str</code> (e.g. "204.152.189.116", "::1", "::FFFF:204.152.189.116") into a binary IP address in network byte order.
+  </li>
+  <li>
+    The <code>domain</code> argument should be specified as either <code>AF_INET</code> or <code>AF_INET6</code>.
+  </li>
+  <li>
+    The converted address is placed in the structure pointed to by <code>addrptr</code> which should point to either an <code>in_addr</code> or an <code>in6_addr</code> structure according to the value specified in domain.
+  </li>
+  <li>
+    A call to <code>inet_pton()</code> returns <code>1</code> on success, <code>0</code> if <code>src_str</code> is not in presentation format or <code>-1</code> on error.
+  </li>
+</ul>
+
+
+<h4>inet_ntop()</h4>
+
+{{% code c %}}#include <arpa/inet.h>
 
 const char *inet_ntop(int domain, const void *addrptr, char *dst_str, size_t len);{{% /code %}}
 
-<p>
-  The inet_pton() function converts the presentation string in  dotted-decimal or hex-string notation contained in src_str into a binary IP address in network byte order. The domain argument should be specified as either AF_INET or AF_INET6. The converted address is placed in the structure pointed to by addrptr which should point to either an in_addr or an in6_addr structure according to the domain. It returns 1 on success, 0 if src_str is not in the correct format or -1 on error.
-</p>
+<ul>
+  <li>
+    The <code>inet_pton()</code> function converts a binary IP address into a presentation string.
+  </li>
+  <li>
+    The <code>domain</code> argument should be specified as either <code>AF_INET</code> or <code>AF_INET6</code>.
+  </li>
+  <li>
+    The <code>addrptr</code> argument should point to an <code>in_addr</code> or <code>in6_addr</code> structure that we wish to convert. The resulting null-terminated string is placed in the buffer pointed to by <code>dst_str</code>. The <code>len</code> argument must specify the size of this buffer.
+  </li>
+  <li>
+    To correctly size the buffer pointed to by <code>dst_str</code>, we can employ the <code>INET_ADDRSTRLEN</code> and <code>INET6_ADDRSTRLEN</code> constants which indicate the maximum lengths (including the terminating null byte) of the presentation strings for IPv4 and IPv6 addresses.
+  </li>
+  <li>
+    On success, <code>inet_ntop()</code> returns <code>dst_str</code>. If <code>len</code> is too small then <code>inet_ntop()</code> returns <code>NULL</code> with <code>errno</code> set to <code>ENOSPC</code>.
+  </li>
+</ul>
 
-<p>
-  The inet_ntop() function performs the reverse conversion. Again, domain should be specified as either AF_INET or AF_INET6, and addrptr should point to an in_addr or in6_addr structure that we wish to convert. The resulting null-terminated string is placed in the buffer pointed to by dst_str. The len argument must specify the size of this buffer. It returns a pointer to dst_str on success or NULL on error.
-</p>
 
-<p>
-  To correctly size the buffer pointed to by dst_str, we can employ two constants which indicate the maximum lengths (including the terminating null byte) of the presentation strings for IPv4 and IPv6 addresses.
-</p>
-
-
-<h3>Hostname to Address Conversion</h3>
+<h4>getaddrinfo()</h4>
 
 {{% code c %}}#include <sys/socket.h>
 #include <netdb.h>
 
 struct addrinfo {
-  int ai_flags;              // input flags (AI_* constants)
+  int ai_flags;              // input flags
   int ai_family;             // address family
-  int ai_socktype;           // SOCK_STREAM or SOCK_DGRAM
+  int ai_socktype;           // socket type
   int ai_protocol;           // socket protocol
   size_t ai_addrlen;         // size of struct pointed to by ai_addr
   char *ai_canonname;        // canonical name of host
-  struct sockaddr *ai_addr;  // pointer to socket address structure
+  struct sockaddr *ai_addr;  // pointer to sockaddr structure
   struct addrinfo *ai_next;  // next structure in linked list
 };
 
-int getaddrinfo(const char *host, const char *service, const struct addrinfo *hints, struct addrinfo **result);
-
-const char *gai_strerror(int errcode);
-
-void freeaddrinfo(struct addrinfo *result);{{% /code %}}
-
-<p>
-  The getaddrinfo() function converts host and service names to  either IPv4 or IPv6 addresses and port numbers. Given a hostname and a service name, getaddrinfo() allocates a linked list of addrinfo structures and sets result to point to the beginning of this list. Each of these addrinfo structures includes a pointer to a socket address structure corresponding to host and service. The call returns 0 on success or a nonzero value on error.
-</p>
-
-<p>
-  The host argument contains either a hostname or a numeric address string, expressed in IPv4 dotted-decimal notation or IPv6 hex-string notation. The service argument contains either a service name or a decimal port number. The hints argument specifies further criteria for selecting the socket addresses. Only the ai_family, ai_socktype, ai_protocol and ai_flags fields of the hints structure can be set with other fields initialized to 0 or NULL as appropriate.
-</p>
-
-<p>
-  The hints.ai_family specifies the domain for the returned socket address structures and may be specified as AF_INET, AF_INET6 or AF_UNSPEC for all types of socket address structures. The hints.ai_socktype field specifies the type of socket as either SOCK_DGRAM, SOCK_STREAM or 0 if any socket type is acceptable. The hints.ai_protocol is typically specified as 0.
-</p>
-
-<p>
-  The hints.ai_flags field is a bit mask that modifies the behavior of getaddrinfo() and is formed by ORing together zero or more of the following:
-</p>
+int getaddrinfo(const char *host, const char *service, const struct addrinfo *hints, struct addrinfo **result);{{% /code %}}
 
 <ul>
   <li>
-    <code>AI_ADDRCONFIG</code>: Return IPv4 addresses only if there is at least one IPv4 address configured for the local system (other than the IPv4 loopback address) and return IPv6 addresses only if there is at least one IPv6 address configured for the local system (other than the IPv6 loopback address).
+    Given a hostname and a service name, the <code>getaddrinfo()</code> function returns a corresponding set of structures each of which contains an IP address and port number.
   </li>
   <li>
-    <code>AI_CANONNAME</code>: If host is not NULL, return a pointer to a null-terminated string containing the canonical name of the host. This pointer is returned in a buffer pointed to by the ai_canonname field of the first of the addrinfo structures returned via result.
+    The <code>host</code> argument contains either a hostname or a numeric address string expressed in IPv4 dotteddecimal notation or IPv6 hex-string notation. The <code>service</code> argument contains either a service name or a decimal port number.
   </li>
   <li>
-    <code>AI_NUMERICHOST</code>: Force interpretation of host as a numeric address string. This is used to prevent name resolution in cases where it is unnecessary, since name resolution can be time-consuming.
-  </li>
-  <li>
-    <code>AI_NUMERICSERV</code>: Interpret service as a numeric port number. This flag prevents the invocation of any name-resolution service, which is not required if service is a numeric string.
-  </li>
-  <li>
-    <code>AI_PASSIVE</code>: Return socket address structures suitable for a passive open. In this case, host should be NULL, and the IP address component of the socket address structures returned by result will contain a wildcard IP address. If this flag is not set then the address structures returned via result will be suitable for use with connect() and sendto(); if host is NULL, then the IP address in the returned socket address structures will be set to the loopback IP address.
+
   </li>
 </ul>
 
-<p>
-  The gai_strerror() function takes one of the nonzero error codes returned by getaddrinfo() on error and returns a pointer to a string containing a corresponding error message. The freeaddrinfo() function is used to free memory allocated by getaddrinfo() when it is no longer needed.
-</p>
+
+- The hints argument points to an addrinfo structure that specifies further criteria for selecting the socket address structures returned via result.
+- As output, getaddrinfo() dynamically allocates a linked list of addrinfo structures and sets result pointing to the beginning of this list.
+- Each of these addrinfo structures includes a pointer to a socket address structure corresponding to host and service.
+- Returns 0 on success, or nonzero on error.
 
 
-<h3>Address to Hostname Conversion</h3>
+The result argument returns a list of structures because there may be multiple combinations of host and service corresponding to the criteria specified in <code>host</code>, <code>service</code> and <code>hints</code>.
+The fields of each <code>addrinfo</code> structure returned via result describe properties of the associated socket address structure.
+
+The ai_canonname field is used only in the first addrinfo structure, and only if the
+AI_CANONNAME flag is employed in hints.ai_flags, as described below.
+As with gethostbyname(), getaddrinfo() may need to send a request to a DNS
+server, and this request may take some time to complete. The same applies for
+getnameinfo(), which we describe in Section 59.10.4.
+We demonstrate the use of getaddrinfo() in Section 59.11.
+Sockets: Internet Domains 1215
+Figure 59-3: Structures allocated and returned by getaddrinfo()
+
+
+
+- The <code>hints</code> argument specifies further criteria for selecting the socket address structures returned by <code>getaddrinfo()</code>.
+- When used as the <code>hints</code> argument, only the <code>ai_flags</code>, <code>ai_family</code>, <code>ai_socktype</code>, and <code>ai_protocol</code> fields of the <code>addrinfo</code> structure can be set. The other fields should be initialized to <code>0</code> or <code>NULL</code> as appropriate.
+  - The <code>hints.ai_family</code> field selects the domain for the returned socket address structures (e.g. AF_INET or AF_INET6). If we are interested in getting back all types of socket address structures then we can specify the value <code>AF_UNSPEC</code> for this field.
+  - The <code>hints.ai_socktype</code> field specifies the type of socket for which the returned address structure is to be used. Can be specified as SOCK_DGRAM or SOCK_STREAM. If hints.socktype is specified as 0, any socket type is acceptable.
+  - The hints.ai_protocol field selects the socket protocol for the returned address structures. Typically specified as 0.
+  - The hints.ai_flags field is a bit mask that modifies the behavior of getaddrinfo().
+- The hints.ai_flags field is formed by ORing together zero or more of the following values:
+  - AI_ADDRCONFIG: Return IPv4 addresses only if there is at least one IPv4 address configured for the local system (other than the IPv4 loopback address) and return IPv6 addresses only if there is at least one IPv6 address configured for the local system (other than the IPv6 loopback address).
+
+- AI_ALL
+See the description of AI_V4MAPPED below.
+
+- AI_CANONNAME: If host is not NULL, return a pointer to a null-terminated string containing
+the canonical name of the host. This pointer is returned in a buffer
+pointed to by the ai_canonname field of the first of the addrinfo structures
+returned via result.
+
+- AI_NUMERICHOST
+Force interpretation of host as a numeric address string. This is used to prevent
+name resolution in cases where it is unnecessary, since name resolution
+can be time-consuming.
+
+- AI_NUMERICSERV: Interpret service as a numeric port number. This flag prevents the invocation of any name-resolution service, which is not required if service is a numeric string.
+
+- AI_PASSIVE: Return socket address structures suitable for a passive open (i.e. a listening socket). In this case, host should be NULL, and the IP address component
+of the socket address structure(s) returned by result will contain a wildcard
+IP address (i.e., INADDR_ANY or IN6ADDR_ANY_INIT). If this flag is not set, then
+the address structure(s) returned via result will be suitable for use with
+connect() and sendto(); if host is NULL, then the IP address in the returned
+socket address structures will be set to the loopback IP address (either
+INADDR_LOOPBACK or IN6ADDR_LOOPBACK_INIT, according to the domain).
+
+As noted above for AI_PASSIVE, host can be specified as NULL. It is also possible to
+specify service as NULL, in which case the port number in the returned address structures is set to 0 (i.e., we are just interested in resolving hostnames to addresses). It
+is not permitted, however, to specify both host and service as NULL.
+
+
+
+<h4>freeaddrinfo()</h4>
+
+{{% code c %}}#include <sys/socket.h>
+#include <netdb.h>
+
+void freeaddrinfo(struct addrinfo *result);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>freeaddrinfo()</code> function deallocates memory dynamically allocated by a call to <code>getaddrinfo()</code>.
+  </li>
+  <li>
+    If we want to preserve a copy of one of the <code>addrinfo</code> structures or its associated socket address structure, then we must duplicate the structures before calling <code>freeaddrinfo()</code>.
+  </li>
+</ul>
+
+
+<h3>getnameinfo()</h3>
 
 {{% code c %}}#include <sys/socket.h>
 #include <netdb.h>
 
 int getnameinfo(const struct sockaddr *addr, socklen_t addrlen, char *host, size_t hostlen, char *service, size_t servlen, int flags);{{% /code %}}
 
-<p>
-  The getnameinfo() function is the converse of getaddrinfo(). Given a socket address structure (either IPv4 or IPv6), it returns strings containing the corresponding host and service name or numeric equivalents if the names can’t be resolved. The addr argument is a pointer to the socket address structure that is to be converted. The length of that structure is given in addrlen. The resulting host and service names are returned as null-terminated strings in the buffers pointed to by host and service. These buffers must be allocated by the caller and their sizes must be passed in hostlen and servlen. It returns 0 on success, or nonzero on error.
-</p>
-
-<p>
-  If we are not interested in obtaining the hostname, we can specify host as NULL and hostlen as 0. Similarly, if we don’t need the service name, we can specify service as NULL and servlen as 0. However, at least one of host and service must be non-NULL. The final argument, flags, is a bit mask that controls the behavior of getnameinfo(). The following constants may be ORed together to form this bit mask:
-</p>
-
 <ul>
   <li>
-    NI_DGRAM: Forces the name of the datagram socket (i.e., UDP) service to be returned.
+    Given a socket address structure (either IPv4 or IPv6), the <code>getnameinfo()</code> function returns strings containing the corresponding host and service name or numeric equivalents if the names cannot be resolved.
   </li>
   <li>
-    NI_NAMEREQD: By default, if the hostname can’t be resolved, a numeric address string is returned in host. If the NI_NAMEREQD flag is specified, an error (EAI_NONAME) is returned instead.
+    The <code>addr</code> argument is a pointer to the socket address structure that is to be converted. The length of that structure is given in <code>addrlen</code>.
   </li>
   <li>
-    NI_NUMERICHOST: Force a numeric address string to be returned in host. This is useful if we want to avoid a possibly time-consuming call to the DNS server.
+    The resulting host and service names are returned as null-terminated strings in the buffers pointed to by <code>host</code> and <code>service</code>. These buffers must be allocated by the caller and their sizes must be passed in <code>hostlen</code> and <code>servlen</code>.
   </li>
   <li>
-    NI_NUMERICSERV:  Force a decimal port number string to be returned in service. This is useful in cases where we know that the port number is an ephemeral port number.
+    The <code>NI_MAXHOST</code> constant indicates the maximum size in bytes for a returned hostname string and the <code>NI_MAXSERV</code> constant indicates the maximum size in bytes for a returned service name string. We may need to include one of <code>_BSD_SOURCE</code> or <code>_GNU_SOURCE</code> to obtain the definitions for these contants.
+  </li>
+  <li>
+    If we are not interested in obtaining the hostname, we can specify <code>host</code> as <code>NULL</code> and <code>hostlen</code> as <code>0</code>. Similarly, if we do not need the service name, we can specify <code>service</code> as <code>NULL</code> and <code>servlen</code> as <code>0</code>.
+  </li>
+  <li>
+    The <code>flags</code> argument is a bit mask. The following constants may used:
+
+    <ul>
+      <li>
+        <code>NI_DGRAM</code>: Forces the name of the datagram socket service to be returned.
+      </li>
+      <li>
+        <code>NI_NAMEREQD</code>: By default, if the hostname cannot be resolved, a numeric address string is returned in host. If the <code>NI_NAMEREQD</code> flag is specified, an error is returned instead.
+      </li>
+      <li>
+        <code>NI_NUMERICHOST</code>: Force a numeric address string to be returned in host.
+      </li>
+      <li>
+        <code>NI_NUMERICSERV</code>: Force a decimal port number string to be returned in service.
+      </li>
+      <li>
+        <code>NI_NOFQDN</code>:  By default, the fully qualified domain name for the host is returned. Specifying the <code>NI_NOFQDN</code> flag causes just the first (i.e., the hostname) part of the name to be returned, if this is a host on the local network.
+      </li>
+    </ul>
+  </li>
+  <li>
+    A call to <code>getnameinfo()</code> returns <code>0</code> on success or non-zero on error.
   </li>
 </ul>
 
+
+<h3>gai_strerror()</h3>
+
+{{% code c %}}#include <netdb.h>
+
+const char *gai_strerror(int errcode);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>gai_strerror()</code> function returns a string describing an error code returned by a call to <code>getaddrinfo()</code>.
+  </li>
+  <li>
+    We can use the string returned by gai_strerror() as part of an error message displayed by an application.
+  </li>
+</ul>
+<!-- #endregion -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3>Miscellaneous</h3>
+
+<h3>Partial Reads and Writes</h3>
+
+- The read() and write() system calls may transfer fewer bytes than requested.
+- Such partial transfers can occur when performing I/O on stream sockets.
+- A partial read may occur if there are fewer bytes available in the socket than were requested in the read() call. In this case, read() simply returns the number of bytes available.
+- A partial write may occur if there is insufficient buffer space to transfer all of the requested bytes and one of the following is true:
+  - A signal handler interrupted the write() call (Section 21.5) after it transferred some of the requested bytes.
+  - The socket was operating in nonblocking mode (O_NONBLOCK), and it was possible to transfer only some of the requested bytes.
+  - An asynchronous error occurred after only some of the requested bytes had been transferred. By an asynchronous error, we mean an error that occurs asynchronously with respect to the application’s use of calls in the sockets API. An asynchronous error can arise, for example, because of a problem with a TCP connection, perhaps resulting from a crash by the peer application.
+- In all of the above cases, assuming that there was space to transfer at least 1 byte, the write() is successful, and returns the number of bytes that were transferred to the output buffer.
+
+- If a partial I/O occurs—for example, if a read() returns fewer bytes than requested or a blocked write() is interrupted by a signal handler after transferring only part of the requested data—then it is sometimes useful to restart the system call to complete the transfer.
+
+
+
+
+<h3>Socket Options</h3>
+
+A simple example of a socket option is SO_TYPE, which can be used to find out the type of a socket, as follows:
+
+int optval;
+socklen_t optlen;
+optlen = sizeof(optval);
+if (getsockopt(sfd, SOL_SOCKET, SO_TYPE, &optval, &optlen) == -1)
+ errExit("getsockopt");
+
+After this call, optval contains the socket type—for example, SOCK_STREAM or
+SOCK_DGRAM.
+
+SO_TYPE is an example of a read-only socket option. It is not possible to use setsockopt() to change a socket’s type.
+
+
+
+<h4>The SO_REUSEADDR Socket Option</h4>
+
+- The SO_REUSEADDR socket option serves a number of purposes though one common use is to avoid the EADDRINUSE error when a TCP server is restarted and tries to bind a socket to a port that currently has an associated TCP.
+- There are two scenarios in which this usually occurs:
+  - A previous invocation of the server that was connected to a client performed an active close either by calling close(), or by crashing. This leaves a TCP endpoint that remains in the TIME_WAIT state until the 2MSL timeout expires.
+  - A previous invocation of the server created a child process to handle a connection to a client. Later, the server terminated, while the child continues to serve the client, and thus maintain a TCP endpoint using the server’s well-known port.
+- In both of these scenarios, the outstanding TCP endpoint is unable to accept new connections. Nevertheless, in both cases, by default, most TCP implementations prevent a new listening socket from being bound to the server’s well-known port.
+
+Each time we accept a socket connection on a listening socket, a new socket is created. All of these sockets are associated with the same local address as the
+listening socket. The only way of distinguishing them is via their connections to
+different peer sockets.
+In other words, a connected TCP socket is identified by a 4-tuple (i.e., a combination of four values) of the following form:
+{ local-IP-address, local-port, foreign-IP-address, foreign-port }
+The TCP specification requires that each such tuple be unique; that is, only one
+corresponding connection incarnation (“telephone call”) can exist. The problem is
+that most implementations (including Linux) enforce a stricter constraint: a local
+port can’t be reused (i.e., specified in a call to bind()) if any TCP connection incarnation with a matching local port exists on the host. This rule is enforced even
+when the TCP could not accept new connections, as in the scenarios described at
+the start of this section.
+Enabling the SO_REUSEADDR socket option relaxes this constraint, bringing it
+closer to the TCP requirement. By default, this option has the value 0, meaning
+that it is disabled. We enable the option by giving it a nonzero value before binding
+a socket, as shown in Listing 61-4.
+
+
+Setting the SO_REUSEADDR option means that we can bind a socket to a local port
+even if another TCP is bound to the same port in either of the scenarios described
+at the start of this section.
+
+
+int sockfd, optval;
+sockfd = socket(AF_INET, SOCK_STREAM, 0);
+if (sockfd == -1)
+errExit("socket");
+optval = 1;
+if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval,
+sizeof(optval)) == -1)
+errExit("socket");
+if (bind(sockfd, &addr, addrlen) == -1)
+errExit("bind");
+if (listen(sockfd, backlog) == -1)
+errExit("listen");
+
+
+
+
 <!-- 
-   The <netdb.h> header file
-defines two constants to assist in sizing these buffers. NI_MAXHOST indicates the maximum size, in bytes, for a returned hostname string. It is defined as 1025. NI_MAXSERV
-indicates the maximum size, in bytes, for a returned service name string. It is
-defined as 32.
- -->
+  COVERAGE: 56, 59, 60, 61
 
-
-<h3>Ephemeral Ports</h3>
+  SKIPPED: 57, 58
+-->
 
 <!-- 
-   For example, for an Internet domain socket, the server could omit the
-call to bind() and simply call listen(), which causes the kernel to choose an ephemeral port for that socket. Afterward, the server can use getsockname() (Section 61.5) to retrieve the
-address of its socket. In this scenario, the server must then publish that address
-so that clients know how to locate the server’s socket.
- -->
+MISC
 
+struct sockaddr_in6 addr;
+memset(&addr, 0, sizeof(struct sockaddr_in6));
+addr.sin6_family = AF_INET6;
+addr.sin6_addr = in6addr_any;
+addr.sin6_port = htons(SOME_PORT_NUM);
+
+---
+
+- In the Internet domain, datagram sockets employ the User Datagram Protocol (UDP), and stream sockets (usually) employ the Transmission Control Protocol (TCP).
+- In a typical client-server scenario, each application creates a socket. The server binds its socket to a well-known address that clients connect to.
+- For all applications described in this book, protocol is always specified as 0.
+
+Socket I/O can be performed using the conventional read() and write() system calls, or using a range of socket-specific system calls (e.g., send(), recv(), sendto(), and
+recvfrom()).
+
+On Linux, we can call ioctl(fd, FIONREAD, &cnt) to obtain the number of unread bytes available on the stream socket referred to by the file descriptor fd. For a datagram socket, this operation returns the number of bytes in the next unread datagram (which may be zero if the next datagram is of zero length), or zero if there are no pending datagrams. This feature is not specified in SUSv3.
+
+
+---
+
+For an Internet domain socket, the server could omit the
+call to bind() and simply call listen(), which causes the kernel to choose an ephemeral port for that socket. (We describe ephemeral ports in Section 58.6.1.)
+
+Afterward, the server can use getsockname() (Section 61.5) to retrieve the
+address of its socket.
+
+If an Internet domain socket is not bound to an address,
+the kernel binds the socket to an ephemeral port on the host system.
+
+Calling getsockname() is also useful if we want to determine the ephemeral port
+number that the kernel assigned to a socket when performing an implicit bind of
+an Internet domain socket. The kernel performs an implicit bind in the following
+circumstances:
+z after a connect() or a listen() call on a TCP socket that has not previously been
+bound to an address by bind();
+z on the first sendto() on a UDP socket that had not previously been bound to an
+address; or
+z after a bind() call where the port number (sin_port) was specified as 0. In this
+case, the bind() specifies the IP address for the socket, but the kernel selects an
+ephemeral port number.
+
+
+---
+
+Later in this chapter, we look at various functions that convert hostnames (e.g.,
+www.kernel.org) and service names (e.g., http) into the corresponding numeric
+forms. These functions generally return integers in network byte order, and these
+integers can be copied directly into the relevant fields of a socket address structure.
+
+---
+
+As noted in Section 58.6.1, well-known port numbers are centrally registered by
+IANA. Each of these ports has a corresponding service name. Because service numbers are centrally managed and are less volatile than IP addresses, an equivalent of
+the DNS server is usually not necessary. Instead, the port numbers and service
+names are recorded in the file /etc/services. The getaddrinfo() and getnameinfo()
+functions use the information in this file to convert service names to port numbers
+and vice versa.
+
+---
+
+SOCKETS: SERVER DESIGN
+
+#include "inet_sockets.h" /* Declares our socket functions */
+#include "tlpi_hdr.h"
+#define SERVICE "echo" /* Name of UDP service */
+#define BUF_SIZE 500 /* Maximum size of datagrams that can
+ be read by client and server */
+
+#include <syslog.h>
+#include "id_echo.h"
+#include "become_daemon.h"
+int
+main(int argc, char *argv[])
+{
+ int sfd;
+ ssize_t numRead;
+ socklen_t addrlen, len;
+ struct sockaddr_storage claddr;
+ char buf[BUF_SIZE];
+ char addrStr[IS_ADDR_STR_LEN];
+ if (becomeDaemon(0) == -1)
+ errExit("becomeDaemon");
+ sfd = inetBind(SERVICE, SOCK_DGRAM, &addrlen);
+ if (sfd == -1) {
+ syslog(LOG_ERR, "Could not create server socket (%s)", strerror(errno));
+ exit(EXIT_FAILURE);
+ }
+/* Receive datagrams and return copies to senders */
+ for (;;) {
+ len = sizeof(struct sockaddr_storage);
+ numRead = recvfrom(sfd, buf, BUF_SIZE, 0,
+ (struct sockaddr *) &claddr, &len);
+ if (numRead == -1)
+ errExit("recvfrom");
+ if (sendto(sfd, buf, numRead, 0, (struct sockaddr *) &claddr, len)
+ != numRead)
+ syslog(LOG_WARNING, "Error echoing response to %s (%s)",
+ inetAddressStr((struct sockaddr *) &claddr, len,
+ addrStr, IS_ADDR_STR_LEN),
+ strerror(errno));
+ }
+}
+
+
+// client
+
+#include "id_echo.h"
+int
+main(int argc, char *argv[])
+{
+ int sfd, j;
+ size_t len;
+ ssize_t numRead;
+ char buf[BUF_SIZE];
+ if (argc < 2 || strcmp(argv[1], "--help") == 0)
+ usageErr("%s: host msg...\n", argv[0]);
+/* Construct server address from first command-line argument */
+ sfd = inetConnect(argv[1], SERVICE, SOCK_DGRAM);
+ if (sfd == -1)
+ fatal("Could not connect to server socket");
+/* Send remaining command-line arguments to server as separate datagrams */
+ for (j = 2; j < argc; j++) {
+ len = strlen(argv[j]);
+ if (write(sfd, argv[j], len) != len)
+ fatal("partial/failed write");
+ numRead = read(sfd, buf, BUF_SIZE);
+ if (numRead == -1)
+ errExit("read");
+ printf("[%ld bytes] %.*s\n", (long) numRead, (int) numRead, buf);
+ }
+ exit(EXIT_SUCCESS);
+}
+
+Here is an example of what we see when we run the server and two instances of the
+client:
+$ su Need privilege to bind reserved port
+Password:
+# ./id_echo_sv Server places itself in background
+# exit Cease to be superuser
+$ ./id_echo_cl localhost hello world This client sends two datagrams
+[5 bytes] hello Client prints responses from server
+[5 bytes] world
+$ ./id_echo_cl localhost goodbye This client sends one datagram
+[7 bytes] goodbye
+
+
+
+60.3 A Concurrent TCP echo Server
+The TCP echo service also operates on port 7. The TCP echo server accepts a connection and then loops continuously, reading all transmitted data and sending it
+back to the client on the same socket. The server continues reading until it detects
+end-of-file, at which point it closes its socket (so that the client sees end-of-file if it is
+still reading from its socket).
+Since the client may send an indefinite amount of data to the server (and thus servicing the client may take an indefinite amount of time), a concurrent server design
+is appropriate, so that multiple clients can be simultaneously served. The server
+implementation is shown in Listing 60-4. (We show an implementation of a client
+for this service in Section 61.2.) Note the following points about the implementation:
+z The server becomes a daemon by calling the becomeDaemon() function shown in
+Section 37.2.
+z To shorten this program, we employ the Internet domain sockets library
+shown in Listing 59-9 (page 1228).
+z Since the server creates a child process for each client connection, we must
+ensure that zombies are reaped. We do this within a SIGCHLD handler.
+z The main body of the server consists of a for loop that accepts a client connection and then uses fork() to create a child process that invokes the
+handleRequest() function to handle that client. In the meantime, the parent continues around the for loop to accept the next client connection.
+In a real-world application, we would probably include some code in our
+server to place an upper limit on the number of child processes that the server
+could create, in order to prevent an attacker from attempting a remote fork
+bomb by using the service to create so many processes on the system that it
+becomes unusable. We could impose this limit by adding extra code in the
+server to count the number of children currently executing (this count would
+be incremented after a successful fork() and decremented as each child was
+reaped in the SIGCHLD handler). If the limit on the number of children were
+reached, we could then temporarily stop accepting connections (or alternatively, accept connections and then immediately close them).
+z After each fork(), the file descriptors for the listening and connected sockets
+are duplicated in the child (Section 24.2.1). This means that both the parent
+and the child could communicate with the client using the connected socket.
+However, only the child needs to perform such communication, and so the
+parent closes the file descriptor for the connected socket immediately after the
+fork(). (If the parent did not do this, then the socket would never actually be
+closed; furthermore, the parent would eventually run out of file descriptors.)
+Since the child doesn’t accept new connections, it closes its duplicate of the file
+descriptor for the listening socket.
+z Each child process terminates after handling a single client.
+1244 Chapter 60
+Listing 60-4: A concurrent server that implements the TCP echo service
+––––––––––––––––––––––––––––––––––––––––––––––––––––– sockets/is_echo_sv.c
+#include <signal.h>
+#include <syslog.h>
+#include <sys/wait.h>
+#include "become_daemon.h"
+#include "inet_sockets.h" /* Declarations of inet*() socket functions */
+#include "tlpi_hdr.h"
+#define SERVICE "echo" /* Name of TCP service */
+#define BUF_SIZE 4096
+static void /* SIGCHLD handler to reap dead child processes */
+grimReaper(int sig)
+{
+ int savedErrno; /* Save 'errno' in case changed here */
+ savedErrno = errno;
+ while (waitpid(-1, NULL, WNOHANG) > 0)
+ continue;
+ errno = savedErrno;
+}
+/* Handle a client request: copy socket input back to socket */
+static void
+handleRequest(int cfd)
+{
+ char buf[BUF_SIZE];
+ ssize_t numRead;
+ while ((numRead = read(cfd, buf, BUF_SIZE)) > 0) {
+ if (write(cfd, buf, numRead) != numRead) {
+ syslog(LOG_ERR, "write() failed: %s", strerror(errno));
+ exit(EXIT_FAILURE);
+ }
+ }
+ if (numRead == -1) {
+ syslog(LOG_ERR, "Error from read(): %s", strerror(errno));
+ exit(EXIT_FAILURE);
+ }
+}
+int
+main(int argc, char *argv[])
+{
+ int lfd, cfd; /* Listening and connected sockets */
+ struct sigaction sa;
+ if (becomeDaemon(0) == -1)
+ errExit("becomeDaemon");
+Sockets: Server Design 1245
+ sigemptyset(&sa.sa_mask);
+ sa.sa_flags = SA_RESTART;
+ sa.sa_handler = grimReaper;
+ if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+ syslog(LOG_ERR, "Error from sigaction(): %s", strerror(errno));
+ exit(EXIT_FAILURE);
+ }
+ lfd = inetListen(SERVICE, 10, NULL);
+ if (lfd == -1) {
+ syslog(LOG_ERR, "Could not create server socket (%s)", strerror(errno));
+ exit(EXIT_FAILURE);
+ }
+ for (;;) {
+ cfd = accept(lfd, NULL, NULL); /* Wait for connection */
+ if (cfd == -1) {
+ syslog(LOG_ERR, "Failure in accept(): %s", strerror(errno));
+ exit(EXIT_FAILURE);
+ }
+/* Handle each client request in a new child process */
+switch (fork()) {
+ case -1:
+ syslog(LOG_ERR, "Can't create child (%s)", strerror(errno));
+ close(cfd); /* Give up on this client */
+ break; /* May be temporary; try next client */
+ case 0: /* Child */
+ close(lfd); /* Unneeded copy of listening socket */
+ handleRequest(cfd);
+ _exit(EXIT_SUCCESS);
+ default: /* Parent */
+ close(cfd); /* Unneeded copy of connected socket */
+ break; /* Loop to accept next connection */
+ }
+ }
+}
+
+---
+
+The TCP_CORK socket option
+To further improve the efficiency of TCP applications using sendfile(), it is sometimes useful to employ the Linux-specific TCP_CORK socket option.
+
+When the TCP_CORK option is enabled on a TCP socket, all subsequent output is
+buffered into a single TCP segment until either the upper limit on the size of a segment is reached, the TCP_CORK option is disabled, the socket is closed, or a maximum
+of 200 milliseconds passes from the time that the first corked byte is written. (The
+timeout ensures that the corked data is transmitted if the application forgets to disable the TCP_CORK option.)
+We enable and disable the TCP_CORK option using the setsockopt() system call
+(Section 61.9). The following code (which omits error checking) demonstrates the
+use of TCP_CORK for our hypothetical HTTP server example:
+int optval;
+/* Enable TCP_CORK option on 'sockfd' - subsequent TCP output is corked
+ until this option is disabled. */
+optval = 1;
+setsockopt(sockfd, IPPROTO_TCP, TCP_CORK, sizeof(optval));
+write(sockfd, ...); /* Write HTTP headers */
+sendfile(sockfd, ...); /* Send page data */
+/* Disable TCP_CORK option on 'sockfd' - corked output is now transmitted
+ in a single TCP segment. */
+optval = 0
+setsockopt(sockfd, IPPROTO_TCP, TCP_CORK, sizeof(optval));
+Sockets: Advanced Topics 1263
+We could avoid the possibility of two segments being transmitted by building a single
+data buffer within our application, and then transmitting that buffer with a single
+write(). (Alternatively, we could use writev() to combine two distinct buffers in a single output operation.) However, if we want to combine the zero-copy efficiency of
+sendfile() with the ability to include a header as part of the first segment of transmitted file data, then we need to use TCP_CORK.
+In Section 61.3, we noted that the MSG_MORE flag provides similar functionality
+to TCP_CORK, but on a per-system-call basis. This is not necessarily an advantage.
+It is possible to set the TCP_CORK option on the socket, and then exec a program
+that performs output on the inherited file descriptor without being aware of
+the TCP_CORK option. By contrast, the use of MSG_MORE requires explicit changes
+to the source code of a program.
+FreeBSD provides an option similar to TCP_CORK in the form of TCP_NOPUSH.
+
+---
+
+61.11 Inheritance of Flags and Options Across accept()
+Various flags and settings can be associated with open file descriptions and file
+descriptors (Section 5.4). Furthermore, as described in Section 61.9, various options
+can be set for a socket. If these flags and options are set on a listening socket, are
+they inherited by the new socket returned by accept()? We describe the details here.
+On Linux, the following attributes are not inherited by the new file descriptor
+returned by accept():
+z The status flags associated with an open file description—the flags that can be
+altered using the fcntl() F_SETFL operation (Section 5.3). These include flags
+such as O_NONBLOCK and O_ASYNC.
+z The file descriptor flags—the flags that can be altered using the fcntl() F_SETFD
+operation. The only such flag is the close-on-exec flag (FD_CLOEXEC, described in
+Section 27.4).
+z The fcntl() F_SETOWN (owner process ID) and F_SETSIG (generated signal) file
+descriptor attributes associated with signal-driven I/O (Section 63.3).
+On the other hand, the new descriptor returned by accept() inherits a copy of most
+of the socket options that can be set using setsockopt() (Section 61.9).
+SUSv3 is silent on the details described here, and the inheritance rules for the
+new connected socket returned by accept() vary across UNIX implementations.
+Most notably, on some UNIX implementations, if open file status flags such as
+O_NONBLOCK and O_ASYNC are set on a listening socket, then they are inherited by the
+new socket returned by accept(). For portability, it may be necessary to explicitly
+reset these attributes on a socket returned by accept().
+
+---
+
+61.6.6 Calling shutdown() on a TCP Socket
+The discussion in the preceding section assumed a full-duplex close; that is, an
+application closes both the sending and receiving channels of the TCP socket using
+close(). As noted in Section 61.2, we can use shutdown() to close just one channel of
+the connection (a half-duplex close). This section notes some specific details for
+shutdown() on a TCP socket.
+Specifying how as SHUT_WR or SHUT_RDWR initiates the TCP connection termination
+sequence (i.e., the active close) described in Section 61.6.5, regardless of whether there
+are other file descriptors referring to the socket. Once this sequence has been initiated,
+the local TCP moves into the FIN_WAIT1 state, and then into the FIN_WAIT2 state,
+while the peer TCP moves into the CLOSE_WAIT state (Figure 61-6). If how is specified as SHUT_WR, then, since the socket file descriptor remains valid and the reading
+half of the connection remains open, the peer can continue to send data back to us.
+The SHUT_RD operation can’t be meaningfully used with TCP sockets. This is
+because most TCP implementations don’t provide the expected behavior for
+SHUT_RD, and the effect of SHUT_RD varies across implementations. On Linux and a few
+other implementations, following a SHUT_RD (and after any outstanding data has
+been read), a read() returns end-of-file, as we expect from the description of SHUT_RD
+in Section 61.2. However, if the peer application subsequently writes data on its
+socket, then it is still possible to read that data on the local socket.
+On some other implementations (e.g., the BSDs), SHUT_RD does indeed cause
+subsequent calls to read() to always return 0. However, on those implementations,
+if the peer continues to write() to the socket, then the data channel will eventually
+fill until the point where a further (blocking) call to write() by the peer will block.
+(With UNIX domain stream sockets, a peer would receive a SIGPIPE signal and the
+EPIPE error if it continued writing to its socket after a SHUT_RD had been performed
+on the local socket.)
+In summary, the use of SHUT_RD should be avoided for portable TCP applications.
+-->
+
+<!--
+<h4>netstat</h4>
+
+The netstat program displays the state of Internet and UNIX domain sockets on a system.
+
+By default, when executed with no command-line options, netstat displays information for connected sockets in both the UNIX and Internet domains
+
+We can use a number of command-line options to change the information displayed.
+
+-a Display information about all sockets, including listening sockets
+-e Display extended information (includes user ID of socket owner)
+-c Redisplay socket information continuously (each second)
+-l Display information only about listening sockets
+-n Display IP addresses, port numbers, and usernames in numerical form
+-p Show the process ID and name of program to which socket belongs
+--inet Display information for Internet domain sockets
+--tcp Display information for Internet domain TCP sockets
+--udp Display information for Internet domain UDP sockets
+--unix Display information for UNIX domain sockets
+
+
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp 0 0 *:50000 *:* LISTEN
+tcp 0 0 *:55000 *:* LISTEN
+tcp 0 0 localhost:smtp *:* LISTEN
+tcp 0 0 localhost:32776 localhost:58000 TIME_WAIT
+tcp 34767 0 localhost:55000 localhost:32773 ESTABLISHED
+tcp 0 115680 localhost:32773 localhost:55000 ESTABLISHED
+udp 0 0 localhost:61000 localhost:60000 ESTABLISHED
+udp 684 0 *:60000 *:*
+
+For each Internet domain socket, we see the following information:
+z Proto: This is the socket protocol—for example, tcp or udp.
+z Recv-Q: This is the number of bytes in the socket receive buffer that are as yet
+unread by the local application. For UDP sockets, this field counts not just
+data, but also bytes in UDP headers and other metadata.
+z Send-Q: This is the number of bytes queued for transmission in the socket send
+buffer. As with the Recv-Q field, for UDP sockets, this field includes bytes in
+UDP headers and other metadata.
+z Local Address: This is the address to which the socket is bound, expressed in the
+form host-IP-address:port. By default, both components of the address are displayed as names, unless the numeric values can’t be resolved to corresponding
+host and service names. An asterisk (*) in the host part of the address means
+the wildcard IP address.
+z Foreign Address: This is the address of the peer socket to which this socket is
+bound. The string *:* indicates no peer address.
+z State: This is the current state of the socket. For a TCP socket, this state is one
+of those described in Section 61.6.3.
+
+
+
+<h3>tcpdump</h3>
+
+- The tcpdump program is a useful debugging tool that allows the superuser to monitor the Internet traffic on a live network, generating a real-time textual equivalent of diagrams such as Figure 61-3. Despite its name, tcpdump can be used to display
+traffic for all kinds of TCP/IP packets (e.g., TCP segments, UDP datagrams, and
+ICMP packets). For each network packet, tcpdump displays information such as
+timestamps, the source and destination IP addresses, and further protocol-specific
+details. It is possible to select the packets to be monitored by protocol type, source
+Sockets: Advanced Topics 1277
+and destination IP address and port number, and a range of other criteria. Full
+details are provided in the tcpdump manual page.
+
+For each TCP segment, tcpdump displays a line of the following form:
+src > dst: flags data-seqno ack window urg <options>
+These fields have the following meanings:
+z src: This is the source IP address and port.
+z dst: This is the destination IP address and port.
+z flags: This field contains zero or more of the following letters, each of which
+corresponds to one of the TCP control bits described in Section 61.6.1: S (SYN),
+F (FIN), P (PSH), R (RST), E (ECE), and C (CWR).
+z data-seqno: This is the range of the sequence-number space covered by the bytes
+in this packet.
+By default, the sequence-number range is displayed relative to the first byte
+monitored for this direction of the data stream. The tcpdump –S option causes
+sequence numbers to be displayed in absolute format.
+z ack: This is a string of the form “ack num” indicating the sequence number of
+the next byte expected from the other direction on this connection.
+z window: This is a string of the form “win num” indicating the number of bytes of
+receive buffer space available for transmission in the opposite direction on this
+connection.
+z urg: This is a string of the form “urg num” indicating that this segment contains
+urgent data at the specified offset within the segment.
+z options: This string describes any TCP options contained in the segment.
+The src, dst, and flags fields always appear. The remaining fields are displayed only if
+appropriate.
+The shell session below shows how tcpdump can be used to monitor the traffic
+between a client (running on the host pukaki) and a server (running on tekapo). In
+this shell session, we use two tcpdump options that make the output less verbose.
+The –t option suppresses the display of timestamp information. The –N option
+causes hostnames to be displayed without a qualifying domain name. Furthermore,
+for brevity, and because we don’t describe the details of TCP options, we have
+removed the options fields from the lines of tcpdump output.
+The server operates on port 55555, so our tcpdump command selects traffic for
+that port. The output shows the three segments exchanged during connection
+establishment:
+$ tcpdump -t -N 'port 55555'
+IP pukaki.60391 > tekapo.55555: S 3412991013:3412991013(0) win 5840
+IP tekapo.55555 > pukaki.60391: S 1149562427:1149562427(0) ack 3412991014 win 5792
+IP pukaki.60391 > tekapo.55555: . ack 1 win 5840
+1278 Chapter 61
+These three segments are the SYN, SYN/ACK, and ACK segments exchanged for
+the three-way handshake (see Figure 61-5).
+In the following output, the client sends the server two messages, containing
+16 and 32 bytes, respectively, and the server responds in each case with a 4-byte
+message:
+IP pukaki.60391 > tekapo.55555: P 1:17(16) ack 1 win 5840
+IP tekapo.55555 > pukaki.60391: . ack 17 win 1448
+IP tekapo.55555 > pukaki.60391: P 1:5(4) ack 17 win 1448
+IP pukaki.60391 > tekapo.55555: . ack 5 win 5840
+IP pukaki.60391 > tekapo.55555: P 17:49(32) ack 5 win 5840
+IP tekapo.55555 > pukaki.60391: . ack 49 win 1448
+IP tekapo.55555 > pukaki.60391: P 5:9(4) ack 49 win 1448
+IP pukaki.60391 > tekapo.55555: . ack 9 win 5840
+For each of the data segments, we see an ACK sent in the opposite direction.
+Lastly, we show the segments exchanged during connection termination (first,
+the client closes its end of the connection, and then the server closes the other end):
+IP pukaki.60391 > tekapo.55555: F 49:49(0) ack 9 win 5840
+IP tekapo.55555 > pukaki.60391: . ack 50 win 1448
+IP tekapo.55555 > pukaki.60391: F 9:9(0) ack 50 win 1448
+IP pukaki.60391 > tekapo.55555: . ack 10 win 5840
+The above output shows the four segments exchanged during connection termination (see Figure 61-6).
+-->
 

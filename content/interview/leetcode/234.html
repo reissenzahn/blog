@@ -1,0 +1,56 @@
+---
+title: "234. Palindrome Linked List"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}/**
+* public class ListNode {
+*     int val;
+*     ListNode next;
+*     ListNode() {}
+*     ListNode(int val) { this.val = val; }
+*     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+* }
+*/
+
+class Solution {
+ 
+ public boolean isPalindrome(ListNode head) {
+   Stack<Integer> stack = new Stack<>();
+   
+   ListNode node = head;
+   while (node != null) {
+     stack.push(node.val);
+     node = node.next;
+   }
+   
+   node = head;
+   
+   while (!stack.isEmpty()) {
+     if (stack.pop() != node.val) {
+       return false;
+     }
+     
+     node = node.next;
+   }
+   
+   return true;
+ }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/palindrome-linked-list/">Original Problem</a>
+  </li>
+</ul>

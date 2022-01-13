@@ -21,15 +21,11 @@ func main() {
 	// constants are a way to give names to literals
 	const pi = 3.14
 	
-	const 
-
 	// factored constant initialization
 	const (
 		i = 1 >> 100
 		j = i >> 99
 	)
-
-
 }
 
 

@@ -1,0 +1,291 @@
+---
+title: "Trivial File Transfer Protocol"
+date: 2021-12-27
+draft: false
+---
+
+<ul>
+  <li>
+    TFTP is a simple lockstep file transfer protocol which allows a client to read a file from or write a file to a remote host.
+  </li>
+  <li>
+    The protocol was designed to be small and easy to implement and so lacks the features provided by more robust protocols.
+  </li>
+  <li>
+    UDP is used as the underlying transport protocol. A transfer request is always initiated targeting port 69.
+  </li>
+</ul>
+
+
+<h3>Transfer Identifiers</h3>
+
+<ul>
+  <li>
+    Each end of a connection starts by randomly choosing a TID between 0 and 65,535 for itself (typically from the range of ephemeral ports).
+  </li>
+  <li>
+    A requesting host sends its initial request with its TID as the source port and 69 as the destination port in the UDP header.
+  </li>
+  <li>
+    The response uses the TID chosen by the server as the source port and the TID chosen by the requestor as the destination port.
+  </li>
+  <li>
+    The chosen TIDs are used for the remainder of the transfer and the hosts should check to ensure that the source TID matches what was agreed upon.
+  </li>
+  <li>
+    If a source TID does not match then the packet should be discarded and an ERROR packet should be sent to the source of the packet while not disturbing the transfer.
+  </li>
+</ul>
+
+
+<h3>Initial Connection</h3>
+
+<ul>
+  <li>
+    A transfer is initiated by sending a request consisting of either a <code>WRQ</code> packet to write a file or a <code>RRQ</code> to read a file containing the filename and transfer mode.
+  </li>
+  <li>
+    Three transfer modes are available:
+    <ul>
+      <li>
+        netascii: Transfer of a modified form of ASCII.
+      </li>
+      <li>
+        octet: Transfer of arbitrary raw 8-bit bytes.
+      </li>
+      <li>
+        mail: Obsolete (should not be implemented or used).
+      </li>
+    </ul>
+  </li>
+  <li>
+    The transfer is established upon receipt of a positive reply consisting of either an <code>ACK</code> packet (with block number zero) for a write or the first <code>DATA</code> packet for a read.
+  </li>
+  <li>
+    If the reply is an <code>ERROR</code> packet then the request has been denied.
+  </li>
+</ul>
+
+
+<h3>Data Transfer</h3>
+
+<ul>
+  <li>
+    If the server grants a transfer request then the file is sent in fixed length blocks of 512 bytes.
+  </li>
+  <li>
+    Each <code>DATA</code> packet contains one block of data and must be acknowledged by an <code>ACK</code> packet before the next packet can be sent.
+  </li>
+  <li>
+    Each <code>DATA</code> packet has a block number. These block numbers begin with one and increase by one for each successive block.
+  </li>
+  <li>
+    An <code>ACK</code> packet contains the block number of the <code>DATA</code> packet being acknowledged.
+  </li>
+  <li>
+    If a packet gets lost then the intended recipient will timeout and retransmit its last packet (which may be a <code>DATA</code> or <code>ACK</code>) thus causing the sender of the lost packet to retransmit that lost packet.
+  </li>
+</ul>
+
+
+<h3>Termination</h3>
+
+<ul>
+  <li>
+    The end of a transfer is marked by a <code></code> packet that contains between 0 and 511 bytes of data.
+  </li>
+  <li>
+    This packet is acknowledged by an <code>ACK</code> packet like all other <code>DATA</code> packets.
+  </li>
+  <li>
+    The host acknowledging the final <code>DATA</code> packet may terminate its side of the connection on sending the final <code>ACK</code>.
+  </li>
+  <li>
+    However, it is encouraged that this host will wait for a while before terminating in order to retransmit the final <code>ACK</code> should it receive the final <code>DATA</code> packet again.
+  </li>
+  <li>
+    In any case, the connection has been closed.
+  </li>
+</ul>
+
+
+<h3>Error Handling</h3>
+
+<ul>
+  <li>
+    Errors are caused by three types of events:
+    <ul>
+      <li>
+        Not being able to satisfy the request (e.g. file not found, access violation or no such user).
+      </li>
+      <li>
+        Receiving a packet which cannot be explained by a delay or duplication in the network (e.g. malformed packet).
+      </li>
+      <li>
+        Losing access to a necessary resource (e.g. disk full or access denied during transfer).
+      </li>
+    </ul>
+  </li>
+  <li>
+    Most errors cause termination of the connection and an ERROR packet is sent with a suitable error code and message as a courtesy.
+  </li>
+  <li>
+    An <code>ERROR</code> packet is not acknowledged and not retransmitted and so timeouts are instead used to detection such a termination.
+  </li>
+  <li>
+    The only error condition that does not cause termination is the case in which the source port of a received packet is incorrect in which case an <code>ERROR</code> packet is sent to the source of the packet.
+  </li>
+  <li>
+    Each error code is a 2-byte integer. The available error codes are: Not defined (0), File not found (1), Access violation (2), Disk full or allocation exceeded (3), Illegal TFTP operation (4), Unknown transfer ID (5), File already exists (6), No such user (7).
+  </li>
+</ul>
+
+
+
+<h3>Netascii</h3>
+
+<ul>
+  <li>
+    Netascii is a modified form of ASCII that consists of basic ASCII ranging from 0x20 to 0x7F plus 8 control characters.
+  </li>
+  <li>
+    The allowed control characters are 0x00 (NUL), 0x10 (LF), 0x13 (CR), 0x07 (BEL), 0x08 (BS), 0x09 (HT), 0x11 (VT) and 0x12 (FF).
+  </li>
+  <li>
+    Another requirement is that newlines are always CRLF. Any CR can only be followed either by an LF or a NUL.
+  </li>
+  <li>
+    All strings are encoded as a sequence of bytes in netascii terminated by a zero byte.
+  </li>
+</ul>
+
+
+<h3>Packets</h3>
+
+<pre>       2 bytes    string    1 byte    string    1 byte
+       -----------------------------------------------
+RRQ/  | 01/02 |  Filename  |   0  |    Mode    |   0  |
+WRQ    -----------------------------------------------
+      
+       2 bytes    2 bytes     n bytes
+       ---------------------------------
+DATA  | 03    |   Block #  |    Data    |
+       ---------------------------------
+  
+       2 bytes    2 bytes
+       -------------------
+ACK   | 04    |   Block #  |
+       --------------------
+   
+       2 bytes    2 bytes      string    1 byte
+       ----------------------------------------
+ERROR | 05    |  ErrorCode |   ErrMsg   |   0  |
+       ----------------------------------------</pre>
+
+<ul>
+  <li>
+    <code>RRQ</code> (opcode = 1) and <code>WRQ</code> (opcode = 2) packets are used to request to read and write files respectively. The mode is one of "netascii", "octet" or "mail".
+  </li>
+  <li>
+    <code>DATA</code> packets (opcode = 3) are used to transfer zero to 512 bytes of data identified by the provided block number.
+  </li>
+  <li>
+    <code>ACK</code> packets (opcode = 4) acknowledge the <code>DATA</code> packet identified by the specified block number. A <code>WRQ</code> is acknowledged a block number of zero.
+  </li>
+  <li>
+    <code>ERROR</code> packets (opcode = 5) are sent if a request cannot be granted or if an error occurs during the transfer. A suitable error code and human-readable message is provided.
+  </li>
+</ul>
+
+
+<h3>Blocksize Option</h3>
+
+<ul>
+  <li>
+    The TFTP Blocksize Option allows the client and server to negotiate a blocksize more applicable to the network medium.
+  </li>
+  <li>
+    The <code>RRQ</code> or <code>WRQ</code> packet is modified to include the string "blksize" and the number of octects in a block specified in ASCII,
+  </li>
+  <li>
+    The blocksize refers to the number of data octets and does not include the four octets of TFTP header. Valid values range between 8 and 65464 octets, inclusive.
+  </li>
+  <li>
+    If the server is willing to accept the blocksize option then it sends an <code>OACK</code> packet to the client. The specified value must be less than or equal to the value specified by the client.
+  </li>
+  <li>
+    The client must then either use the size specified in the <code>OACK</code> or send an <code>ERROR</code> packet with error code 8 to terminate the transfer.
+  </li>
+  <li>
+    The reception of a data packet with a data length less than the negotiated blocksize is the final packet.
+  </li>
+  <li>
+    Increasing the blocksize can lead to decreased transfer times due to a reduction in the number of DATA and ACK packets sent. However, if the blocksize exceeds the path MTU then IP fragmentation and reassembly will begin to add more overhead.
+  </li>
+</ul>
+
+
+
+<pre>+-------+---~~---+---+---~~---+---+---~~---+---+---~~---+---+
+|  opc  |filename| 0 |  mode  | 0 | blksize| 0 | #octets| 0 |
++-------+---~~---+---+---~~---+---+---~~---+---+---~~---+---+</pre>
+
+
+
+   
+  
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.ietf.org/rfc/rfc1350.txt">RFC 1350</a>
+  </li>
+  <li>
+    <a href="https://www.ietf.org/rfc/rfc2348.txt">RFC 2347</a>
+  </li>
+  <li>
+    <a href="https://en.wikipedia.org/wiki/Sorcerer%27s_Apprentice_Syndrome">Sorcerer's Apprentice Syndrome (Wikipedia)</a>
+  </li>
+</ul>
+
+<!--
+MISC
+
+If the amount of data to be transfered is an integral multiple of the blocksize, an extra data packet containing no data is sent to end the transfer.
+
+The sender has to keep just one packet on hand for retransmission, since the lock step acknowledgment guarantees that all older packets have been received.
+
+Each block of data is usually carried within a single IP packet in order to avoid IP fragmentation.
+
+DATA packet is an acknowledgment for the first ACK packet of the
+previous DATA packet. The WRQ and DATA packets are acknowledged by
+ACK or ERROR packets, while RRQ and ACK packets are acknowledged by  DATA  or ERROR packets. 
+-->
+
+<!-- <h3>Example</h3> -->
+
+<!-- As an example, the following shows the steps used to establish a connection to write a file.
+
+1. Host A sends a WRQ to host B with source=A's TID, dest=69.
+2. Host B sends a ACK (block number=0) to host A with source=B's TID, dest= A's TID.
+
+
+    At this point the connection has been established and the first data
+    packet can be sent by Host A with a sequence number of 1.  In the
+    next step.
+             
+---
+
+Initial Connection Protocol for reading a file
+
+   1. Host  A  sends  a  "RRQ"  to  host  B  with  source= A's TID,
+      destination= 69.
+
+   2. Host B sends a "DATA" (with block number= 1) to host  A  with
+      source= B's TID, destination= A's TID.
+
+---
+
+Host A sends a request to host B. Somewhere in the network, the request packet is duplicated, and as a result two acknowledgments are returned to host A, with different TID's chosen on host B in response to the two requests.  When the first response arrives, host A continues the connection.  When the second response to the request arrives, it should be rejected, but there is no reason to terminate the first connection.  Therefore, if different TID's are chosen for the two  connections on host B and host A checks the source TID's of the messages it receives, the first connection can be maintained while the second is rejected by returning an error packet. -->

@@ -4,39 +4,38 @@ date: 2021-11-24
 draft: false
 ---
 
-<p>
-  The <code>mmap()</code> system call creates a new memory mapping in the virtual address space of the calling process.
-</p>
-
-
-<h3>File and Anonymous Mappings</h3>
-
-<p>
-  A memory mapping created by <code>mmap()</code> can be of two types:
-</p>
+<!-- COVERAGE: 49 -->
 
 <ul>
   <li>
-    File mapping: Maps a region of a file directly into the virtual memory of the calling process. The contents of the file can be accessed by operations on the bytes in the corresponding memory region.
+    The <code>mmap()</code> system call creates a new memory mapping in the virtual address space of the calling process.
   </li>
   <li>
-    Anonymous mapping: The pages of the mapping are simply zero-initialized. This can be thought of as a mapping of a virtual file whose contents are always initialized to zeros.
-  </li>
-</ul>
+    A memory mapping can be of two types:
 
-
-<h3>Private and Shared Mappings</h3>
-
-<p>
-  If two or more processes map the same region of a file then they share the same pages of physical memory. Each process can potentially see the changes to the page contents made by other processes:
-</p>
-
-<ul>
-  <li>
-    Private mapping: Modifications to the contents of the mapping are not visible to other processes and (for a file mapping) are not carried through to the underlying file. If a process attempts to modify the page then the kernel creates a separate copy of that page for the process (copy-on-write).
+    <ul>
+      <li>
+        File mapping: Maps a region of a file directly into the virtual memory of the calling process. The contents of the file can be accessed by operations on the bytes in the corresponding memory region. The pages of the mapping are automatically loaded from the file as required.
+      </li>
+      <li>
+        Anonymous mapping: Does not have a corresponding file. Instead, the pages of the mapping are zero-initialized. This can be thought of as a mapping of a virtual file whose contents are always initialized to zeros.
+      </li>
+    </ul>
   </li>
   <li>
-    Shared mapping: Modifications to the contents of the mapping are visible to other processes that share the same mapping and (for a file mapping) are carried through to the underlying file. Updates to the file are not guaranteed to be immediate.
+    If multiple processes map the same region of a file then they share the same pages of physical memory. Each process can potentially see the changes to the page contents made by other processes:
+
+    <ul>
+      <li>
+        <code>MAP_PRIVATE</code>: Modifications to the contents of the mapping are not visible to other processes and (for a file mapping) are not carried through to the underlying file. If a process attempts to modify a page then the kernel creates a separate copy of that page for the process (copy-on-write).
+      </li>
+      <li>
+        <code>MAP_SHARED</code>: Modifications to the contents of the mapping are visible to other processes that share the same mapping and (for a file mapping) are carried through to the underlying file. Updates to the file are not guaranteed to be immediate.
+      </li>
+    </ul>
+  </li>
+  <li>
+    Information about all of the mappings of a process is visible in the Linux-specific <code>/proc/PID/maps</code> file.
   </li>
 </ul>
 
@@ -47,45 +46,198 @@ draft: false
 
 void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);{{% /code %}}
 
-<p>
-  The <code>mmap()</code> system call creates a new mapping. The <code>addr</code> argument is a hint about the virtual address at which the mapping is to be located. If we specify this as <code>NULL</code> then the kernel chooses a suitable address. The <code>length</code> argument specifies the size of the mapping in bytes (which is effectively rounded up to the next multiple of the page size).
-</p>
-
-<p>
-  The <code>prot</code> argument is a bit mask specifying the protection to be placed on the mapping. Available flags are as follows:
-</p>
-
 <ul>
   <li>
-    <code>PROT_NONE</code>: The region may not be accessed.
+    The <code>mmap()</code> system call creates a new memory mapping in the virtual address space of the calling process.
   </li>
   <li>
-    <code>PROT_READ</code>: The contents of the region can be read.
+    The <code>addr</code> argument is a hint about the virtual address at which the mapping is to be located. If we specify this as <code>NULL</code> then the kernel chooses a suitable address. In practice, the kernel will at the very least round the address to a nearby page boundary. In either case, the kernel will choose an address that does not conflict with any existing mapping.
   </li>
   <li>
-    <code>PROT_WRITE</code>: The contents of the region can be modified.
+    The <code>length</code> argument specifies the size of the mapping in bytes (which is effectively rounded up to the next multiple of the page size).
   </li>
   <li>
-    <code>PROT_EXEC</code>: The contents of the region can be executed.
+    The <code>prot</code> argument is a bit mask specifying the protection to be placed on the mapping. Available flags are as follows:
+
+    <ul>
+      <li>
+        <code>PROT_NONE</code>: The region may not be accessed.
+      </li>
+      <li>
+        <code>PROT_READ</code>: The contents of the region can be read.
+      </li>
+      <li>
+        <code>PROT_WRITE</code>: The contents of the region can be modified.
+      </li>
+      <li>
+        <code>PROT_EXEC</code>: The contents of the region can be executed.
+      </li>
+    </ul>
+  </li>
+  <li>
+    If a process attempts to access a memory region in a way that violates the protection on the region then the kernel delivers the <code>SIGSEGV</code> signal to a process.
+  </li>
+  <li>
+    The <code>flags</code> argument is a bit mask of options. Exactly one of <code>MAP_PRIVATE</code> or <code>MAP_SHARED</code> must be included and other flags include <code>MAP_ANONYMOUS</code> to create an anonymous mapping.
+  </li>
+  <li>
+    The remaining arguments are used with file mappings. The <code>fd</code> argument is a file descriptor identifying the file to be mapped and <code>offset</code> specifies the starting point of the mapping in the file (and must be a multiple of the system page size).
+  </li>
+  <li>
+    A call to <code>mmap()</code> returns the starting address of the new mapping on success and <code>MAP_FAILED</code> on error.
   </li>
 </ul>
 
-<p>
-  The <code>flags</code> argument is a bit mask of options controlling various aspects of the mapping operation. Exactly one of <code>MAP_PRIVATE</code> (private mapping) or <code>MAP_SHARED</code> (shared mapping) must be included in this mask. The other values include <code>MAP_ANONYMOUS</code> to create an anonymous mapping.
-</p>
-
-<p>
-  The remaining arguments <code>fd</code> and <code>offset</code> are used with file mappings. The <code>fd</code> argument is a file descriptor identifying the file to be mapped and <code>offset</code> specifies the starting point of the mapping in the file and must be a multiple of the system page size. To map the entire file, we would specify <code>offset</code> as <code>0</code> and <code>length</code> as the size of the file.
-</p>
-
-<p>
-  A call to <code>mmap()</code> returns the starting address of the new mapping on success and <code>MAP_FAILED</code> on error.
-</p>
 
 
-<h3>Example</h3>
+<h3>Unmapping a Mapped Region</h3>
 
 {{% code c %}}#include <sys/mman.h>
+
+int munmap(void *addr, size_t length);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>munmap()</code> system call removes a memory mapping from the virtual address space of the calling process.
+  </li>
+  <li>
+    The <code>addr</code> argument is the starting address of the address range to be unmapped (it must be aligned to a page boundary).
+  </li>
+  <li>
+    The <code>length</code> argument specifies the size in bytes of the region to be unmapped. The address range up to the next multiple of the system page size will be unmapped.
+  </li>
+  <li>
+    It is possible to unmap part of a mapping in which case the mapping either shrinks or splits in two. It is also possible to specify an address range spanning several mappings in which case all of the mappings are unmapped.
+  </li>
+  <li>
+    If there are no mappings in the address range specified by <code>addr</code> and <code>length</code> then <code>munmap()</code> has no effect and returns successfully.
+  </li>
+  <li>
+    If a process terminates or performs an <code>exec()</code> then all of its mappings are automatically unmapped.
+  </li>
+  <li>
+    A call to <code>munmap()</code> returns <code>0</code> on success or <code>-1</code> on error.
+  </li>
+</ul>
+
+
+
+<h3>File Mappings</h3>
+
+<ul>
+  <li>
+    To create a file mapping typically obtain a file descriptor via a call to <code>open()</code> and pass that file descriptor as the <code>fd</code> argument in a call to <code>mmap()</code>.
+  </li>
+  <li>
+    As a result, <code>mmap()</code> maps the file contents into the address space of the calling process. Once <code>mmap()</code> has been called we closed the file descriptor without affecting the mapping.
+  </li>
+  <li>
+    The file referred to by the file descriptor passed to <code>fd</code> must have been opened with permissions appropriate for the values specified in <code>prot</code> and <code>flags</code>. The file must always be opened for reading and if <code>PROT_WRITE</code> and <code>MAP_SHARED</code> are specified in <code>flags</code> then the file must be opened for both reading and writing.
+  </li>
+  <li>
+    With a file mapping, we can perform file I/O simply by accessing bytes of memory relying on the kernel to ensure that the changes to memory are propagated to the mapped file.
+  </li>
+  <li>
+    Replacing <code>read()</code> and <code>write()</code> system calls with memory accesses can simplify the logic of some applications and provide better performance under certain circumstances.
+  </li>
+  <li>
+    On Linux, the page of a file mapping are mapped in on the first access. As such, if changes are made to a file region after the <code>mmap()</code> call but before the corresponding page of the mapping is accessed then the changes may be visible to the process. This behavior is implementation-dependent.
+  </li>
+</ul>
+
+
+
+<h3>Synchronizing a Mapped Region</h3>
+
+{{% code c %}}#include <sys/mman.h>
+
+int msync(void *addr, size_t length, int flags);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>msync()</code> system call gives an application explicit control over when a shared mapping is synchronized with the mapped file. 
+  </li>
+  <li>
+    The kernel automatically carries modifications of the contents of a <code>MAP_SHARED</code> mapping through to the underlying file but provides no guarantees about when such synchronization will occur.
+  </li>
+  <li>
+    The <code>addr</code> and <code>length</code> arguments specify the starting address and size of the memory region to be synchronized. The address must be page-aligned and length is rounded up to the next multiple of the page size.
+  </li>
+  <li>
+    The <code>flags</code> argument may include one of the following:
+
+    <ul>
+      <li>
+        <code>MS_SYNC</code>: Perform a synchronous file write. The call blocks until all modified pages of the memory region have been written to the disk.
+      </li>
+      <li>
+        <code>MS_ASYNC</code>: Perform an asynchronous file write. The modified pages are written to the disk at some later point and are immediately made visible to other processes performing a <code>read()</code> on the corresponding file region.
+      </li>
+    </ul>
+  </li>
+  <li>
+    A call to <code>msync()</code> returns <code>0</code> or <code>-1</code> on error.
+  </li>
+</ul>
+
+
+
+<p>
+  One other value can additionally be specified for flags <code>MS_INVALIDATE</code> which invalidates cached copies of mapped data. After any modified pages in the memory region have been synchronized with the file, all pages of the memory region that are inconsistent with the underlying file data are marked as invalid. When next referenced, the contents of the pages will be copied from the corresponding locations in the file. As a consequence, any updates that have been made to the file by another process are made visible in the memory region.
+</p>
+
+
+<!-- 
+  Like many other modern UNIX implementations, Linux provides a so-called
+unified virtual memory system. This means that, where possible, memory mappings
+and blocks of the buffer cache share the same pages of physical memory. Thus, the
+views of a file obtained via a mapping and via I/O system calls (read(), write(), and
+so on) are always consistent, and the only use of msync() is to force the contents of a
+mapped region to be flushed to disk.
+However, a unified virtual memory system is not required by SUSv3 and is not
+employed on all UNIX implementations.
+ -->
+
+
+
+
+<h3>Anonymous Mapping</h3>
+
+<p>
+  An anonymous mapping does not have a corresponding file. We can create an anonymous mapping by specifying the <code>MAP_ANONYMOUS</code> in <code>flags</code> and specifying <code>fd</code> as <code>-1</code> in the call to <code>mmap()</code>. The <code>offset</code> argument is ignored. The bytes of the resulting mapping are zero-initialized.
+</p>
+
+
+<h3>MAP_FIXED</h3>
+
+<p>
+  Specifying <code>MAP_FIXED</code> in the <code>flags</code> argument to <code>mmap()</code> forces the kernel to interpret the address in <code>addr</code> exactly. In this case, the provided address must be page-aligned. Generally, a portable application should omit the use of MAP_FIXED and specify addr as NULL.
+</p>
+
+<p>
+   However, if MAP_FIXED is specified when calling mmap() and the memory region beginning at addr and running for length bytes overlaps the pages of any previous mapping then the overlapped pages are replaced by the new mapping.
+</p>
+
+We can use this feature to portably map multiple parts of a file (or files) into a contiguous region of memory,
+as follows:
+1. Use mmap() to create an anonymous mapping (Section 49.7). In the mmap()
+call, we specify addr as NULL and don’t specify the MAP_FIXED flag. This allows the
+kernel to choose an address for the mapping.
+2. Use a series of mmap() calls specifying MAP_FIXED to map (i.e., overlay) file regions
+into different parts of the mapping created in the preceding step.
+Although we could skip the first step, and use a series of mmap() MAP_FIXED operations to create a set of contiguous mappings at an address range selected by the
+application, this approach is less portable than performing both steps. As noted
+Memory Mappings 1041
+above, a portable application should avoid trying to create a new mapping at a fixed
+address. The first step avoids the portability problem, because we let the kernel
+select a contiguous address range, and then create new mappings within that
+address range.
+
+
+
+{{% code c %}}// mmap_cat.c
+
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -93,28 +245,24 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 #include <unistd.h>
 
 int main(int argc, char *argv[]) {
-  char *addr;
-  int fd;
-  struct stat sb;
-
   if (argc != 2) {
     fprintf(stderr, "usage: %s file\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
-  fd = open(argv[1], O_RDONLY);
+  int fd = open(argv[1], O_RDONLY);
   if (fd == -1) {
     perror("open");
     exit(EXIT_FAILURE);
   }
 
+  struct stat sb;
   if (fstat(fd, &sb) == -1) {
     perror("fstat");
     exit(EXIT_FAILURE);
   }
 
-  // create a private file mapping of the entire file
-  addr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *addr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
   if (addr == MAP_FAILED) {
     perror("mmap");
     exit(EXIT_FAILURE);
@@ -127,39 +275,6 @@ int main(int argc, char *argv[]) {
 
   exit(EXIT_SUCCESS);
 }{{% /code %}}
-
-
-
-<h3>Unmapping a Mapped Region</h3>
-
-{{% code c %}}#include <sys/mman.h>
-
-int munmap(void *addr, size_t length);{{% /code %}}
-
-<p>
-  The <code>munmap()</code> system call removes a memory mapping. The <code>addr</code> argument is the starting address of the address range to be unmapped (it must be aligned to a page boundary). The <code>length</code> argument specifies the size in bytes of the region to be unmapped. The address range up to the next multiple of the system page size will be unmapped.
-</p>
-
-<p>
-  Notice that we can remove part of a mapping in which case the mapping either shrinks or splits in two. It is also possible to specify an address range spanning several mappings in which case all of the mappings are unmapped. If a process terminates then all of its mappings are automatically unmapped.
-</p>
-
-<p>
-  A call to <code>munmap()</code> returns <code>0</code> on success or <code>-1</code> on error. If there are no mappings in the address range specified then the call has no effect and returns successfully.
-</p>
-
-
-
-<h3>File Mappings</h3>
-
-<p>
-  To create a file mapping typically obtain a file descriptor via a call to <code>open()</code> and pass that file descriptor as the <code>fd</code> argument in a call to <code>mmap()</code>. The file referred to by the file descriptor must have been opened with permissions appropriate for the values specified in <code>prot</code> and <code>flags</code>. In particular, the file must always be opened for reading, and, if PROT_WRITE and MAP_SHARED are specified in flags, then the file must be opened for both reading and writing. As a result, <code>mmap()</code> maps the file contents into the address space of the calling process. Once <code>mmap()</code> has been called we closed the file descriptor without affecting the mapping.
-</p>
-
-
-<p>
-  With a file mapping, we can perform file I/O simply by accessing bytes of memory relying on the kernel to ensure that the changes to memory are propagated to the mapped file. Replacing <code>read()</code> and <code>write()</code> system calls with memory accesses can simplify the logic of some applications and provide better performance under certain circumstances.
-</p>
 
 {{% code c %}}#include <stdlib.h>
 #include <string.h>
@@ -217,58 +332,514 @@ int main(int argc, char *argv[]) {
 // $ od -c -w8 test.txt{{% /code %}}
 
 
-<h3>Synchronizing a Mapped Region</h3>
 
-{{% code c %}}#include <sys/mman.h>
-
-int msync(void *addr, size_t length, int flags);{{% /code %}}
-
-<p>
-  The kernel automatically carries modifications of the contents of a <code>MAP_SHARED</code> mapping through to the underlying file but provides no guarantees about when such synchronization will occur. The <code>msync()</code> system call gives an application explicit control over when a shared mapping is synchronized with the mapped file. This is useful for forcing data to be written to the disk as well as ensuring that updates to a writable mapping are visible to other processes.
-</p>
-
-<p>
-  The <code>addr</code> and <code>length</code> arguments specify the starting address and size of the memory region to be synchronized. The address must be page-aligned and length is rounded up to the next multiple of the page size. The <code>flags</code> argument may include <code>MS_SYNC</code> to perform a synchronous file write in which the call blocks until all modified pages of the memory region have been written to the disk. Alternatively, it may include <code>MS_ASYNC</code> to perform an asynchronous file write where the modified pages are written to the disk at some later point and are immediately made visible to other processes performing a read() on the corresponding file region.
-</p>
-
-<p>
-  One other value can additionally be specified for flags <code>MS_INVALIDATE</code> which invalidates cached copies of mapped data. After any modified pages in the memory region have been synchronized with the file, all pages of the memory region that are inconsistent with the underlying file data are marked as invalid. When next referenced, the contents of the pages will be copied from the corresponding locations in the file. As a consequence, any updates that have been made to the file by another process are made visible in the memory region.
-</p>
-
-<p>
-  It returns 0 on success or -1 on error.
-</p>
 
 <!-- 
-  Like many other modern UNIX implementations, Linux provides a so-called
+MISC
+
+FORK/EXEC
+
+A child process created by fork() inherits copies of its parent’s mappings, and these mappings refer to the same pages of physical memory as the corresponding mappings in the parent.
+
+Mappings are lost when a process performs an exec(), but are inherited by the child of a fork(). The mapping type is also inherited.
+
+Private anonymous mapping: Each call to mmap() to create a private anonymous mapping yields a new mapping that is distinct from (i.e., does not share physical pages with) other anonymous mappings created by the same (or a different) process. Although a child process inherits its parent’s mappings, copy-on-write semantics ensure that, after the fork(), the parent and child don’t see changes
+
+Shared anonymous mapping: As with a private anonymous mapping, each call to mmap() to create a shared anonymous mapping creates a new, distinct mapping that doesn’t share pages with any other mapping. The difference is that the pages of the mapping are not copied-on-write. This means that when a child inherits the mapping after a fork(), the parent and child share the same pages of RAM, and changes made to the contents of the mapping by one process are visible to the other process.
+
+
+SIGNALS
+
+Two signals may come into play when accessing the contents of a mapping. SIGSEGV
+is generated if we attempt access in a manner that violates the protections on the
+mapping (or if we access any currently unmapped address). SIGBUS is generated for
+file-based mappings if we access a part of the mapping for which no corresponding
+region exists in the file (i.e., the mapping is larger than the underlying file).
+
+
+
+MALLOC
+
+The glibc implementation of malloc() uses MAP_PRIVATE anonymous mappings to
+allocate blocks of memory larger than MMAP_THRESHOLD bytes.
+
+
+OTHER
+
+Information about all of a process’s mappings is visible in the Linux-specific /proc/PID/maps file
+
+get page size -> sysconf(_SC_PAGESIZE)
+-->
+
+
+
+z A child process created by fork() inherits copies of its parent’s mappings, and
+these mappings refer to the same pages of physical memory as the corresponding mappings in the parent.
+
+
+
+Private + File: Initializing memory from contents of file Memory allocation
+Shared + File: Shared Memory-mapped I/O; sharing memory between processes (IPC)
+
+Private + Anonymous: Memory allocation
+Shared + Anonymous: Sharing memory between processes (IPC)
+
+
+Mappings are lost when a process performs an exec(), but are inherited by the child of a fork(). The mapping type (MAP_PRIVATE or MAP_SHARED) is also inherited.
+
+
+
+49.2 Creating a Mapping: mmap()
+
+If the value MAP_FIXED is included in flags, then addr must be page-aligned.
+
+the system page size as returned by sysconf(_SC_PAGESIZE)
+
+
+Memory protections reside in process-private virtual memory tables. Thus, different processes may map the same memory region with different protections.
+
+z An implementation may require that offset be a multiple of the system page size.
+z If MAP_FIXED is specified, then an implementation may require that addr be
+page-aligned.
+z If MAP_FIXED is specified, and addr is nonzero, then addr and offset shall have the
+same remainder modulo the system page size.
+
+
+49.3 Unmapping a Mapped Region: munmap()
+
+During unmapping, the kernel removes any memory locks that the process
+holds for the specified address range. (Memory locks are established using mlock()
+or mlockall(), as described in Section 50.2.)
+
+To ensure that the contents of a shared file mapping are written to the underlying
+file, a call to msync() (Section 49.5) should be made before unmapping a mapping
+with munmap().
+
+
+
+49.4.1 Private File Mappings
+The two most common uses of private file mappings are the following:
+z To allow multiple processes executing the same program or using the same
+shared library to share the same (read-only) text segment, which is mapped
+from the corresponding part of the underlying executable or library file.
+Memory Mappings 1025
+Although the executable text segment is normally protected to allow only read
+and execute access (PROT_READ | PROT_EXEC), it is mapped using MAP_PRIVATE
+rather than MAP_SHARED, because a debugger or a self-modifying program can
+modify the program text (after first changing the protection on the memory),
+and such changes should not be carried through to the underlying file or affect
+other processes.
+z To map the initialized data segment of an executable or shared library. Such
+mappings are made private so that modifications to the contents of the
+mapped data segment are not carried through to the underlying file.
+Both of these uses of mmap() are normally invisible to a program, because these
+mappings are created by the program loader and dynamic linker. Examples of both
+kinds of mappings can be seen in the /proc/PID/maps output shown in Section 48.5.
+One other, less frequent, use of a private file mapping is to simplify the fileinput logic of a program. This is similar to the use of shared file mappings for
+memory-mapped I/O (described in the next section), but allows only for file input.
+Figure 49-1: Overview of memory-mapped file
+49.4.2 Shared File Mappings
+When multiple processes create shared mappings of the same file region, they all
+share the same physical pages of memory. In addition, modifications to the contents
+of the mapping are carried through to the file. In effect, the file is being treated as
+the paging store for this region of memory, as shown in Figure 49-2. (We simplify
+things in this diagram by omitting to show that the mapped pages are typically not
+contiguous in physical memory.)
+Shared file mappings serve two purposes: memory-mapped I/O and IPC. We
+consider each of these uses below.
+Process virtual
+memory
+address
+returned
+by mmap()
+mapped
+region
+mapped
+region
+offset length
+Open file ( fd)
+increasing
+memory address
+1026 Chapter 49
+Figure 49-2: Two processes with a shared mapping of the same region of a file
+Memory-mapped I/O
+Since the contents of the shared file mapping are initialized from the file, and any
+modifications to the contents of the mapping are automatically carried through to
+the file, we can perform file I/O simply by accessing bytes of memory, relying on the
+kernel to ensure that the changes to memory are propagated to the mapped file.
+(Typically, a program would define a structured data type that corresponds to the
+contents of the disk file, and then use that data type to cast the contents of the
+mapping.) This technique is referred to as memory-mapped I/O, and is an alternative
+to using read() and write() to access the contents of a file.
+Memory-mapped I/O has two potential advantages:
+z By replacing read() and write() system calls with memory accesses, it can simplify
+the logic of some applications.
+z It can, in some circumstances, provide better performance than file I/O carried
+out using the conventional I/O system calls.
+The reasons that memory-mapped I/O can provide performance benefits are as
+follows:
+z A normal read() or write() involves two transfers: one between the file and the
+kernel buffer cache, and the other between the buffer cache and a user-space
+buffer. Using mmap() eliminates the second of these transfers. For input, the
+data is available to the user process as soon as the kernel has mapped the
+Process A
+page table
+PT entries
+for mapped
+region
+Process B
+page table
+PT entries
+for mapped
+region
+Mapped
+pages
+Physical
+memory
+Mapped
+region of
+file
+Open file
+I/O managed
+by kernel
+Memory Mappings 1027
+corresponding file blocks into memory. For output, the user process merely
+needs to modify the contents of the memory, and can then rely on the kernel
+memory manager to automatically update the underlying file.
+z In addition to saving a transfer between kernel space and user space, mmap()
+can also improve performance by lowering memory requirements. When using
+read() or write(), the data is maintained in two buffers: one in user space and the
+other in kernel space. When using mmap(), a single buffer is shared between
+the kernel space and user space. Furthermore, if multiple processes are performing I/O on the same file, then, using mmap(), they can all share the same
+kernel buffer, resulting in an additional memory saving.
+Performance benefits from memory-mapped I/O are most likely to be realized
+when performing repeated random accesses in a large file. If we are performing
+sequential access of a file, then mmap() will probably provide little or no gain over
+read() and write(), assuming that we perform I/O using buffer sizes big enough to
+avoid making a large number of I/O system calls. The reason that there is little performance benefit is that, regardless of which technique we use, the entire contents of the
+file will be transferred between disk and memory exactly once, and the efficiency gains
+of eliminating a data transfer between user space and kernel space and reducing
+memory usage are typically negligible compared to the time required for disk I/O.
+Memory-mapped I/O can also have disadvantages. For small I/Os, the cost
+of memory-mapped I/O (i.e., mapping, page faulting, unmapping, and updating the hardware memory management unit’s translation look-aside buffer) can
+actually be higher than for a simple read() or write(). In addition, it can sometimes
+be difficult for the kernel to efficiently handle write-back for writable mappings
+(the use of msync() or sync_file_range() can help improve efficiency in this case).
+IPC using a shared file mapping
+Since all processes with a shared mapping of the same file region share the same
+physical pages of memory, the second use of a shared file mapping is as a method
+of (fast) IPC. The feature that distinguishes this type of shared memory region
+from a System V shared memory object (Chapter 48) is that modifications to the
+contents of the region are carried through to the underlying mapped file. This feature is useful in an application that requires the shared memory contents to persist
+across application or system restarts.
+Example program
+Listing 49-2 provides a simple example of the use of mmap() to create a shared file
+mapping. This program begins by mapping the file named in its first command-line
+argument. It then prints the value of the string lying at the start of the mapped
+region. Finally, if a second command-line argument is supplied, that string is copied
+into the shared memory region.
+The following shell session log demonstrates the use of this program. We begin
+by creating a 1024-byte file that is populated with zeros:
+$ dd if=/dev/zero of=s.txt bs=1 count=1024
+1024+0 records in
+1024+0 records out
+1028 Chapter 49
+We then use our program to map the file and copy a string into the mapped
+region:
+$ ./t_mmap s.txt hello
+Current string=
+Copied "hello" to shared memory
+The program displayed nothing for the current string because the initial value of
+the mapped files began with a null byte (i.e., zero-length string).
+Next, we use our program to again map the file and copy a new string into the
+mapped region:
+$ ./t_mmap s.txt goodbye
+Current string=hello
+Copied "goodbye" to shared memory
+Finally, we dump the contents of the file, 8 characters per line, to verify its contents:
+$ od -c -w8 s.txt
+0000000 g o o d b y e nul
+0000010 nul nul nul nul nul nul nul nul
+*
+0002000
+Our trivial program doesn’t use any mechanism to synchronize access by multiple
+processes to the mapped file. However, real-world applications typically need to
+synchronize access to shared mappings. This can be done using a variety of techniques, including semaphores (Chapters 47 and 53) and file locking (Chapter 55).
+We explain the msync() system call used in Listing 49-2 in Section 49.5.
+Listing 49-2: Using mmap() to create a shared file mapping
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– mmap/t_mmap.c
+#include <sys/mman.h>
+#include <fcntl.h>
+#include "tlpi_hdr.h"
+#define MEM_SIZE 10
+int
+main(int argc, char *argv[])
+{
+ char *addr;
+ int fd;
+ if (argc < 2 || strcmp(argv[1], "--help") == 0)
+ usageErr("%s file [new-value]\n", argv[0]);
+ fd = open(argv[1], O_RDWR);
+ if (fd == -1)
+ errExit("open");
+Memory Mappings 1029
+ addr = mmap(NULL, MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+ if (addr == MAP_FAILED)
+ errExit("mmap");
+ if (close(fd) == -1) /* No longer need 'fd' */
+ errExit("close");
+ printf("Current string=%.*s\n", MEM_SIZE, addr);
+ /* Secure practice: output at most MEM_SIZE bytes */
+ if (argc > 2) { /* Update contents of region */
+ if (strlen(argv[2]) >= MEM_SIZE)
+ cmdLineErr("'new-value' too large\n");
+ memset(addr, 0, MEM_SIZE); /* Zero out region */
+ strncpy(addr, argv[2], MEM_SIZE - 1);
+ if (msync(addr, MEM_SIZE, MS_SYNC) == -1)
+ errExit("msync");
+ printf("Copied \"%s\" to shared memory\n", argv[2]);
+ }
+ exit(EXIT_SUCCESS);
+}
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– mmap/t_mmap.c
+49.4.3 Boundary Cases
+In many cases, the size of a mapping is a multiple of the system page size, and the
+mapping falls entirely within the bounds of the mapped file. However, this is not
+necessarily so, and we now look at what happens when these conditions don’t hold.
+Figure 49-3 portrays the case where the mapping falls entirely within the
+bounds of the mapped file, but the size of the region is not a multiple of the system
+page size (which we assume is 4096 bytes for the purposes of this discussion).
+Figure 49-3: Memory mapping whose length is not a multiple of the system page size
+Memory
+region
+references
+yield SIGSEGV
+Mapped file
+(9500 bytes)
+remainder
+of page
+file offset: 0
+byte offset: 0 6000
+mmap(0, 6000, prot, MAP_SHARED, fd, 0);
+accessible, mapped to file
+9499
+5999 8192 8191
+requested size of mapping
+actual mapped region of file
+8191 8192
+unmapped
+1030 Chapter 49
+Since the size of the mapping is not a multiple of the system page size, it is
+rounded up to the next multiple of the system page size. Because the file is larger
+than this rounded-up size, the corresponding bytes of the file are mapped as
+shown in Figure 49-3.
+Attempts to access bytes beyond the end of the mapping result in the generation of a SIGSEGV signal (assuming that there is no other mapping at that location).
+The default action for this signal is to terminate the process with a core dump.
+When the mapping extends beyond the end of the underlying file (see Figure 49-4), the situation is more complex. As before, because the size of the mapping is not a multiple of the system page size, it is rounded up. However, in this
+case, while the bytes in the rounded-up region (i.e., bytes 2200 to 4095 in the diagram) are accessible, they are not mapped to the underlying file (since no corresponding bytes exist in the file). Instead, they are initialized to 0 (SUSv3 requires
+this). These bytes will nevertheless be shared with other processes mapping the file,
+if they specify a sufficiently large length argument. Changes to these bytes are not
+written to the file.
+If the mapping includes pages beyond the rounded-up region (i.e., bytes 4096
+and beyond in Figure 49-4), then attempts to access addresses in these pages result
+in the generation of a SIGBUS signal, which warns the process that there is no region
+of the file corresponding to these addresses. As before, attempts to access
+addresses beyond the end of the mapping result in the generation of a SIGSEGV signal.
+From the above description, it may appear pointless to create a mapping whose
+size exceeds that of the underlying file. However, by extending the size of the file
+(e.g., using ftruncate() or write()), we can render previously inaccessible parts of such
+a mapping usable.
+Figure 49-4: Memory mapping extending beyond end of mapped file
+
+
+49.4.4 Memory Protection and File Access Mode Interactions
+
+As a general principle, we can say that the PROT_READ and
+PROT_EXEC protections require that the mapped file is opened O_RDONLY or O_RDWR, and that
+the PROT_WRITE protection requires that the mapped file is opened O_WRONLY or O_RDWR.
+
+z The results when a file is opened with the O_RDONLY flag depend on whether we
+specify MAP_PRIVATE or MAP_SHARED when calling mmap(). For a MAP_PRIVATE mapping,
+we can specify any combination of memory protection in mmap()—because
+modifications to the contents of a MAP_PRIVATE page are never written to the file,
+the inability to write to the file is not a problem. For a MAP_SHARED mapping, the
+only memory protections that are compatible with O_RDONLY are PROT_READ and
+(PROT_READ | PROT_EXEC). This is logical, since a PROT_WRITE, MAP_SHARED mapping
+allows updates to the mapped file.
+
+
+
+
+49.5 Synchronizing a Mapped Region: msync()
+
+
+Another way of distinguishing these two values is to say that after an MS_SYNC operation,
+the memory region is synchronized with the disk, while after an MS_ASYNC operation, the
+memory region is merely synchronized with the kernel buffer cache.
+
+MS_INVALIDATE
+Invalidate cached copies of mapped data. After any modified pages in the
+memory region have been synchronized with the file, all pages of the memory region that are inconsistent with the underlying file data are marked as
+invalid. When next referenced, the contents of the pages will be copied
+from the corresponding locations in the file. As a consequence, any updates
+that have been made to the file by another process are made visible in the
+memory region.
+
+Like many other modern UNIX implementations, Linux provides a so-called
 unified virtual memory system. This means that, where possible, memory mappings
 and blocks of the buffer cache share the same pages of physical memory. Thus, the
 views of a file obtained via a mapping and via I/O system calls (read(), write(), and
 so on) are always consistent, and the only use of msync() is to force the contents of a
 mapped region to be flushed to disk.
 However, a unified virtual memory system is not required by SUSv3 and is not
-employed on all UNIX implementations.
- -->
+employed on all UNIX implementations. On such systems, a call to msync() is
+required to make changes to the contents of a mapping visible to other processes
+that read() the file, and the MS_INVALIDATE flag is required to perform the converse
+action of making writes to the file by another process visible in the mapped region.
+Multiprocess applications that employ both mmap() and I/O system calls to operate
+on the same file should be designed to make appropriate use of msync() if they are
+to be portable to systems that don’t have a unified virtual memory system.
 
 
-<h3>Anonymous Mapping</h3>
+49.6 Additional mmap() Flags
 
-<p>
-  An anonymous mapping does not have a corresponding file. We can create an anonymous mapping by specifying the <code>MAP_ANONYMOUS</code> in <code>flags</code> and specifying <code>fd</code> as <code>-1</code> in the call to <code>mmap()</code>. The <code>offset</code> argument is ignored. The bytes of the resulting mapping are zero-initialized.
-</p>
+MAP_ANONYMOUS
+Create an anonymous mapping—that is, a mapping that is not backed by a
+file.
 
 
-<h3>MAP_FIXED</h3>
+49.7 Anonymous Mappings
+An anonymous mapping is one that doesn’t have a corresponding file. In this section,
+we show how to create anonymous mappings, and look at the purposes served by
+private and shared anonymous mappings.
+MAP_ANONYMOUS and /dev/zero
+On Linux, there are two different, equivalent methods of creating an anonymous
+mapping with mmap():
+z Specify MAP_ANONYMOUS in flags and specify fd as –1. (On Linux, the value of fd is
+ignored when MAP_ANONYMOUS is specified. However, some UNIX implementations
+require fd to be –1 when employing MAP_ANONYMOUS, and portable applications
+should ensure that they do this.)
+We must define either the _BSD_SOURCE or the _SVID_SOURCE feature test macros
+to get the definition of MAP_ANONYMOUS from <sys/mman.h>. Linux provides the
+constant MAP_ANON as a synonym for MAP_ANONYMOUS for compatibility with some
+other UNIX implementations using this alternative name.
+z Open the /dev/zero device file and pass the resulting file descriptor to mmap().
+/dev/zero is a virtual device that always returns zeros when we read from it.
+Writes to this device are always discarded. A common use of /dev/zero is to
+populate a file with zeros (e.g., using the dd(1) command).
+With both the MAP_ANONYMOUS and the /dev/zero techniques, the bytes of the resulting
+mapping are initialized to 0. For both techniques, the offset argument is ignored
+(since there is no underlying file in which to specify an offset). We show examples
+of each technique shortly.
+The MAP_ANONYMOUS and /dev/zero techniques are not specified in SUSv3,
+although most UNIX implementations support one or both of them. The reason
+for the existence of two different techniques with the same semantics is that
+one (MAP_ANONYMOUS) derives from BSD, while the other (/dev/zero) derives from
+System V.
+Memory Mappings 1035
+MAP_PRIVATE anonymous mappings
+MAP_PRIVATE anonymous mappings are used to allocate blocks of process-private
+memory initialized to 0. We can use the /dev/zero technique to create a MAP_PRIVATE
+anonymous mapping as follows:
+fd = open("/dev/zero", O_RDWR);
+if (fd == -1)
+ errExit("open");
+addr = mmap(NULL, length, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+if (addr == MAP_FAILED)
+ errExit("mmap");
+The glibc implementation of malloc() uses MAP_PRIVATE anonymous mappings to
+allocate blocks of memory larger than MMAP_THRESHOLD bytes. This makes it possible
+to efficiently deallocate such blocks (via munmap()) if they are later given to free().
+(It also reduces the possibility of memory fragmentation when repeatedly allocating and deallocating large blocks of memory.) MMAP_THRESHOLD is 128 kB by
+default, but this parameter is adjustable via the mallopt() library function.
+MAP_SHARED anonymous mappings
+A MAP_SHARED anonymous mapping allows related processes (e.g., parent and child)
+to share a region of memory without needing a corresponding mapped file.
+MAP_SHARED anonymous mappings are available only with Linux 2.4 and later.
+We can use the MAP_ANONYMOUS technique to create a MAP_SHARED anonymous mapping
+as follows:
+addr = mmap(NULL, length, PROT_READ | PROT_WRITE,
+ MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+if (addr == MAP_FAILED)
+ errExit("mmap");
+If the above code is followed by a call to fork(), then, because the child produced by
+fork() inherits the mapping, both processes share the memory region.
+Example program
+The program in Listing 49-3 demonstrates the use of either MAP_ANONYMOUS or /dev/zero
+to share a mapped region between parent and child processes. The choice of technique is determined by whether USE_MAP_ANON is defined when compiling the program. The parent initializes an integer in the shared region to 1 prior to calling
+fork(). The child then increments the shared integer and exits, while the parent
+waits for the child to exit and then prints the value of the integer. When we run this
+program, we see the following:
+$ ./anon_mmap
+Child started, value = 1
+In parent, value = 2
+1036 Chapter 49
+Listing 49-3: Sharing an anonymous mapping between parent and child processes
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––– mmap/anon_mmap.c
+#ifdef USE_MAP_ANON
+#define _BSD_SOURCE /* Get MAP_ANONYMOUS definition */
+#endif
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include "tlpi_hdr.h"
+int
+main(int argc, char *argv[])
+{
+ int *addr; /* Pointer to shared memory region */
+#ifdef USE_MAP_ANON /* Use MAP_ANONYMOUS */
+ addr = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE,
+ MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+ if (addr == MAP_FAILED)
+ errExit("mmap");
+#else /* Map /dev/zero */
+ int fd;
+ fd = open("/dev/zero", O_RDWR);
+ if (fd == -1)
+ errExit("open");
+ addr = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+ if (addr == MAP_FAILED)
+ errExit("mmap");
+ if (close(fd) == -1) /* No longer needed */
+ errExit("close");
+#endif
+ *addr = 1; /* Initialize integer in mapped region */
+ switch (fork()) { /* Parent and child share mapping */
+ case -1:
+ errExit("fork");
+ case 0: /* Child: increment shared integer and exit */
+ printf("Child started, value = %d\n", *addr);
+ (*addr)++;
+ if (munmap(addr, sizeof(int)) == -1)
+ errExit("munmap");
+ exit(EXIT_SUCCESS);
+ default: /* Parent: wait for child to terminate */
+ if (wait(NULL) == -1)
+ errExit("wait");
+ printf("In parent, value = %d\n", *addr);
+Memory Mappings 1037
+ if (munmap(addr, sizeof(int)) == -1)
+ errExit("munmap");
+ exit(EXIT_SUCCESS);
+ }
+}
 
-<p>
-  Specifying <code>MAP_FIXED</code> in the <code>flags</code> argument to <code>mmap()</code> forces the kernel to interpret the address in <code>addr</code> exactly. In this case, the provided address must be page-aligned. Generally, a portable application should omit the use of MAP_FIXED and specify addr as NULL.
-</p>
 
-<p>
-   However, if MAP_FIXED is specified when calling mmap() and the memory region beginning at addr and running for length bytes overlaps the pages of any previous mapping then the overlapped pages are replaced by the new mapping.
-</p>
 
-We can use this feature to portably map multiple parts of a file (or files) into a contiguous region of memory,
+49.10 The MAP_FIXED Flag
+Specifying MAP_FIXED in the mmap() flags argument forces the kernel to interpret the
+address in addr exactly, rather than take it as a hint. If we specify MAP_FIXED, addr
+must be page-aligned.
+Generally, a portable application should omit the use of MAP_FIXED, and specify
+addr as NULL, which allows the system to choose the address at which to place the
+mapping. The reasons for this are the same as those that we outlined in Section 48.3
+when explaining why it usually preferable to specify shmaddr as NULL when attaching
+a System V shared memory segment using shmat().
+There is, however, one situation where a portable application might use MAP_FIXED.
+If MAP_FIXED is specified when calling mmap(), and the memory region beginning at
+addr and running for length bytes overlaps the pages of any previous mapping, then
+the overlapped pages are replaced by the new mapping. We can use this feature to
+portably map multiple parts of a file (or files) into a contiguous region of memory,
 as follows:
 1. Use mmap() to create an anonymous mapping (Section 49.7). In the mmap()
 call, we specify addr as NULL and don’t specify the MAP_FIXED flag. This allows the
@@ -282,51 +853,30 @@ above, a portable application should avoid trying to create a new mapping at a f
 address. The first step avoids the portability problem, because we let the kernel
 select a contiguous address range, and then create new mappings within that
 address range.
+From Linux 2.6 onward, the remap_file_pages() system call, which we describe
+in the next section, can also be used to achieve the same effect. However, the use of
+MAP_FIXED is more portable than remap_file_pages(), which is Linux-specific.
 
 
+49.12 Summary
+
+Memory mappings serve a variety of uses, including:
+z allocating process-private memory (private anonymous mappings);
+z initializing the contents of the text and initialized data segments of a process (private file mappings);
+z sharing memory between processes related via fork() (shared anonymous mappings); and
+z performing memory-mapped I/O, optionally combined with memory sharing
+between unrelated processes (shared file mappings).
 
 
-
-
-
-
-
-<!-- 
-  MISC
-
-
-
-  FORK/EXEC
-
-  A child process created by fork() inherits copies of its parent’s mappings, and these mappings refer to the same pages of physical memory as the corresponding mappings in the parent.
-
-  Mappings are lost when a process performs an exec(), but are inherited by the child of a fork(). The mapping type is also inherited.
-
-  Private anonymous mapping: Each call to mmap() to create a private anonymous mapping yields a new mapping that is distinct from (i.e., does not share physical pages with) other anonymous mappings created by the same (or a different) process. Although a child process inherits its parent’s mappings, copy-on-write semantics ensure that, after the fork(), the parent and child don’t see changes
-
-  Shared anonymous mapping: As with a private anonymous mapping, each call to mmap() to create a shared anonymous mapping creates a new, distinct mapping that doesn’t share pages with any other mapping. The difference is that the pages of the mapping are not copied-on-write. This means that when a child inherits the mapping after a fork(), the parent and child share the same pages of RAM, and changes made to the contents of the mapping by one process are visible to the other process.
-
-
-  SIGNALS
-
-  Two signals may come into play when accessing the contents of a mapping. SIGSEGV
+Two signals may come into play when accessing the contents of a mapping. SIGSEGV
 is generated if we attempt access in a manner that violates the protections on the
 mapping (or if we access any currently unmapped address). SIGBUS is generated for
 file-based mappings if we access a part of the mapping for which no corresponding
 region exists in the file (i.e., the mapping is larger than the underlying file).
 
+Swap space overcommitting allows the system to allocate more memory to
+processes than is actually available in RAM and swap space. Overcommitting is possible
+because, typically, each process does not make full use of its allocation. Overcommitting can be controlled on a per-mmap() basis using the MAP_NORESERVE flag, and on a
+system-wide basis using /proc files.
 
-
-  MALLOC
-
-  The glibc implementation of malloc() uses MAP_PRIVATE anonymous mappings to
-allocate blocks of memory larger than MMAP_THRESHOLD bytes.
-
-
-  OTHER
-
-  Information about all of a process’s mappings is visible in the Linux-specific /proc/PID/maps file
-
-  get page size -> sysconf(_SC_PAGESIZE)
--->
-
+The mremap() system call allows an existing mapping to be resized.

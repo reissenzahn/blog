@@ -57,7 +57,7 @@ func main() {
   fmt.Println(c4)
 
 
-  // the new() function can be used to return a pointer to struct
+  // the new() function can be used to return a pointer to a struct literal
   p1 := new(Circle)
   fmt.Printf("%T\n", p1) // *main.Circle
 

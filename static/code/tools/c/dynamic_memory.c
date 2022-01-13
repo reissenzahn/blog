@@ -95,7 +95,20 @@ int main() {
 
   free(ptr4);
 
+  // if the pointer is NULL then the call is equivalent to malloc() with the specified size
+
 
   // when a process terminates all allocated memory is returned to the operating system
   return 0;
 }
+
+
+// Every object has an effective type, which determines which lvalue accesses are valid and which violate the strict aliasing rules.
+
+// If the object was created by a declaration, the declared type of that object is the object's effective type.
+
+// If the object was created by an allocation function (including realloc), it has no declared type. Such object acquires an effective type as follows:
+
+// The first write to that object through an lvalue that has a type other than character type, at which time the type of that lvalue becomes this object's effective type for that write and all subsequent reads.
+// memcpy or memmove copy another object into that object, at which time the effective type of the source object (if it had one) becomes the effective type of this object for that write and all subsequent reads.
+// Any other access to the object with no declared type, the effective type is the type of the lvalue used for the access.

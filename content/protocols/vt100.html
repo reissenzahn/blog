@@ -1,0 +1,388 @@
+---
+title: "VT100"
+date: 2020-09-29
+draft: false
+---
+
+
+<h3>Ctrl-Key Commands</h3>
+
+<p>
+  The Ctrl key strips bits 5 and 6 from whatever key is pressed in combination with Ctrl.
+</p>
+
+<ul>
+  <li>
+    Ctrl-s: Freezes the screen and stops any display on the screen from continuing.
+  </li>
+  <li>
+    Ctrl-q: Unfreezes the screen and lets screen display continue.
+  </li>
+  <li>
+    Ctrl-c: Interrupts a running program.
+  </li>
+  <li>
+    Ctrl-\: Same as ctrl-c but stronger.
+  </li>
+  <li>
+
+  </li>
+</ul>
+
+<!-- 
+ctrl-z
+suspends a running program (use the fg command to continue the program, see section Controlling Jobs)
+ctrl-h
+deletes last character typed
+ctrl-w
+deletes last word typed
+ctrl-u
+deletes last line typed
+ctrl-r
+redraws last line typed
+ctrl-d
+ends text input for many UNIX programs, including mail and write.
+
+http://web.cecs.pdx.edu/~rootd/catdoc/guide/TheGuide_38.html
+
+---
+
+ -->
+
+
+<h3>ASCII</h3>
+
+<ul>
+  <li>
+    ASCII is a character encoding standard that encodes 128 specified characters into seven-bit integers.
+  </li>
+  <li>
+    Codes 0 to 31 as well as 127 are non-printable control characters (e.g. NUL, BEL, HT, LF, CR, DEL).
+  </li>
+  <li>
+    Codes 32 to 126 are known as printable characters and represent letters, digits, punctuation marks and a few miscellaneous symbols.
+  </li>
+</ul>
+
+<!--
+char c;
+while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q') {
+
+  // iscntrl() tests whether a character is a control character
+  if (iscntrl(c)) {
+    printf("%d\n", c);
+  } else {
+    printf("%d ('%c')\n", c, c);
+  }
+}
+-->
+
+
+<h3>Escape Sequences</h3>
+
+<!-- 
+Arrow keys, Page Up, Page Down, Home, and End all input 3 or 4 bytes to the terminal: 27, '[', and then one or two other characters. This is known as an escape sequence.
+
+All escape sequences start with a 27 byte. Pressing Escape sends a single 27 byte as input.
+
+- Backspace is byte 127.
+- Delete is a 4-byte escape sequence.
+- Enter is byte 10 which is a newline character ('\n').
+- The Ctrl key combinations that do work seem to map the letters A–Z to the codes 1–26 (i.e. Ctrl-A is 1, Ctrl-B is 2, Ctrl-E is 5, etc.).
+
+We are writing an escape sequence to the terminal. Escape sequences always start with an escape character (27) followed by a [ character. Escape sequences instruct the terminal to do various text formatting tasks, such as coloring text, moving the cursor around, and clearing parts of the screen.
+-->
+
+
+<h3>Terminal Input Sequences</h3>
+
+<!-- 
+ESC[1~ - Home
+ESC[7~ - Home
+ESC[H  - Home
+ESC[OH - Home
+
+ESC[4~ - End
+ESC[8~ - End
+ESC[F  - End
+ESC[OF - End
+
+ESC[2~ - Insert
+ESC[3~ - Delete
+ESC[5~ - PgUp
+ESC[6~ - PgDn
+
+ESC[10~ - F0
+ESC[11~ - F1
+ESC[12~ - F2
+ESC[13~ - F3
+ESC[14~ - F4
+ESC[15~ - F5
+ESC[17~ - F6
+ESC[18~ - F7
+ESC[19~ - F8
+ESC[20~ - F9
+ESC[21~ - F10
+ESC[23~ - F11
+ESC[24~ - F12
+ESC[25~ - F13
+ESC[26~ - F14
+ESC[28~ - F15
+ESC[29~ - F16
+ESC[31~ - F17
+ESC[32~ - F18
+ESC[33~ - F19
+ESC[34~ - F20
+
+https://en.wikipedia.org/wiki/ANSI_escape_code
+-->
+
+
+<h3>VT100 Control Sequences</h3>
+
+<!--
+- The first byte of a control sequence is the escape character \x1b.
+-->
+
+<!--
+// Terminal Modes
+
+// Set Mode - set mode indicated by MODE
+ESC[{MODE}l
+
+// Reset Mode - reset mode indicated by MODE
+ESC[{MODE}l
+
+?25 - hide/show cursor
+
+
+// Device Status
+
+// Query Cursor Position - request a Report Cursor Position response
+ESC[6n
+
+// Report Cursor Position - reports the current cursor position
+ESC[{ROW};{COLUMN}R
+
+
+// Cursor Control
+
+// Cursor Home - set cursor position (default: upper left)
+ESC[{ROW};{COLUMN}H
+
+// Cursor Up - move cursor up by COUNT rows (default: COUNT=1)
+ESC[{COUNT}A
+
+// Cursor Down - move cursor down by COUNT rows (default: COUNT=1)
+ESC[{COUNT}B
+
+// Cursor Forward - move cursor forward by COUNT columns (default: COUNT=1)
+ESC[{COUNT}C
+
+// Cursor Backward - move the cursor backward by COUNT columns (default: COUNT=1)
+ESC[{COUNT}D
+
+
+// Erasing Text
+
+// Erase End of Line - erase from cursor to the end of the current line
+ESC[K
+
+// Erase Start of Line - erase from cursor to the start of the current line
+ESC[1K
+
+// Erase Line - erase the entire current line
+ESC[2K
+
+// Erase Screen - erase the entire screen and move cursor home
+ESC[2J
+
+
+// Colors
+
+// Select Graphic Rendition - sets multiple display attribute settings (default: 0)
+ESC[[{attr1};...;{attrn}m
+
+0	Reset all attributes
+1	Bright
+2	Dim
+4	Underscore	
+5	Blink
+7	Reverse
+8	Hidden
+
+30 Foreground black
+31 Foreground red
+32 Foreground green
+33 Foreground yellow
+34 Foreground blue
+35 Foreground magenta
+36 Foreground cyan
+37 Foreground white
+
+40 Background black
+41 Background red
+42 Background green
+43 Background yellow
+44 Background blue
+45 Background magenta
+46 Background cyan
+47 Background white
+
+-->
+
+    
+<h3>Canonical and Raw Mode</h3>
+
+<!--
+- By default, the terminal starts in canonical mode. Keyboard input is only sent when the user presses Enter.
+- To process input byte-by-byte as its typed, we need to enable raw mode by modifying various terminal attributes.
+- We can set terminal attributes by using tcgetattr() to read the current attributes into a termios struct, modifying the struct and passing the modified struct to tcsetattr().
+- Passing the TCSAFLUSH argument in the tcsetattr() call applies the changes by waiting for all pending output to be written to the terminal and discarding any input that has not been read.
+
+Some of the steps to enabling raw mode include:
+
+- Disable canonical mode by toggling off ICANON.
+- Disable echoing of input by toggling off ECHO.
+- Disable Ctrl-C and Ctrl-Z by toggling off ISIG.
+- Disable Ctrl-S and Ctrl-Q by toggling off IXON.
+- Disable Ctrl-V by toggling off IEXTEN.
+- Disable input conversion of carriage returns into newlines by toggling off ICRNL. 
+- Disable output conversion of newlines into carriage returns followed by newlines by toggling the OPOST flag.
+- Also toggle off BRKINT, INPCK, ISTRIP and toggle on CS8.
+-->
+
+
+
+<h3>Timeout for read()</h3>
+
+<!-- 
+- A call to read() from standard in will block indefinitely for input from the keyboard before it returns.
+- We can set a timeout, so that read() returns if it doesn’t get any input for a certain amount of time.
+- The VMIN value sets the minimum number of bytes of input needed before read() can return. We set it to 0 so that read() returns as soon as there is any input to be read.
+- The VTIME value sets the maximum amount of time to wait before read() returns. It is in tenths of a second, so we set it to 1/10 of a second, or 100 milliseconds.
+- If read() times out, it will return 0, which makes sense because its usual return value is the number of bytes read.
+ -->
+
+
+<h3>Window Size</h3>
+
+<!--
+- On most systems, the size of the terminal window can be obtained by calling ioctl() with the TIOCGWINSZ request.
+- On success, ioctl() will place the number of columns wide and the number of rows high the terminal is into the provided winsize struct. On failure, ioctl() returns -1 (or may set both the number of rows and the number of columns to zero).
+- A fallback method consists of positioning the cursor at the bottom-right of the screen and then querying the position of the cursor in order to determine how many rows and columns there must be on the screen.
+- We can use the C command to move the cursor to the right by a very large value (e.g. 999) and then use the B command to move the cursor down in a similar way. These commands stop the cursor from going past the edge of the screen while the H command is undocumented in this regard.
+-->
+
+
+<h3>Preventing Flickering</h3>
+
+<!-- 
+- It’s not a good idea to make a whole bunch of small write()’s every time we refresh the screen.
+- It would be better to do one big write(), to make sure the whole screen updates at once.
+- Otherwise there could be small unpredictable pauses between write()’s, which would cause an annoying flicker effect.
+
+- There is another possible source of the annoying flicker effect we will take care of now.
+- It’s possible that the cursor might be displayed in the middle of the screen somewhere for a split second while the terminal is drawing to the screen.
+- To make sure that doesn’t happen, let’s hide the cursor before refreshing the screen, and show it again immediately after the refresh finishes.
+-->
+
+
+---
+
+Instead of clearing the entire screen before each refresh, it seems more optimal to clear each line as we redraw them. Let’s remove the <esc>[2J (clear entire screen) escape sequence, and instead put a <esc>[K sequence at the end of each line we draw.
+
+The K command (Erase In Line) erases part of the current line. Its argument is analogous to the J command’s argument: 2 erases the whole line, 1 erases the part of the line to the left of the cursor, and 0 erases the part of the line to the right of the cursor. 0 is the default argument, and that’s what we want, so we leave out the argument and just use <esc>[K.
+
+-- -
+
+<!-- E.cx is the horizontal coordinate of the cursor (the column) and E.cy is the vertical coordinate (the row). We initialize both of them to 0, as we want the cursor to start at the top-left of the screen. (Since the C language uses indexes that start from 0, we will use 0-indexed values wherever possible.) -->
+
+We add 1 to E.cy and E.cx to convert from 0-indexed values to the 1-indexed values that the terminal uses.
+
+
+<h3>Scrolling</h3>
+
+<!--
+- To enable vertical scrolling we keep track of the row offset which indicates which row of the file the user has currently scrolled to; that is, the row number at the top of the screen.
+- To get the row of the file that we want to display at each y position in the screen we then add the row offset to the y position.
+- To calculate the row offset, we check if the cursor has moved outside of the screen and adjust the row offset so the cursor is just inside the screen before we refresh the screen.
+- We allow the cursor to advance past the bottom of the screen but not the bottom of the file.
+- The cursor x and cursor y then refer to the position of the cursor inside the file rather than the position on the screen. To position the cursor on the screen we have to subtract the row offset from cursor y.
+
+- Similarly, for horizontal scrolling we use a column offset which indicates the column of the file the user has scrolled to.
+
+-->
+
+
+
+Now let’s work on horizontal scrolling. We’ll implement it in just about the same way we implemented vertical scrolling. Start by adding a coloff (column offset) variable to the global editor state.
+
+To display each row at the column offset, we’ll use E.coloff as an index into the chars of each erow we display, and subtract the number of characters that are to the left of the offset from the length of the row.
+
+Note that when subtracting E.coloff from the length, len can now be a negative number, meaning the user scrolled horizontally past the end of the line. In that case, we set len to 0 so that nothing is displayed on that line.
+
+Now both E.cx and E.cy refer to the cursor’s position within the file, not its position on the screen. So our goal with the next few steps is to limit the values of E.cx and E.cy to only ever point to valid positions in the file. Otherwise, the user could move the cursor way off to the right of a line and start inserting text there, which wouldn’t make much sense. (The only exceptions to this rule are that E.cx can point one character past the end of a line so that characters can be inserted at the end of the line, and E.cy can point one line past the end of the file so that new lines at the end of the file can be added easily.)
+
+The user is still able to move the cursor past the end of a line, however. They can do it by moving the cursor to the end of a long line, then moving it down to the next line, which is shorter. The E.cx value won’t change, and the cursor will be off to the right of the end of the line it’s now on.
+
+Let’s add some code to editorMoveCursor() that corrects E.cx if it ends up past the end of the line it’s on.
+
+
+---
+
+Let’s allow the user to press ← at the beginning of the line to move to the end of the previous line.
+
+Similarly, let’s allow the user to press → at the end of a line to go to the beginning of the next line.
+
+---
+
+
+<h3>Handling Tabs</h3>
+
+<!--
+- A tab moves the cursor forward to the next tab stop.
+- To control the rendering of tabs we will associate a second character array with each row that contains the actual characters to be drawn to the screen.
+
+
+- We render tabs as multiple spaces.
+- We allocate sufficient memory to replace the tabs with spaces and then, for each tab character, we append one space (because each tab must advance the cursor forward at least one column) and then append spaces until we get to a tab stop which is a column that is divisible by TAB_STOP.
+ 
+
+- This could be extended to handle non-printable control characters such as ^A for Ctrl-A.
+-->
+
+
+- We then introduce rx as the index into the render field of the row. If there are no tabs on the current line, then E.rx will be the same as E.cx. If there are tabs, then E.rx will be greater than E.cx by however many extra spaces those tabs take up when rendered.
+- 
+
+
+All that’s left to do is calculate the value of E.rx properly in editorScroll(). Let’s create an editorRowCxToRx() function that converts a chars index into a render index. We’ll need to loop through all the characters to the left of cx, and figure out how many spaces each tab takes up.
+
+For each character, if it’s a tab we use rx % KILO_TAB_STOP to find out how many columns we are to the right of the last tab stop, and then subtract that from KILO_TAB_STOP - 1 to find out how many columns we are to the left of the next tab stop. We add that amount to rx to get just to the left of the next tab stop, and then the unconditional rx++ statement gets us right on the next tab stop. Notice how this works even if we are currently on a tab stop.
+
+All that’s left to do is calculate the value of E.rx properly in editorScroll(). Let’s create an editorRowCxToRx() function that converts a chars index into a render index. We’ll need to loop through all the characters to the left of cx, and figure out how many spaces each tab takes up.
+
+For each character, if it’s a tab we use rx % KILO_TAB_STOP to find out how many columns we are to the right of the last tab stop, and then subtract that from KILO_TAB_STOP - 1 to find out how many columns we are to the left of the next tab stop. We add that amount to rx to get just to the left of the next tab stop, and then the unconditional rx++ statement gets us right on the next tab stop. Notice how this works even if we are currently on a tab stop.
+
+---
+
+
+
+
+
+
+
+
+
+
+gcc kilo.c -o kilo -Wall -Wextra -pedantic -std=c99
+
+
+<h3>Resources</h3>
+
+<!-- 
+  https://vt100.net/docs/vt100-ug/chapter3.html
+
+  https://viewsourcecode.org/snaptoken/kilo
+ -->

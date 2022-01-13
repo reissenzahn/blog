@@ -1,0 +1,96 @@
+
+
+INTRODUCTION
+
+UDP is a datagram-based protocol.
+
+
+UDP is ideal when speed and simplicity are required and the potential for data loss is acceptable, such as with live video streaming.
+
+User Datagram Protocol (UDP) is unreliable
+
+UDP does not provide session support or even confirm that the destination is accessible; it simply makes a best-effort attempt to deliver the packet.
+
+Recipients do not automatically acknowledge UDP packets, so UDP has no inherent delivery confirmation.
+
+UDP does not manage congestion, control data flow, or retransmit packets.
+
+UDP does not guarantee that the destination receives packets in the order they originate.
+
+Whereas TCP must establish a session with each individual node in a group before it can transmit data, UDP can send a single packet to a group of nodes without duplicating the packet, a process known as multicasting.
+
+UDP is also capable of broadcasting packets to all members of a subnet since it doesn’t need to establish a session between each node.
+
+UDP is ideal when missing packets aren’t detrimental to overall communication because the most recently received packets can take the place of earlier, dropped packets.
+
+
+
+PACKET STRUCTURE
+
+UDP’s packet structure consists of an 8-byte header and a payload.
+
+The header contains 2 bytes for the source port, 2 bytes for the destination port, 2 bytes for the packet length in bytes, and a 2-byte checksum.
+
+The minimum packet length is 8 bytes to account for the header and an empty payload.
+
+Although the maximum packet length is 65,535 bytes, application layer protocols often limit the packet length to avoid fragmentation.
+
+
+UDP is not a stream-oriented protocol. UDP does not maintain a session or involve a handshake process like TCP. UDP does not have the concept of acknowledgments, retransmissions, or flow control.
+
+Instead, UDP primarily relies on the packet-oriented net.PacketConn interface.
+
+
+
+
+AVOIDING FRAGMENTATION
+
+Fragmentation is a Layer 3 IP process of splitting a packet into smaller pieces suitable for efficient transmission over a network.
+
+All network media have packet size limitations known as the maximum transmission unit (MTU).
+
+Packets larger than the MTU of a medium require fragmentation so that each fragment is less than or equal to the MTU before nodes pass them over the medium.
+
+Once the fragments reach their destination, the operating system reassembles each packet and presents the packet to your application.
+
+But fragments can corrupt or fail to reach their destination for one reason or another. This is a significant consideration if you’re using UDP because UDP does not gracefully recover from missing or corrupt data.
+
+If an operating system fails to receive even a single fragment, the sender must retransmit the entire UDP packet. As you can imagine, retransmitting large packets is woefully inefficient.
+
+
+You can use the ping command to determine the MTU between your computer and a destination node. The ping command allows you to send an ICMP packet of a specific size with a flag set to inform nodes not to fragment it. If the packet reaches a node that needs to fragment the packet because of its size, the node will see the do not fragment flag and respond with an ICMP message informing you that the packet is too large.
+
+The following example sends these pings over Ethernet, which has a minimum MTU of 46 bytes and a maximum MTU of 1,500 bytes, per its specification. If any hop between your computer and its destination has an MTU of less than 1,500 bytes, your packet will fragment.
+
+$ ping -M 1do -s 21500 1.1.1.1
+PING 1.1.1.1 (1.1.1.1) 1500(31528) bytes of data.
+ping: sendmsg: 4Message too long
+
+You set the -M flag 1 to do, which sets the prohibit fragmentation option, and set the -s flag 2 to 1500, which sets a payload of 1,500 bytes. Since you aren’t accounting for the packet’s header size, this should exceed the Ethernet MTU.
+
+The extra 28 bytes is the sum of the 8-byte ICMP header and the 20-byte IP header. Any payload you specify should account for the overall header size as well.
+
+As you can see, you never received a reply from 1.1.1.1 because the packet you sent was too big to traverse each hop without
+requiring fragmentation. Instead, the ping command informed you that your message was too long.
+
+$ ping -M do -s 1472 1.1.1.1
+PING 1.1.1.1 (1.1.1.1) 1472(1500) bytes of data.
+1480 bytes from 1.1.1.1: icmp_seq=1 ttl=59 time=11.8 ms
+Listing 5-10: Pinging 1.1.1.1 with a payload size of 1472 bytes on Linux
+
+That’s more like it. You confirmed that the MTU between this computer and 1.1.1.1 over the internet is set to 1,500 bytes. 
+
+
+This is the maximum packet size you can send on the network before it will require fragmentation. Thankfully, the UDP header is also 8 bytes, so the ping command gives
+accurate results despite using ICMP. Accounting for the headers, your maximum UDP payload size is 1,472 bytes to avoid fragmentation.
+
+
+Since ICMP packet headers used by the ping command are the
+same size as UDP headers, you can use that knowledge to easily determine
+the payload size threshold at which fragmentation will occur. Aside from
+managing fragmentation by appropriately sizing your payloads, your code
+must manage acknowledgments and retransmissions to ensure reliability.
+
+
+
+

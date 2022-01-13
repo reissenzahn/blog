@@ -1,0 +1,3340 @@
+---
+title: "File I/O"
+date: 2021-11-24
+draft: false
+---
+
+<!--
+- The universal I/O model consists of the following system calls: open(), read(), write() and close().
+- These system calls are used for performing I/O on all types of files.
+-->
+
+
+<h3>File Descriptors</h3>
+
+<!--
+- All system calls for performing I/O refer to open files using non-negative integers called file descriptors.
+- File descriptors are used to refer to all types of open files including disk files, sockets, pipes, terminals, devices, etc.
+- Each process has its own set of file descriptors.
+- Most programs expect to be able to use three standard file descriptors: standard input (STDIN_FILENO), standard output (STDOUT_FILENO) and standard error (STDERR_FILENO).
+-->
+
+
+<h3>Opening a File</h3>
+
+<!-- 
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int open(const char *pathname, int flags, ... /* mode_t mode */);
+
+- The open() system call either opens an existing file or creates and opens a new file.
+- The file to be opened is identified by the pathname argument. If pathname is a symbolic link, it is dereferenced.
+- On success, open() returns a file descriptor that is used to refer to the file in subsequent system calls. On error, open() returns -1 and errno is set accordingly.
+- The flags argument is a bit mask that specifies the access mode for the file.
+- When open() is used to create a new file, the mode bit-mask argument specifies the permissions to be placed on the file. If the open() call doesn’t specify O_CREAT then mode can be omitted.
+- The mode argument can be specified as a number (typically in octal) by ORing together zero or more of bit-mask constants.
+-->
+
+
+<h4>Available Flags</h4>
+
+<!--
+Some of the flags available are as follows:
+
+- O_RDONLY: Open for reading only.
+- O_WRONLY: Open for writing only.
+- O_RDWR: Open for reading and writing.
+- O_CREAT: Create a new empty file if it does not already exist.
+- O_EXCL: Used with O_CREAT to cause the call to fail if the file already exists with errno set to EEXIST.
+- O_TRUNC: Truncate existing file to zero length.
+- O_APPEND: Writes are always appended to end of file.
+- O_NONBLOCK: Open in nonblocking mode.
+- O_SYNC: Make file writes synchronous.
+
+If we specify O_CREAT then we must supply a mode argument in the open() call; otherwise, the permissions of the new file will be set to some random value from the stack.
+-->
+
+
+<h3>Reading from a File</h3>
+
+<!--
+#include <unistd.h>
+
+ssize_t read(int fd, void *buffer, size_t count);
+
+- The read() system call reads data from the open file referred to by the descriptor fd.
+- The count argument specifies the maximum number of bytes to read.
+- The buffer argument supplies the address of the memory buffer into which the input data is to be placed. This buffer must be at least count bytes long.
+- A successful call to read() returns the number of bytes actually read or 0 if end-of-file is encountered. On error,  –1 is returned.
+- A call to read() may read less than the requested number of bytes.
+-->
+
+
+<h3>Writing to a File</h3>
+
+<!--
+#include <unistd.h>
+
+ssize_t write(int fd, void *buffer, size_t count);
+
+- The write() system call writes data to an open file.
+- The arguments to write() are similar to those for read(): buffer is the address of the data to be written; count is the number of bytes to write from buffer; and fd is a file descriptor referring to the file to which data is to be written.
+- On success, write() returns the number of bytes actually written which may be less than count.
+- When performing I/O on a disk file, a successful return from write() does not guarantee that the data has been transferred to disk as the kernel performs buffering of disk I/O in order to reduce disk activity and expedite write() calls.
+-->
+
+
+<h3>Closing a File</h3>
+
+<!--
+#include <unistd.h>
+
+int close(int fd);
+
+- The close() system call closes an open file descriptor, freeing it for subsequent reuse by the process.
+- File descriptors are a consumable resource so failure to close a file descriptor could result in a process running out of descriptors.
+- A call to close() returns 0 on success or -1 on error.
+- When a process terminates, all of its open file descriptors are automatically closed.
+-->
+
+
+<h3>File Offsets and Holes</h3>
+
+<!-- 
+- For each open file, the kernel records a file offset which is the location in the file at which the next read() or write() will commence.
+- The file offset is expressed as an ordinal byte position relative to the start of the file. The first byte of the file is at offset 0.
+- The file offset is set to point to the start of the file when the file is opened and is automatically adjusted by each subsequent call to read() or write() so that it points to the next byte of the file after the byte(s) just read or written.
+
+- If a program seeks past the end of a file then a  call to read() will return 0 indicating end-of-file.
+- Somewhat surprisingly, it is possible to write bytes at an arbitrary point past the end of the file.
+The space in between the previous end of the file and the newly written bytes is referred to as a file hole.
+From a programming point of view, the bytes in a hole exist and reading from the hole returns a buffer of bytes containing 0 (null bytes).
+- File holes do not take up any disk space as the file system does not allocate any disk blocks for a hole until data is written into it.
+- The existence of holes means that the nominal size of a file may be larger than the amount of disk storage it utilizes. Writing bytes into the middle of the file hole will decrease the amount of free disk space even though the file size does not change.
+-->
+
+
+<h3>Changing the File Offset</h3>
+
+<!--
+#include <unistd.h>
+
+off_t lseek(int fd, off_t offset, int whence);
+
+- The lseek() system call adjusts the file offset of the open file referred to by the file descriptor fd according to the values specified in offset and whence.
+- Calling lseek() simply adjusts the record of the file offset associated with a file descriptor and does not cause any physical device access.
+- The offset argument specifies a value in bytes. The whence argument indicates the base point from which offset is to be interpreted and is one of the following values:
+  - SEEK_SET: The file offset is set offset bytes from the beginning of the file.
+  - SEEK_CUR: The file offset is adjusted by offset bytes relative to the current file offset.
+  - SEEK_END: The file offset is set to the size of the file plus offset. In other words, offset is interpreted with respect to the next byte after the last byte of the file.
+- If whence is SEEK_CUR or SEEK_END, offset may be negative or positive; for SEEK_SET, offset must be nonnegative.
+- A call to lseek with offset specified as 0 and SEEK_CUR returns the current location of the file offset without changing it.
+- A call to lseek() returns the new file offset if successful or -1 on error.
+
+---
+
+lseek(fd, 0, SEEK_SET);    // start of file
+lseek(fd, 0, SEEK_END);    // next byte after the end of the file
+lseek(fd, -1, SEEK_END);   // last byte of file
+lseek(fd, -10, SEEK_CUR);  // 10 bytes prior to current location
+lseek(fd, 100, SEEK_END);  // 101 bytes past last byte of file
+-->
+
+
+<h3>Operations Outside the Universal I/O Model</h3>
+
+<!--
+#include <sys/ioctl.h>
+
+int ioctl(int fd, int request, ... /* argp */);
+
+- The ioctl() system call is a general-purpose mechanism for performing file and device operations that fall outside the universal I/O model.
+- The fd argument is an open file descriptor for the device or file upon which the control operation specified by request is to be performed.
+- Device-specific header files define constants that can be passed in the request argument.
+- The third argument to ioctl() can be of any type. The value of the request argument enables ioctl() to determine what type of value to expect in argp.
+-->
+
+
+<h3>Some Possible Race Conditions</h3>
+
+<!--
+- Specifying O_EXCL in conjunction with O_CREAT causes open() to return an error if the file already exists.
+- This provides a way for a process to ensure that it is the creator of a file as check on the prior existence of the file and the creation of the file are performed atomically.
+- This is necessary as making a call to open() and then handling an ENOENT error by creating a new file via open() with O_CREAT introduces the possibility that some other process creates the file between the two calls to open().
+- In this scenario, we would wrongly conclude that we had created the file since the second open() succeeds whether or not the file exists.
+- Using a single open() call that specifies the O_CREAT and O_EXCL flags prevents this possibility by guaranteeing that the check and creation steps are carried out as a single atomic operation.
+
+- When multiple processes are appending data to the same file, we cannot have the processes simply seek to the end of the file and start writing as some other process could seek and write between these operations.
+- Avoiding this problem requires that the seek to the next byte past the end of the file and the write operation happen atomically. This is what opening a file with the O_APPEND flag guarantees.
+-->
+
+
+<h3>File Control Operations</h3>
+
+
+
+- The fcntl() system call performs a range of control operations on an open file descriptor.
+- The cmd argument can specify a wide range of operations.
+- As indicated by the ellipsis, the third argument to fcntl() can be of different types or it can be omitted.
+
+
+One use of fcntl() is to retrieve or modify the access mode and open file status flags of an open file. (These are the values set by the flags argument specified in the call
+to open().) To retrieve these settings, we specify cmd as F_GETFL:
+int flags, accessMode;
+flags = fcntl(fd, F_GETFL); /* Third argument is not required */
+if (flags == -1)
+ errExit("fcntl");
+After the above piece of code, we could test if the file was opened for synchronized
+writes as follows:
+if (flags & O_SYNC)
+ printf("writes are synchronized\n");
+SUSv3 requires that only status flags that were specified during an open() or a
+later fcntl() F_SETFL should be set on an open file. However, Linux deviates
+from this in one respect: if an application was compiled using one of the techniques described in Section 5.10 for opening large files, then O_LARGEFILE will
+always be set in the flags retrieved by F_GETFL.
+Checking the access mode of the file is slightly more complex, since the O_RDONLY (0),
+O_WRONLY (1), and O_RDWR (2) constants don’t correspond to single bits in the open file
+status flags. Therefore, to make this check, we mask the flags value with the constant O_ACCMODE, and then test for equality with one of the constants:
+accessMode = flags & O_ACCMODE;
+if (accessMode == O_WRONLY || accessMode == O_RDWR)
+ printf("file is writable\n");
+We can use the fcntl() F_SETFL command to modify some of the open file status flags.
+The flags that can be modified are O_APPEND, O_NONBLOCK, O_NOATIME, O_ASYNC, and
+O_DIRECT. Attempts to modify other flags are ignored. (Some other UNIX implementations allow fcntl() to modify other flags, such as O_SYNC.)
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ...);
+Return on success depends on cmd, or –1 on error
+94 Chapter 5
+Using fcntl() to modify open file status flags is particularly useful in the following cases:
+z The file was not opened by the calling program, so that it had no control over
+the flags used in the open() call (e.g., the file may be one of the three standard
+descriptors that are opened before the program is started).
+z The file descriptor was obtained from a system call other than open(). Examples
+of such system calls are pipe(), which creates a pipe and returns two file descriptors referring to either end of the pipe, and socket(), which creates a socket and
+returns a file descriptor referring to the socket.
+To modify the open file status flags, we use fcntl() to retrieve a copy of the existing
+flags, then modify the bits we wish to change, and finally make a further call to fcntl()
+to update the flags. Thus, to enable the O_APPEND flag, we would write the following:
+int flags;
+flags = fcntl(fd, F_GETFL);
+if (flags == -1)
+ errExit("fcntl");
+flags |= O_APPEND;
+if (fcntl(fd, F_SETFL, flags) == -1)
+ errExit("fcntl");
+5.4 Relationship Between File Descriptors and Open Files
+Up until now, it may have appeared that there is a one-to-one correspondence
+between a file descriptor and an open file. However, this is not the case. It is possible—
+and useful—to have multiple descriptors referring to the same open file. These file
+descriptors may be open in the same process or in different processes.
+To understand what is going on, we need to examine three data structures
+maintained by the kernel:
+z the per-process file descriptor table;
+z the system-wide table of open file descriptions; and
+z the file system i-node table.
+For each process, the kernel maintains a table of open file descriptors. Each entry in
+this table records information about a single file descriptor, including:
+z a set of flags controlling the operation of the file descriptor (there is just one
+such flag, the close-on-exec flag, which we describe in Section 27.4); and
+z a reference to the open file description.
+The kernel maintains a system-wide table of all open file descriptions. (This table is
+sometimes referred to as the open file table, and its entries are sometimes called open
+file handles.) An open file description stores all information relating to an open file,
+including:
+z the current file offset (as updated by read() and write(), or explicitly modified
+using lseek());
+File I/O: Further Details 95
+z status flags specified when opening the file (i.e., the flags argument to open());
+z the file access mode (read-only, write-only, or read-write, as specified in open());
+z settings relating to signal-driven I/O (Section 63.3); and
+z a reference to the i-node object for this file.
+Each file system has a table of i-nodes for all files residing in the file system. The i-node
+structure, and file systems in general, are discussed in more detail in Chapter 14.
+For now, we note that the i-node for each file includes the following information:
+z file type (e.g., regular file, socket, or FIFO) and permissions;
+z a pointer to a list of locks held on this file; and
+z various properties of the file, including its size and timestamps relating to different types of file operations.
+Here, we are overlooking the distinction between on-disk and in-memory representations of an i-node. The on-disk i-node records the persistent attributes
+of a file, such as its type, permissions, and timestamps. When a file is accessed,
+an in-memory copy of the i-node is created, and this version of the i-node
+records a count of the open file descriptions referring to the i-node and the
+major and minor IDs of the device from which the i-node was copied. The inmemory i-node also records various ephemeral attributes that are associated
+with a file while it is open, such as file locks.
+Figure 5-2 illustrates the relationship between file descriptors, open file descriptions, and i-nodes. In this diagram, two processes have a number of open file
+descriptors.
+Figure 5-2: Relationship between file descriptors, open file descriptions, and i-nodes
+fd 0
+fd
+flags
+file
+ptr
+fd 2
+fd 1
+fd 20
+Process A
+File descriptor table
+file
+offset
+status
+flags
+inode
+ptr
+0
+86 5139
+23
+Open file table
+(system-wide)
+file
+type
+file
+locks ...
+I-node table
+(system-wide)
+1976
+ 224
+73
+fd 0
+fd
+flags
+file
+ptr
+fd 2
+fd 1
+Process B
+File descriptor table
+fd 3
+96 Chapter 5
+In process A, descriptors 1 and 20 both refer to the same open file description
+(labeled 23). This situation may arise as a result of a call to dup(), dup2(), or fcntl()
+(see Section 5.5).
+Descriptor 2 of process A and descriptor 2 of process B refer to a single open
+file description (73). This scenario could occur after a call to fork() (i.e., process A is
+the parent of process B, or vice versa), or if one process passed an open descriptor
+to another process using a UNIX domain socket (Section 61.13.3).
+Finally, we see that descriptor 0 of process A and descriptor 3 of process B
+refer to different open file descriptions, but that these descriptions refer to the
+same i-node table entry (1976)—in other words, to the same file. This occurs
+because each process independently called open() for the same file. A similar situation could occur if a single process opened the same file twice.
+We can draw a number of implications from the preceding discussion:
+z Two different file descriptors that refer to the same open file description share
+a file offset value. Therefore, if the file offset is changed via one file descriptor
+(as a consequence of calls to read(), write(), or lseek()), this change is visible
+through the other file descriptor. This applies both when the two file descriptors belong to the same process and when they belong to different processes.
+z Similar scope rules apply when retrieving and changing the open file status
+flags (e.g., O_APPEND, O_NONBLOCK, and O_ASYNC) using the fcntl() F_GETFL and F_SETFL
+operations.
+z By contrast, the file descriptor flags (i.e., the close-on-exec flag) are private to
+the process and file descriptor. Modifying these flags does not affect other file
+descriptors in the same process or a different process.
+
+
+
+<h3>Duplicating File Descriptors</h3>
+
+<!-- 
+#include <unistd.h>
+
+int dup(int oldfd);
+
+- dup() takes an open file descriptor oldfd and returns a new descriptor that refers to the same open file description or -1 on error.
+- The new descriptor is guaranteed to be the lowest unused file descriptor.
+- Duplicate file descriptors share the same file offset value and status flags. However, the new file descriptor has its own set of file descriptor flags, and its close-on-exec flag is always turned off.
+
+
+#include <unistd.h>
+
+int dup2(int oldfd, int newfd);
+
+- The dup2() system call makes a duplicate of the file descriptor given in oldfd using the descriptor number supplied in newfd.
+- If the file descriptor specified in newfd is already open then dup2() closes it first. Any error that occurs during this close is silently ignored.
+- A successful dup2() call returns the number of the duplicate descriptor or -1 on error.
+- If oldfd is a valid file descriptor and oldfd and newfd have the same value then dup2() does nothing and returns the newfd as its function result.
+-->
+
+
+<h3>File I/O at a Specified Offset</h3>
+
+<!-- 
+#include <unistd.h>
+
+ssize_t pread(int fd, void *buf, size_t count, off_t offset);
+
+ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
+
+- The pread() and pwrite() system calls operate just like read() and write() except that the file I/O is performed at the location specified by offset rather than at the current file offset. The file offset is left unchanged by these calls.
+- Calling pread() is equivalent to atomically seeking to the specified file offset, reading and seeking back to the original file offset.
+- These system calls can be particularly useful in multi-threaded applications where using lseek() before a read/write would create a race condition.
+
+---
+
+off_t orig;
+orig = lseek(fd, 0, SEEK_CUR); /* Save current offset */
+lseek(fd, offset, SEEK_SET);
+s = read(fd, buf, len);
+lseek(fd, orig, SEEK_SET); /* Restore original file offset */
+-->
+
+
+<h3>Scatter-Gather I/O</h3>
+
+- The readv() and writev() system calls perform scatter-gather I/O.
+- Instead of accepting a single buffer of data to be read or written, these functions transfer multiple buffers of data in a single system call.
+- The set of buffers to be transferred is defined by the array iov. The integer count specifies the number of elements in iov. Each element of iov is a structure of the following form:
+
+
+- An implementation can advertise its limit by defining IOV_MAX in <limits.h> or at run time via the return from the call sysconf(_SC_IOV_MAX).
+- However, the glibc wrapper functions for readv() and writev() silently do some extra work. If the system call fails because iovcnt is too large then the wrapper function temporarily allocates a single buffer large enough to hold all of the items described by iov and performs a read() or write() call.
+
+
+#include <sys/uio.h>
+
+ssize_t readv(int fd, const struct iovec *iov, int iovcnt);
+
+struct iovec {
+  void *iov_base;  // start address of buffer
+  size_t iov_len;  // number of bytes to transfer to/from buffer
+};
+
+- The readv() system call performs scatter input: it reads a contiguous sequence of bytes from the file referred to by the file descriptor fd and places these bytes into the buffers specified by iov.
+- Each of the buffers, starting with iov[0], is completely filled before readv() proceeds to the next buffer.
+- On successful completion, readv() returns the number of bytes read or 0 if end-of-file was encountered.
+- The caller must examine this count to verify whether all requested bytes were read. If insufficient data was available, then only some of the buffers may have been filled, and the last of these may be only partially filled.
+- An important property of readv() is that it completes atomically.
+
+
+#include <sys/uio.h>
+
+ssize_t writev(int fd, const struct iovec *iov, int iovcnt);
+
+- The writev() system call performs gather output. It concatenates (“gathers”) data
+from all of the buffers specified by iov and writes them as a sequence of contiguous
+bytes to the file referred to by the file descriptor fd. The buffers are gathered in
+array order, starting with the buffer defined by iov[0].
+Like readv(), writev() completes atomically, with all data being transferred in a
+single operation from user memory to the file referred to by fd. Thus, when writing
+to a regular file, we can be sure that all of the requested data is written contiguously to the file, rather than being interspersed with writes by other processes (or
+threads).
+As with write(), a partial write is possible. Therefore, we must check the return
+value from writev() to see if all requested bytes were written.
+The primary advantages of readv() and writev() are convenience and speed. For
+example, we could replace a call to writev() by either:
+z code that allocates a single large buffer, copies the data to be written from
+other locations in the process’s address space into that buffer, and then calls
+write() to output the buffer; or
+z a series of write() calls that output the buffers individually.
+The first of these options, while semantically equivalent to using writev(), leaves us
+with the inconvenience (and inefficiency) of allocating buffers and copying data in
+user space.
+The second option is not semantically equivalent to a single call to writev(), since
+the write() calls are not performed atomically. Furthermore, performing a single
+writev() system call is cheaper than performing multiple write() calls (refer to the discussion of system calls in Section 3.1).
+Performing scatter-gather I/O at a specified offset
+Linux 2.6.30 adds two new system calls that combine scatter-gather I/O functionality with the ability to perform the I/O at a specified offset: preadv() and pwritev().
+These system calls are nonstandard, but are also available on the modern BSDs.
+The preadv() and pwritev() system calls perform the same task as readv() and writev(),
+but perform the I/O at the file location specified by offset (like pread() and pwrite()).
+These system calls are useful for applications (e.g., multithreaded applications)
+that want to combine the benefits of scatter-gather I/O with the ability to perform
+I/O at a location that is independent of the current file offset.
+#define _BSD_SOURCE
+#include <sys/uio.h>
+ssize_t preadv(int fd, const struct iovec *iov, int iovcnt, off_t offset);
+Returns number of bytes read, 0 on EOF, or –1 on error
+ssize_t pwritev(int fd, const struct iovec *iov, int iovcnt, off_t offset);
+Returns number of bytes written, or –1 on error
+
+
+<h3>Truncating a File</h3>
+
+<!-- 
+#include <unistd.h>
+
+int truncate(const char *pathname, off_t length);
+
+int ftruncate(int fd, off_t length);
+
+- The truncate() and ftruncate() system calls set the size of a file to the value specified by length.
+- If the file is longer than length, the excess data is lost. If the file is currently shorter than length, it is extended by padding with a sequence of null bytes or a hole.
+- With truncate(), the file, which must be accessible and writable, is specified as a pathname string. If pathname is a symbolic link, it is dereferenced.
+- The ftruncate() system call takes a descriptor for a file that has been opened for writing. It does not change the file offset for the file.
+-->
+
+
+<h3>Non-blocking I/O</h3>
+
+<!-- 
+- Specifying the O_NONBLOCK flag when opening a file serves two purposes:
+  - If the file cannot be opened immediately then open() returns an error instead of blocking.
+  - After a successful open(), subsequent I/O operations are also nonblocking. If an I/O system call cannot complete immediately then either a partial data transfer is performed or the system call fails with one of the errors EAGAIN or EWOULDBLOCK depending on the system call.
+-  Nonblocking mode can be used with devices (e.g. terminals and pseudoterminals), pipes, FIFOs and sockets.
+- Because file descriptors for pipes and sockets are not obtained using open(), we must enable this flag using the fcntl() F_SETFL operation.
+- O_NONBLOCK is generally ignored for regular files, because the kernel buffer cache ensures that I/O on regular files does not block.
+-->
+
+
+<h3>I/O on Large Files</h3>
+
+<!-- 
+- The off_t data type used to hold a file offset is typically implemented as a signed long integer. On 32-bit architectures this would limit the size of files to 2^31–1 bytes (i.e. 2 GB).
+- The LFS specification defines a set of extensions that allow processes running on 32-bit systems to perform operations on files whose size is too large to be represented in 32 bits.
+- The recommended method of obtaining LFS functionality is to define the macro _FILE_OFFSET_BITS with the value 64 when compiling a program or in the C source before including any header files.
+- This automatically converts all of the relevant 32-bit functions and data types into their 64-bit counterparts.
+- To display a value of type off_t, we cast it to long long and use the %lld printf() specifier.
+
+$ cc -D_FILE_OFFSET_BITS=64 prog.c
+-->
+
+
+<h3>Creating Temporary Files</h3>
+
+- Some programs need to create temporary files that are used only while the program is running and these files should be removed when the program terminates.
+
+#include <stdlib.h>
+
+int mkstemp(char *template);
+
+- The mkstemp() function generates a unique filename based on a template supplied by the caller and opens the file, returning a file descriptor that can be used with I/O system calls.
+- The template argument takes the form of a pathname in which the last 6 characters must be XXXXXX. These 6 characters are replaced with a string that makes the filename unique and this modified string is returned via the template argument.
+- Because template is modified, it must be specified as a character array, rather than as a string constant.
+- The mkstemp() function creates the file with read and write permissions for the file owner (and no permissions for other users), and opens it with the O_EXCL flag, guaranteeing that the caller has exclusive access to the file.
+- Typically, a temporary file is unlinked (deleted) soon after it is opened, using the unlink() system call.
+- A call to mkstemp() returns a file descriptor on success or -1 on error.
+
+
+
+
+
+
+CHAPTER 13 - FILE I/O BUFFERING
+
+
+13.1 Kernel Buffering of File I/O: The Buffer Cache
+
+- When working with disk files, the read() and write() system calls do not directly initiate disk access.
+- Instead, they simply copy data between a user-space buffer and a buffer in the kernel buffer cache.
+- At some later point, the kernel writes (flushes) its buffer to the disk.
+- We say that the system call is not synchronized with the disk operation.
+- If another process attempts to read byte from a file that a process has just written to then the the kernel automatically supplies the data from the buffer cache, rather than from (the outdated contents of) the file.
+- Correspondingly, for input, the kernel reads data from the disk and stores it in a kernel buffer. Calls to read() fetch data from this buffer until it is exhausted, at which point the kernel reads the next segment of the file into the buffer cache.
+- The aim of this design is to allow read() and write() to be fast, since they do not need to wait on a (slow) disk operation. This design is also efficient, since it reduces the number of disk transfers that the kernel must perform.
+
+
+The Linux kernel imposes no fixed upper limit on the size of the buffer cache.
+
+The kernel will allocate as many buffer cache pages as are required, limited only by the amount of available physical memory and the demands for physical memory for other purposes.
+
+
+Effect of buffer size on I/O system call performance
+
+The kernel performs the same number of disk accesses, regardless of whether we
+perform 1000 writes of a single byte or a single write of a 1000 bytes. However, the
+latter is preferable, since it requires a single system call, while the former requires
+1000.
+
+The impact of performing file I/O using different buffer sizes can be seen by
+running the program in Listing 4-1 (on page 71) with different BUF_SIZE values.
+(The BUF_SIZE constant specifies how many bytes are transferred by each call to
+read() and write().) Table 13-1 shows the time that this program requires to copy a
+file of 100 million bytes on a Linux ext2 file system using different BUF_SIZE values.
+Note the following points concerning the information in this table:
+z The Elapsed and Total CPU time columns have the obvious meanings. The User
+CPU and System CPU columns show a breakdown of the Total CPU time into,
+respectively, the time spent executing code in user mode and the time spent
+executing kernel code (i.e., system calls).
+z The tests shown in the table were performed using a vanilla 2.6.30 kernel on an
+ext2 file system with a block size of 4096 bytes.
+When we talk about a vanilla kernel, we mean an unpatched mainline kernel.
+This is in contrast to kernels that are supplied by most distributors, which
+often include various patches to fix bugs or add features.
+File I/O Buffering 235
+z Each row shows the average of 20 runs for the given buffer size. In these tests,
+as in other tests shown later in this chapter, the file system was unmounted and
+remounted between each execution of the program to ensure that the buffer
+cache for the file system was empty. Timing was done using the shell time
+command.
+Since the total amount of data transferred (and hence the number of disk operations) is the same for the various buffer sizes, what Table 13-1 illustrates is the overhead of making read() and write() calls. With a buffer size of 1 byte, 100 million calls
+are made to read() and write(). With a buffer size of 4096 bytes, the number of invocations of each system call falls to around 24,000, and near optimal performance is
+reached. Beyond this point, there is no significant performance improvement,
+because the cost of making read() and write() system calls becomes negligible compared to the time required to copy data between user space and kernel space, and
+to perform actual disk I/O.
+The final rows of Table 13-1 allow us to make rough estimates of the times
+required for data transfer between user space and kernel space, and for file I/O.
+Since the number of system calls in these cases is relatively small, their contribution to the elapsed and CPU times is negligible. Thus, we can say that the
+System CPU time is essentially measuring the time for data transfers between
+user space and kernel space. The Elapsed time value gives us an estimate of the
+time required for data transfer to and from the disk. (As we’ll see in a moment,
+this is mainly the time required for disk reads.)
+In summary, if we are transferring a large amount of data to or from a file, then by
+buffering data in large blocks, and thus performing fewer system calls, we can
+greatly improve I/O performance.
+The data in Table 13-1 measures a range of factors: the time to perform read()
+and write() system calls, the time to transfer data between buffers in kernel space
+and user space, and the time to transfer data between kernel buffers and the disk.
+Let’s consider the last factor further. Obviously, transferring the contents of the
+Table 13-1: Time required to duplicate a file of 100 million bytes
+BUF_SIZE Time (seconds)
+Elapsed Total CPU User CPU System CPU
+ 1 107.43 107.32 8.20 99.12
+ 2 54.16 53.89 4.13 49.76
+ 4 31.72 30.96 2.30 28.66
+ 8 15.59 14.34 1.08 13.26
+ 16 7.50 7.14 0.51 6.63
+ 32 3.76 3.68 0.26 3.41
+ 64 2.19 2.04 0.13 1.91
+ 128 2.16 1.59 0.11 1.48
+ 256 2.06 1.75 0.10 1.65
+ 512 2.06 1.03 0.05 0.98
+ 1024 2.05 0.65 0.02 0.63
+ 4096 2.05 0.38 0.01 0.38
+16384 2.05 0.34 0.00 0.33
+65536 2.06 0.32 0.00 0.32
+236 Chapter 13
+input file into the buffer cache is unavoidable. However, we already saw that write()
+returns immediately after transferring data from user space to the kernel buffer
+cache. Since the RAM size on the test system (4 GB) far exceeds the size of the file
+being copied (100 MB), we can assume that by the time the program completes, the
+output file has not actually been written to disk. Therefore, as a further experiment, we ran a program that simply wrote arbitrary data to a file using different
+write() buffer sizes. The results are shown in Table 13-2.
+Again, the data shown in Table 13-2 was obtained from kernel 2.6.30, on an
+ext2 file system with a 4096-byte block size, and each row shows the average of 20 runs.
+We don’t show the test program (filebuff/write_bytes.c), but it is available in the
+source code distribution for this book.
+Table 13-2 shows the costs just for making write() system calls and transferring data
+from user space to the kernel buffer cache using different write() buffer sizes. For
+larger buffer sizes, we see significant differences from the data shown in Table 13-1.
+For example, for a 65,536-byte buffer size, the elapsed time in Table 13-1 is 2.06 seconds, while for Table 13-2 it is 0.09 seconds. This is because no actual disk I/O is
+being performed in the latter case. In other words, the majority of the time
+required for the large buffer cases in Table 13-1 is due to the disk reads.
+As we’ll see in Section 13.3, when we force output operations to block until
+data is transferred to the disk, the times for write() calls rise significantly.
+Finally, it is worth noting that the information in Table 13-2 (and later, in
+Table 13-3) represents just one form of (naive) benchmark for a file system. Furthermore, the results will probably show some variation across file systems. File systems
+can be measured by various other criteria, such as performance under heavy multiuser
+load, speed of file creation and deletion, time required to search for a file in a large
+directory, space required to store small files, or maintenance of file integrity in the
+event of a system crash. Where the performance of I/O or other file-system operations is critical, there is no substitute for application-specific benchmarks on the
+target platform.
+Table 13-2: Time required to write a file of 100 million bytes
+BUF_SIZE Time (seconds)
+Elapsed Total CPU User CPU System CPU
+ 1 72.13 72.11 5.00 67.11
+ 2 36.19 36.17 2.47 33.70
+ 4 20.01 19.99 1.26 18.73
+ 8 9.35 9.32 0.62 8.70
+ 16 4.70 4.68 0.31 4.37
+ 32 2.39 2.39 0.16 2.23
+ 64 1.24 1.24 0.07 1.16
+ 128 0.67 0.67 0.04 0.63
+ 256 0.38 0.38 0.02 0.36
+ 512 0.24 0.24 0.01 0.23
+ 1024 0.17 0.17 0.01 0.16
+ 4096 0.11 0.11 0.00 0.11
+16384 0.10 0.10 0.00 0.10
+65536 0.09 0.09 0.00 0.09
+File I/O Buffering 237
+13.2 Buffering in the stdio Library
+Buffering of data into large blocks to reduce system calls is exactly what is done by
+the C library I/O functions (e.g., fprintf(), fscanf(), fgets(), fputs(), fputc(), fgetc()) when
+operating on disk files. Thus, using the stdio library relieves us of the task of buffering data for output with write() or input via read().
+Setting the buffering mode of a stdio stream
+The setvbuf() function controls the form of buffering employed by the stdio library.
+The stream argument identifies the file stream whose buffering is to be modified.
+After the stream has been opened, the setvbuf() call must be made before calling
+any other stdio function on the stream. The setvbuf() call affects the behavior of all
+subsequent stdio operations on the specified stream.
+The streams used by the stdio library should not be confused with the
+STREAMS facility of System V. The System V STREAMS facility is not implemented in the mainline Linux kernel.
+The buf and size arguments specify the buffer to be used for stream. These arguments may be specified in two ways:
+z If buf is non-NULL, then it points to a block of memory of size bytes that is to be
+used as the buffer for stream. Since the buffer pointed to by buf is then used by
+the stdio library, it should be either statically allocated or dynamically allocated
+on the heap (using malloc() or similar). It should not be allocated as a local
+function variable on the stack, since chaos will result when that function
+returns and its stack frame is deallocated.
+z If buf is NULL, then the stdio library automatically allocates a buffer for use with
+stream (unless we select unbuffered I/O, as described below). SUSv3 permits,
+but does not require, an implementation to use size to determine the size for
+this buffer. In the glibc implementation, size is ignored in this case.
+The mode argument specifies the type of buffering and has one of the following values:
+_IONBF
+Don’t buffer I/O. Each stdio library call results in an immediate write() or
+read() system call. The buf and size arguments are ignored, and can be specified as NULL and 0, respectively. This is the default for stderr, so that error
+output is guaranteed to appear immediately.
+#include <stdio.h>
+int setvbuf(FILE *stream, char *buf, int mode, size_t size);
+Returns 0 on success, or nonzero on error
+238 Chapter 13
+_IOLBF
+Employ line-buffered I/O. This flag is the default for streams referring to
+terminal devices. For output streams, data is buffered until a newline character is output (unless the buffer fills first). For input streams, data is read
+a line at a time.
+_IOFBF
+Employ fully buffered I/O. Data is read or written (via calls to read() or
+write()) in units equal to the size of the buffer. This mode is the default for
+streams referring to disk files.
+The following code demonstrates the use of setvbuf():
+#define BUF_SIZE 1024
+static char buf[BUF_SIZE];
+if (setvbuf(stdout, buf, _IOFBF, BUF_SIZE) != 0)
+ errExit("setvbuf");
+Note that setvbuf() returns a nonzero value (not necessarily –1) on error.
+The setbuf() function is layered on top of setvbuf(), and performs a similar task.
+Other than the fact that it doesn’t return a function result, the call setbuf(fp, buf) is
+equivalent to:
+setvbuf(fp, buf, (buf != NULL) ? _IOFBF: _IONBF, BUFSIZ);
+The buf argument is specified either as NULL, for no buffering, or as a pointer to a
+caller-allocated buffer of BUFSIZ bytes. (BUFSIZ is defined in <stdio.h>. In the glibc
+implementation, this constant has the value 8192, which is typical.)
+The setbuffer() function is similar to setbuf(), but allows the caller to specify the
+size of buf.
+The call setbuffer(fp, buf, size) is equivalent to the following:
+setvbuf(fp, buf, (buf != NULL) ? _IOFBF : _IONBF, size);
+The setbuffer() function is not specified in SUSv3, but is available on most UNIX
+implementations.
+#include <stdio.h>
+void setbuf(FILE *stream, char *buf);
+#define _BSD_SOURCE
+#include <stdio.h>
+void setbuffer(FILE *stream, char *buf, size_t size);
+File I/O Buffering 239
+Flushing a stdio buffer
+Regardless of the current buffering mode, at any time, we can force the data in a
+stdio output stream to be written (i.e., flushed to a kernel buffer via write()) using
+the fflush() library function. This function flushes the output buffer for the specified stream.
+If stream is NULL, fflush() flushes all stdio buffers.
+The fflush() function can also be applied to an input stream. This causes any
+buffered input to be discarded. (The buffer will be refilled when the program next
+tries to read from the stream.)
+A stdio buffer is automatically flushed when the corresponding stream is closed.
+In many C library implementations, including glibc, if stdin and stdout refer to a
+terminal, then an implicit fflush(stdout) is performed whenever input is read from
+stdin. This has the effect of flushing any prompts written to stdout that don’t include
+a terminating newline character (e.g., printf(“Date: ”)). However, this behavior is not
+specified in SUSv3 or C99 and is not implemented in all C libraries. Portable programs
+should use explicit fflush(stdout) calls to ensure that such prompts are displayed.
+The C99 standard makes two requirements if a stream is opened for both input
+and output. First, an output operation can’t be directly followed by an input
+operation without an intervening call to fflush() or one of the file-positioning
+functions (fseek(), fsetpos(), or rewind()). Second, an input operation can’t be
+directly followed by an output operation without an intervening call to one of
+the file-positioning functions, unless the input operation encountered endof-file.
+13.3 Controlling Kernel Buffering of File I/O
+It is possible to force flushing of kernel buffers for output files. Sometimes, this is
+necessary if an application (e.g., a database journaling process) must ensure that
+output really has been written to the disk (or at least to the disk’s hardware cache)
+before continuing.
+Before we describe the system calls used to control kernel buffering, it is useful
+to consider a few relevant definitions from SUSv3.
+Synchronized I/O data integrity and synchronized I/O file integrity
+SUSv3 defines the term synchronized I/O completion to mean “an I/O operation that
+has either been successfully transferred [to the disk] or diagnosed as unsuccessful.”
+SUSv3 defines two different types of synchronized I/O completion. The difference between the types involves the metadata (“data about data”) describing the file,
+which the kernel stores along with the data for a file. We consider file metadata in
+detail when we look at file i-nodes in Section 14.4, but for now, it is sufficient to
+#include <stdio.h>
+int fflush(FILE *stream);
+Returns 0 on success, EOF on error
+240 Chapter 13
+note that the file metadata includes information such as the file owner and group;
+file permissions; file size; number of (hard) links to the file; timestamps indicating
+the time of the last file access, last file modification, and last metadata change; and
+file data block pointers.
+The first type of synchronized I/O completion defined by SUSv3 is synchronized
+I/O data integrity completion. This is concerned with ensuring that a file data update
+transfers sufficient information to allow a later retrieval of that data to proceed.
+z For a read operation, this means that the requested file data has been transferred (from the disk) to the process. If there were any pending write operations affecting the requested data, these are transferred to the disk before
+performing the read.
+z For a write operation, this means that the data specified in the write request
+has been transferred (to the disk) and all file metadata required to retrieve that
+data has also been transferred. The key point to note here is that not all modified file metadata attributes need to be transferred to allow the file data to be
+retrieved. An example of a modified file metadata attribute that would need to
+be transferred is the file size (if the write operation extended the file). By contrast, modified file timestamps would not need to be transferred to disk before
+a subsequent data retrieval could proceed.
+The other type of synchronized I/O completion defined by SUSv3 is synchronized I/O
+file integrity completion, which is a superset of synchronized I/O data integrity completion. The difference with this mode of I/O completion is that during a file
+update, all updated file metadata is transferred to disk, even if it is not necessary
+for the operation of a subsequent read of the file data.
+System calls for controlling kernel buffering of file I/O
+The fsync() system call causes the buffered data and all metadata associated with the
+open file descriptor fd to be flushed to disk. Calling fsync() forces the file to the synchronized I/O file integrity completion state.
+An fsync() call returns only after the transfer to the disk device (or at least its cache)
+has completed.
+The fdatasync() system call operates similarly to fsync(), but only forces the file
+to the synchronized I/O data integrity completion state.
+#include <unistd.h>
+int fsync(int fd);
+Returns 0 on success, or –1 on error
+#include <unistd.h>
+int fdatasync(int fd);
+Returns 0 on success, or –1 on error
+File I/O Buffering 241
+Using fdatasync() potentially reduces the number of disk operations from the two
+required by fsync() to one. For example, if the file data has changed, but the file size
+has not, then calling fdatasync() only forces the data to be updated. (We noted
+above that changes to file metadata attributes such as the last modification
+timestamp don’t need to be transferred for synchronized I/O data completion.) By
+contrast, calling fsync() would also force the metadata to be transferred to disk.
+Reducing the number of disk I/O operations in this manner is useful for certain
+applications in which performance is crucial and the accurate maintenance of certain metadata (such as timestamps) is not essential. This can make a considerable
+performance difference for applications that are making multiple file updates:
+because the file data and metadata normally reside on different parts of the disk,
+updating them both would require repeated seek operations backward and forward across the disk.
+In Linux 2.2 and earlier, fdatasync() is implemented as a call to fsync(), and thus
+carries no performance gain.
+Starting with kernel 2.6.17, Linux provides the nonstandard sync_file_range()
+system call, which allows more precise control than fdatasync() when flushing
+file data. The caller can specify the file region to be flushed, and specify flags
+controlling whether the system call blocks on disk writes. See the
+sync_file_range(2) manual page for further details.
+The sync() system call causes all kernel buffers containing updated file information
+(i.e., data blocks, pointer blocks, metadata, and so on) to be flushed to disk.
+In the Linux implementation, sync() returns only after all data has been transferred
+to the disk device (or at least to its cache). However, SUSv3 permits an implementation of sync() to simply schedule the I/O transfer and return before it has completed.
+A permanently running kernel thread ensures that modified kernel buffers are
+flushed to disk if they are not explicitly synchronized within 30 seconds. This is
+done to ensure that buffers don’t remain unsynchronized with the corresponding disk file (and thus vulnerable to loss in the event of a system crash)
+for long periods. In Linux 2.6, this task is performed by the pdflush kernel
+thread. (In Linux 2.4, it is performed by the kupdated kernel thread.)
+The file /proc/sys/vm/dirty_expire_centisecs specifies the age (in hundredths of a second) that a dirty buffer must reach before it is flushed by
+pdflush. Additional files in the same directory control other aspects of the operation of pdflush.
+Making all writes synchronous: O_SYNC
+Specifying the O_SYNC flag when calling open() makes all subsequent output
+synchronous:
+fd = open(pathname, O_WRONLY | O_SYNC);
+#include <unistd.h>
+void sync(void);
+242 Chapter 13
+After this open() call, every write() to the file automatically flushes the file data and
+metadata to the disk (i.e., writes are performed according to synchronized I/O file
+integrity completion).
+Older BSD systems used the O_FSYNC flag to provide O_SYNC functionality. In
+glibc, O_FSYNC is defined as a synonym for O_SYNC.
+Performance impact of O_SYNC
+Using the O_SYNC flag (or making frequent calls to fsync(), fdatasync(), or sync()) can
+strongly affect performance. Table 13-3 shows the time required to write 1 million
+bytes to a newly created file (on an ext2 file system) for a range of buffer sizes with
+and without O_SYNC. The results were obtained (using the filebuff/write_bytes.c
+program provided in the source code distribution for this book) using a vanilla
+2.6.30 kernel and an ext2 file system with a block size of 4096 bytes. Each row
+shows the average of 20 runs for the given buffer size.
+As can be seen from the table, O_SYNC increases elapsed times enormously—in
+the 1-byte buffer case, by a factor of more than 1000. Note also the large differences
+between the elapsed and CPU times for writes with O_SYNC. This is a consequence of
+the program being blocked while each buffer is actually transferred to disk.
+The results shown in Table 13-3 omit a further factor that affects performance
+when using O_SYNC. Modern disk drives have large internal caches, and by default,
+O_SYNC merely causes data to be transferred to the cache. If we disable caching on
+the disk (using the command hdparm –W0), then the performance impact of O_SYNC
+becomes even more extreme. In the 1-byte case, the elapsed time rises from 1030
+seconds to around 16,000 seconds. In the 4096-byte case, the elapsed time rises
+from 0.34 seconds to 4 seconds.
+In summary, if we need to force flushing of kernel buffers, we should consider
+whether we can design our application to use large write() buffer sizes or make judicious use of occasional calls to fsync() or fdatasync(), instead of using the O_SYNC flag
+when opening the file.
+Table 13-3: Impact of the O_SYNC flag on the speed of writing 1 million bytes
+BUF_SIZE
+Time required (seconds)
+Without O_SYNC With O_SYNC
+Elapsed Total CPU Elapsed Total CPU
+1 0.73 0.73 1030 98.8
+16 0.05 0.05 65.0 0.40
+256 0.02 0.02 4.07 0.03
+4096 0.01 0.01 0.34 0.03
+File I/O Buffering 243
+The O_DSYNC and O_RSYNC flags
+SUSv3 specifies two further open file status flags related to synchronized I/O:
+O_DSYNC and O_RSYNC.
+The O_DSYNC flag causes writes to be performed according to the requirements
+of synchronized I/O data integrity completion (like fdatasync()). This contrasts with
+O_SYNC, which causes writes to be performed according to the requirements of synchronized I/O file integrity completion (like fsync()).
+The O_RSYNC flag is specified in conjunction with either O_SYNC or O_DSYNC, and
+extends the write behaviors of these flags to read operations. Specifying both
+O_RSYNC and O_DSYNC when opening a file means that all subsequent reads are completed according to the requirements of synchronized I/O data integrity (i.e., prior
+to performing the read, all pending file writes are completed as though carried out
+with O_DSYNC). Specifying both O_RSYNC and O_SYNC when opening a file means that all
+subsequent reads are completed according to the requirements of synchronized I/O
+file integrity (i.e., prior to performing the read, all pending file writes are completed as though carried out with O_SYNC).
+Before kernel 2.6.33, the O_DSYNC and O_RSYNC flags were not implemented on
+Linux, and the glibc headers defined these constants to be the same as O_SYNC. (This
+isn’t actually correct in the case of O_RSYNC, since O_SYNC doesn’t provide any functionality for read operations.)
+Starting with kernel 2.6.33, Linux implements O_DSYNC, and an implementation
+of O_RSYNC is likely to be added in a future kernel release.
+Before kernel 2.6.33, Linux didn’t fully implement O_SYNC semantics. Instead,
+O_SYNC was implemented as O_DSYNC. To maintain consistent behavior for applications that were built for older kernels, applications that were linked against
+older versions of the GNU C library continue to provide O_DSYNC semantics for
+O_SYNC, even on Linux 2.6.33 and later.
+13.4 Summary of I/O Buffering
+Figure 13-1 provides an overview of the buffering employed (for output files) by
+the stdio library and the kernel, along with the mechanisms for controlling each
+type of buffering. Traveling downward through the middle of this diagram, we see
+the transfer of user data by the stdio library functions to the stdio buffer, which is
+maintained in user memory space. When this buffer is filled, the stdio library
+invokes the write() system call, which transfers the data into the kernel buffer cache
+(maintained in kernel memory). Eventually, the kernel initiates a disk operation to
+transfer the data to the disk.
+The left side of Figure 13-1 shows the calls that can be used at any time to
+explicitly force a flush of either of the buffers. The right side shows the calls that
+can be used to make flushing automatic, either by disabling buffering in the stdio
+library or by making file output system calls synchronous, so that each write() is
+immediately flushed to the disk.
+244 Chapter 13
+Figure 13-1: Summary of I/O buffering
+
+
+
+
+13.8 Summary
+Buffering of input and output data is performed by the kernel, and also by the stdio
+library. In some cases, we may wish to prevent buffering, but we need to be aware
+of the impact this has on application performance. Various system calls and library
+functions can be used to control kernel and stdio buffering and to perform one-off
+buffer flushes.
+A process can use posix_fadvise() to advise the kernel of its likely pattern for
+accessing data from a specified file. The kernel may use this information to optimize the use of the buffer cache, thus improving I/O performance.
+The Linux-specific open() O_DIRECT flag allows specialized applications to bypass
+the buffer cache.
+The fileno() and fdopen() functions assist us with the task of mixing system calls
+and standard C library functions to perform I/O on the same file. Given a stream,
+fileno() returns the corresponding file descriptor; fdopen() performs the converse
+operation, creating a new stream that employs a specified open file descriptor.
+
+
+
+
+CHAPTER 14: FILE SYSTEMS
+
+
+A file system is an organized collection of files and directories.
+
+
+Device Files
+
+A device special file corresponds to a device on the system. Within the kernel,
+each device type has a corresponding device driver, which handles all I/O requests
+for the device. A device driver is a unit of kernel code that implements a set of operations that (normally) correspond to input and output actions on an associated
+piece of hardware. The API provided by device drivers is fixed, and includes operations corresponding to the system calls open(), close(), read(), write(), mmap(), and ioctl().
+The fact that each device driver provides a consistent interface, hiding the differences in operation of individual devices, allows for universality of I/O (Section 4.2).
+Some devices are real, such as mice, disks, and tape drives. Others are virtual,
+meaning that there is no corresponding hardware; rather, the kernel provides (via
+a device driver) an abstract device with an API that is the same as a real device.
+Devices can be divided into two types:
+z Character devices handle data on a character-by-character basis. Terminals and
+keyboards are examples of character devices.
+z Block devices handle data a block at a time. The size of a block depends on the
+type of device, but is typically some multiple of 512 bytes. Examples of block
+devices include disks and tape drives.
+Device files appear within the file system, just like other files, usually under the /dev
+directory. The superuser can create a device file using the mknod command, and
+the same task can be performed in a privileged (CAP_MKNOD) program using the
+mknod() system call.
+We don’t describe the mknod() (“make file-system i-node”) system call in detail
+since its use is straightforward, and the only purpose for which it is required
+nowadays is to create device files, which is not a common application
+requirement. We can also use mknod() to create FIFOs (Section 44.7), but the
+mkfifo() function is preferred for this task. Historically, some UNIX implementations also used mknod() for creating directories, but this use has now
+been replaced by the mkdir() system call. Nevertheless, some UNIX implementations—but not Linux—preserve this capability in mknod() for backward compatibility. See the mknod(2) manual page for further details.
+In earlier versions of Linux, /dev contained entries for all possible devices on the
+system, even if such devices weren’t actually connected to the system. This meant
+that /dev could contain literally thousands of unused entries, slowing the task of
+programs that needed to scan the contents of that directory, and making it
+impossible to use the contents of the directory as a means of discovering which
+devices were actually present on the system. In Linux 2.6, these problems are
+solved by the udev program. The udev program relies on the sysfs file system, which
+exports information about devices and other kernel objects into user space via a
+pseudo-file system mounted under /sys.
+File Systems 253
+[Kroah-Hartman, 2003] provides an overview of udev, and outlines the reasons
+it is considered superior to devfs, the Linux 2.4 solution to the same problems.
+Information about the sysfs file system can be found in the Linux 2.6 kernel
+source file Documentation/filesystems/sysfs.txt and in [Mochel, 2005].
+Device IDs
+Each device file has a major ID number and a minor ID number. The major ID identifies the general class of device, and is used by the kernel to look up the appropriate
+driver for this type of device. The minor ID uniquely identifies a particular device
+within a general class. The major and minor IDs of a device file are displayed by the
+ls –l command.
+A device’s major and minor IDs are recorded in the i-node for the device file.
+(We describe i-nodes in Section 14.4.) Each device driver registers its association
+with a specific major device ID, and this association provides the connection
+between the device special file and the device driver. The name of the device file
+has no relevance when the kernel looks for the device driver.
+On Linux 2.4 and earlier, the total number of devices on the system is limited
+by the fact that device major and minor IDs are each represented using just 8 bits.
+The fact that major device IDs are fixed and centrally assigned (by the Linux
+Assigned Names and Numbers Authority; see http://www.lanana.org/) further exacerbates this limitation. Linux 2.6 eases this limitation by using more bits to hold the
+major and minor device IDs (respectively, 12 and 20 bits).
+14.2 Disks and Partitions
+Regular files and directories typically reside on hard disk devices. (Files and directories may also exist on other devices, such as CD-ROMs, flash memory cards, and
+virtual disks, but for the present discussion, we are interested primarily in hard disk
+devices.) In the following sections, we look at how disks are organized and divided
+into partitions.
+Disk drives
+A hard disk drive is a mechanical device consisting of one or more platters that
+rotate at high speed (of the order of thousands of revolutions per minute). Magnetically encoded information on the disk surface is retrieved or modified by read/
+write heads that move radially across the disk. Physically, information on the disk
+surface is located on a set of concentric circles called tracks. Tracks themselves are
+divided into a number of sectors, each of which consists of a series of physical blocks.
+Physical blocks are typically 512 bytes (or some multiple thereof) in size, and represent the smallest unit of information that the drive can read or write.
+Although modern disks are fast, reading and writing information on the disk
+still takes significant time. The disk head must first move to the appropriate track
+(seek time), then the drive must wait until the appropriate sector rotates under the
+head (rotational latency), and finally the required blocks must be transferred
+(transfer time). The total time required to carry out such an operation is typically of
+the order of milliseconds. By comparison, modern CPUs are capable of executing
+millions of instructions in this time.
+254 Chapter 14
+Disk partitions
+Each disk is divided into one or more (nonoverlapping) partitions. Each partition is
+treated by the kernel as a separate device residing under the /dev directory.
+The system administrator determines the number, type, and size of partitions
+on a disk using the fdisk command. The command fdisk –l lists all partitions on
+a disk. The Linux-specific /proc/partitions file lists the major and minor device
+numbers, size, and name of each disk partition on the system.
+A disk partition may hold any type of information, but usually contains one of the
+following:
+z a file system holding regular files and directories, as described in Section 14.3;
+z a data area accessed as a raw-mode device, as described in Section 13.6 (some
+database management systems use this technique); or
+z a swap area used by the kernel for memory management.
+A swap area is created using the mkswap(8) command. A privileged (CAP_SYS_ADMIN)
+process can use the swapon() system call to notify the kernel that a disk partition is
+to be used as a swap area. The swapoff() system call performs the converse function,
+telling the kernel to cease using a disk partition as a swap area. These system calls
+are not standardized in SUSv3, but they exist on many UNIX implementations. See
+the swapon(2), and swapon(8) manual pages for additional information.
+The Linux-specific /proc/swaps file can be used to display information about
+the currently enabled swap areas on the system. This information includes the
+size of each swap area and the amount of the area that is in use.
+14.3 File Systems
+A file system is an organized collection of regular files and directories. A file system
+is created using the mkfs command.
+One of the strengths of Linux is that it supports a wide variety of file systems,
+including the following:
+z the traditional ext2 file system;
+z various native UNIX file systems such as the Minix, System V, and BSD file
+systems;
+z Microsoft’s FAT, FAT32, and NTFS file systems;
+z the ISO 9660 CD-ROM file system;
+z Apple Macintosh’s HFS;
+z a range of network file systems, including Sun’s widely used NFS (information
+about the Linux implementation of NFS is available at http://nfs.sourceforge.net/),
+IBM and Microsoft’s SMB, Novell’s NCP, and the Coda file system developed
+at Carnegie Mellon University; and
+z a range of journaling file systems, including ext3, ext4, Reiserfs, JFS, XFS, and Btrfs.
+File Systems 255
+The file-system types currently known by the kernel can be viewed in the Linux-specific
+/proc/filesystems file.
+Linux 2.6.14 added the Filesystem in Userspace (FUSE) facility. This mechanism
+adds hooks to the kernel that allow a file system to be completely implemented
+via a user-space program, without needing to patch or recompile the kernel.
+For further details, see http://fuse.sourceforge.net/.
+The ext2 file system
+For many years, the most widely used file system on Linux was ext2, the Second
+Extended File System, which is the successor to the original Linux file system, ext. In
+more recent times, the use of ext2 has declined in favor of various journaling file
+systems. Sometimes, it is useful to describe generic file-system concepts in terms of
+a specific file-system implementation, and for this purpose, we use ext2 as an
+example at various points later in this chapter.
+The ext2 file system was written by Remy Card. The source code for ext2 is
+small (around 5000 lines of C) and forms the model for several other file-system
+implementations. The ext2 home page is http://e2fsprogs.sourceforge.net/ext2.html.
+This web site includes a good overview paper describing the implementation
+of ext2. The Linux Kernel, an online book by David Rusling available at http://
+www.tldp.org/, also describes ext2.
+File-system structure
+The basic unit for allocating space in a file system is a logical block, which is some
+multiple of contiguous physical blocks on the disk device on which the file system
+resides. For example, the logical block size on ext2 is 1024, 2048, or 4096 bytes.
+(The logical block size is specified as an argument of the mkfs(8) command used to
+build the file system.)
+A privileged (CAP_SYS_RAWIO) program can use the FIBMAP ioctl() operation to
+determine the physical location of a specified block of a file. The third argument of the call is a value-result integer. Before the call, this argument should
+be set to a logical block number (the first logical block is number 0); after the
+call, it is set to the number of the starting physical block where that logical
+block is stored.
+Figure 14-1 shows the relationship between disk partitions and file systems, and
+shows the parts of a (generic) file system.
+Figure 14-1: Layout of disk partitions and a file system
+boot
+block
+superblock
+i-node
+table data blocks
+Disk partition partition partition
+File
+system
+256 Chapter 14
+A file system contains the following parts:
+z Boot block: This is always the first block in a file system. The boot block is not
+used by the file system; rather, it contains information used to boot the operating system. Although only one boot block is needed by the operating system,
+all file systems have a boot block (most of which are unused).
+z Superblock: This is a single block, immediately following the boot block, which
+contains parameter information about the file system, including:
+– the size of the i-node table;
+– the size of logical blocks in this file system; and
+– the size of the file system in logical blocks.
+Different file systems residing on the same physical device can be of different
+types and sizes, and have different parameter settings (e.g., block size). This is
+one of the reasons for splitting a disk into multiple partitions.
+z I-node table: Each file or directory in the file system has a unique entry in the i-node
+table. This entry records various information about the file. I-nodes are discussed in greater detail in the next section. The i-node table is sometimes also
+called the i-list.
+z Data blocks: The great majority of space in a file system is used for the blocks of
+data that form the files and directories residing in the file system.
+In the specific case of the ext2 file system, the picture is somewhat more complex than described in the main text. After the initial boot block, the file system is broken into a set of equal-sized block groups. Each block group contains a
+copy of the superblock, parameter information about the block group, and
+then the i-node table and data blocks for this block group. By attempting to
+store all of the blocks of a file within the same block group, the ext2 file system
+aims to reduce seek time when sequentially accessing a file. For further information, see the Linux source code file Documentation/filesystems/ext2.txt, the
+source code of the dumpe2fs program that comes as part of the e2fsprogs package,
+and [Bovet & Cesati, 2005].
+14.4 I-nodes
+A file system’s i-node table contains one i-node (short for index node) for each file
+residing in the file system. I-nodes are identified numerically by their sequential
+location in the i-node table. The i-node number (or simply i-number) of a file is the
+first field displayed by the ls –li command. The information maintained in an i-node
+includes the following:
+z File type (e.g., regular file, directory, symbolic link, character device).
+z Owner (also referred to as the user ID or UID) for the file.
+z Group (also referred to as the group ID or GID) for the file.
+z Access permissions for three categories of user: owner (sometimes referred to
+as user), group, and other (the rest of the world). Section 15.4 provides further
+details.
+File Systems 257
+z Three timestamps: time of last access to the file (shown by ls –lu), time of last
+modification of the file (the default time shown by ls –l), and time of last status
+change (last change to i-node information, shown by ls –lc). As on other UNIX
+implementations, it is notable that most Linux file systems don’t record the
+creation time of a file.
+z Number of hard links to the file.
+z Size of the file in bytes.
+z Number of blocks actually allocated to the file, measured in units of 512-byte
+blocks. There may not be a simple correspondence between this number and
+the size of the file in bytes, since a file can contain holes (Section 4.7), and thus
+require fewer allocated blocks than would be expected according to its nominal size in bytes.
+z Pointers to the data blocks of the file.
+I-nodes and data block pointers in ext2
+Like most UNIX file systems, the ext2 file system doesn’t store the data blocks of a
+file contiguously or even in sequential order (though it does attempt to store them
+close to one another). To locate the file data blocks, the kernel maintains a set of
+pointers in the i-node. The system used for doing this on the ext2 file system is
+shown in Figure 14-2.
+Removing the need to store the blocks of a file contiguously allows the file
+system to use space in an efficient way. In particular, it reduces the incidence
+of fragmentation of free disk space—the wastage created by the existence of
+numerous pieces of noncontiguous free space, all of which are too small to
+use. Put conversely, we could say that the advantage of efficiently using the
+free disk space is paid for by fragmenting files in the filled disk space.
+Under ext2, each i-node contains 15 pointers. The first 12 of these pointers (numbered 0 to 11 in Figure 14-2) point to the location in the file system of the first 12 blocks
+of the file. The next pointer is a pointer to a block of pointers that give the locations of
+the thirteenth and subsequent data blocks of the file. The number of pointers in
+this block depends on the block size of the file system. Each pointer requires 4 bytes,
+so there may be from 256 pointers (for a 1024-byte block size) to 1024 pointers (for
+a 4096-byte block size). This allows for quite large files. For even larger files, the
+fourteenth pointer (numbered 13 in the diagram) is a double indirect pointer—it points
+to blocks of pointers that in turn point to blocks of pointers that in turn point to
+data blocks of the file. And should the need for a truly enormous file arise, there is
+a further level of indirection: the last pointer in the i-node is a triple-indirect pointer.
+This seemingly complex system is designed to satisfy a number of requirements. To begin with, it allows the i-node structure to be a fixed size, while at the
+same time allowing for files of an arbitrary size. Additionally, it allows the file system to store the blocks of a file noncontiguously, while also allowing the data to be
+accessed randomly via lseek(); the kernel just needs to calculate which pointer(s) to
+follow. Finally, for small files, which form the overwhelming majority of files on
+most systems, this scheme allows the file data blocks to be accessed rapidly via the
+direct pointers of the i-node.
+258 Chapter 14
+Figure 14-2: Structure of file blocks for a file in an ext2 file system
+As an example, the author measured one system containing somewhat more
+than 150,000 files. Just over 30% of the files were less than 1000 bytes in size,
+and 80% occupied 10,000 bytes or less. Assuming a 1024-byte block size, all of
+the latter files could be referenced using just the 12 direct pointers, which can
+refer to blocks containing a total of 12,288 bytes. Using a 4096-byte block
+size, this limit rises to 49,152 bytes (95% of the files on the system fell under
+that limit).
+This design also allows for enormous file sizes; for a block size of 4096 bytes, the
+theoretical largest file size is slightly more than 1024*1024*1024*4096, or approximately 4 terabytes (4096 GB). (We say slightly more because of the blocks pointed to
+by the direct, indirect, and double indirect pointers. These are insignificant compared to the range that can be pointed to by the triple indirect pointer.)
+Key
+DB = Data block
+IPB = Indirect pointer block
+2IPB = Double IBP
+3IPB = Triple IPB
+Note: not all blocks are shown 0
+IPB
+DB 11 DB 12
+2IPB
+3IPB
+DB 0
+DB 13
+IPB
+IPB
+2IPB
+IPB
+IPB
+DB
+DB
+2IPB
+DB
+DB 5
+i-node entry
+Other file
+information
+1
+9
+2
+8
+7
+6
+5
+4
+3
+12
+11
+10
+14
+13 Pointers to indirectly
+addressed file blocks
+Direct pointers
+to file blocks
+File Systems 259
+One other benefit conferred by this design is that files can have holes, as
+described in Section 4.7. Rather than allocate blocks of null bytes for the holes in a
+file, the file system can just mark (with the value 0) appropriate pointers in the i-node
+and in the indirect pointer blocks to indicate that they don’t refer to actual disk blocks.
+14.5 The Virtual File System (VFS)
+Each of the file systems available on Linux differs in the details of its implementation. Such differences include, for example, the way in which the blocks of a file are
+allocated and the manner in which directories are organized. If every program that
+worked with files needed to understand the specific details of each file system, the
+task of writing programs that worked with all of the different file systems would be
+nearly impossible. The virtual file system (VFS, sometimes also referred to as the
+virtual file switch) is a kernel feature that resolves this problem by creating an
+abstraction layer for file-system operations (see Figure 14-3). The ideas behind the
+VFS are straightforward:
+z The VFS defines a generic interface for file-system operations. All programs
+that work with files specify their operations in terms of this generic interface.
+z Each file system provides an implementation for the VFS interface.
+Under this scheme, programs need to understand only the VFS interface and can
+ignore details of individual file-system implementations.
+The VFS interface includes operations corresponding to all of the usual system
+calls for working with file systems and directories, such as open(), read(), write(),
+lseek(), close(), truncate(), stat(), mount(), umount(), mmap(), mkdir(), link(), unlink(),
+symlink(), and rename().
+The VFS abstraction layer is closely modeled on the traditional UNIX file-system
+model. Naturally, some file systems—especially non-UNIX file systems—don’t support
+all of the VFS operations (e.g., Microsoft’s VFAT doesn’t support the notion of
+symbolic links, created using symlink()). In such cases, the underlying file system
+passes an error code back to the VFS layer indicating the lack of support, and the
+VFS in turn passes this error code back to the application.
+Figure 14-3: The virtual file system
+Application
+Virtual File System (VFS)
+ext2 Reiserfs VFAT NFS ext3
+260 Chapter 14
+14.6 Journaling File Systems
+The ext2 file system is a good example of a traditional UNIX file system, and suffers
+from a classic limitation of such file systems: after a system crash, a file-system consistency check ( fsck) must be performed on reboot in order to ensure the integrity
+of the file system. This is necessary because, at the time of the system crash, a file
+update may have been only partially completed, and the file-system metadata
+(directory entries, i-node information, and file data block pointers) may be in an
+inconsistent state, so that the file system might be further damaged if these inconsistencies are not repaired. A file-system consistency check ensures the consistency
+of the file-system metadata. Where possible, repairs are performed; otherwise,
+information that is not retrievable (possibly including file data) is discarded.
+The problem is that a consistency check requires examining the entire file system. On a small file system, this may take anything from several seconds to a few
+minutes. On a large file system, this may require several hours, which is a serious
+problem for systems that must maintain high availability (e.g., network servers).
+Journaling file systems eliminate the need for lengthy file-system consistency checks after a system crash. A journaling file system logs (journals) all
+metadata updates to a special on-disk journal file before they are actually carried
+out. The updates are logged in groups of related metadata updates (transactions). In
+the event of a system crash in the middle of a transaction, on system reboot, the log
+can be used to rapidly redo any incomplete updates and bring the file system back
+to a consistent state. (To borrow database parlance, we can say that a journaling
+file system ensures that file metadata transactions are always committed as a complete unit.) Even very large journaling file systems can typically be available within
+seconds after a system crash, making them very attractive for systems with highavailability requirements.
+The most notable disadvantage of journaling is that it adds time to file updates,
+though good design can make this overhead low.
+Some journaling file systems ensure only the consistency of file metadata.
+Because they don’t log file data, data may still be lost in the event of a crash. The
+ext3, ext4, and Reiserfs file systems provide options for logging data updates, but,
+depending on the workload, this may result in lower file I/O performance.
+The journaling file systems available for Linux include the following:
+z Reiserfs was the first of the journaling file systems to be integrated into the kernel (in version 2.4.1). Reiserfs provides a feature called tail packing (or tail
+merging): small files (and the final fragment of larger files) are packed into the
+same disk blocks as the file metadata. Because many systems have (and some
+applications create) large numbers of small files, this can save a significant
+amount of disk space.
+z The ext3 file system was a result of a project to add journaling to ext2 with minimal impact. The migration path from ext2 to ext3 is very easy (no backup and
+restore are required), and it is possible to migrate in the reverse direction as
+well. The ext3 file system was integrated into the kernel in version 2.4.15.
+File Systems 261
+z JFS was developed at IBM. It was integrated into the 2.4.20 kernel.
+z XFS (http://oss.sgi.com/projects/xfs/) was originally developed by Silicon Graphics (SGI) in the early 1990s for Irix, its proprietary UNIX implementation. In
+2001, XFS was ported to Linux and made available as a free software project.
+XFS was integrated into the 2.4.24 kernel.
+Support for the various file systems is enabled using kernel options that are set
+under the File systems menu when configuring the kernel.
+At the time of writing, work is in progress on two other file systems that provide journaling and a range of other advanced features:
+z The ext4 file system (http://ext4.wiki.kernel.org/) is the successor to ext3. The first
+pieces of the implementation were added in kernel 2.6.19, and various features
+were added in later kernel versions. Among the planned (or already implemented) features for ext4 are extents (reservation of contiguous blocks of storage) and other allocation features that aim to reduce file fragmentation, online
+file-system defragmentation, faster file-system checking, and support for nanosecond timestamps.
+z Btrfs (B-tree FS, usually pronounced “butter FS”; http://btrfs.wiki.kernel.org/) is a
+new file system designed from the ground up to provide a range of modern
+features, including extents, writable snapshots (which provide functionality
+equivalent to metadata and data journaling), checksums on data and metadata,
+online file-system checking, online file-system defragmentation, space-efficient
+packing of small files, and space-efficient indexed directories. It was integrated
+into the kernel in version 2.6.29.
+14.7 Single Directory Hierarchy and Mount Points
+On Linux, as on other UNIX systems, all files from all file systems reside under a
+single directory tree. At the base of this tree is the root directory, / (slash). Other
+file systems are mounted under the root directory and appear as subtrees within the
+overall hierarchy. The superuser uses a command of the following form to mount a
+file system:
+$ mount device directory
+This command attaches the file system on the named device into the directory hierarchy at the specified directory—the file system’s mount point. It is possible to change
+the location at which a file system is mounted—the file system is unmounted using the
+umount command, and then mounted once more at a different point.
+With Linux 2.4.19 and later, things became more complicated. The kernel
+now supports per-process mount namespaces. This means that each process
+potentially has its own set of file-system mount points, and thus may see a different single directory hierarchy from other processes. We explain this point
+further when we describe the CLONE_NEWNS flag in Section 28.2.1.
+262 Chapter 14
+To list the currently mounted file systems, we can use the command mount, with no
+arguments, as in the following example (whose output has been somewhat
+abridged):
+$ mount
+/dev/sda6 on / type ext4 (rw)
+proc on /proc type proc (rw)
+sysfs on /sys type sysfs (rw)
+devpts on /dev/pts type devpts (rw,mode=0620,gid=5)
+/dev/sda8 on /home type ext3 (rw,acl,user_xattr)
+/dev/sda1 on /windows/C type vfat (rw,noexec,nosuid,nodev)
+/dev/sda9 on /home/mtk/test type reiserfs (rw)
+Figure 14-4 shows a partial directory and file structure for the system on which the
+above mount command was performed. This diagram shows how the mount points
+map onto the directory hierarchy.
+Figure 14-4: Example directory hierarchy showing file-system mount points
+14.8 Mounting and Unmounting File Systems
+The mount() and umount() system calls allow a privileged (CAP_SYS_ADMIN) process to
+mount and unmount file systems. Most UNIX implementations provide versions of
+these system calls. However, they are not standardized by SUSv3, and their operation varies both across UNIX implementations and across file systems.
+/
+bin home
+bash vmlinuz avr mtk
+test britta windows
+copy.c explorer.exe
+directory
+regular file
+Mount
+points
+sda6 file system
+boot windows
+sda9 file system
+sda8 file system
+sda1 file system
+C
+File Systems 263
+Before looking at these system calls, it is useful to know about three files that
+contain information about the file systems that are currently mounted or can be
+mounted:
+z A list of the currently mounted file systems can be read from the Linux-specific
+/proc/mounts virtual file. /proc/mounts is an interface to kernel data structures, so
+it always contains accurate information about mounted file systems.
+With the arrival of the per-process mount namespace feature mentioned earlier, each process now has a /proc/PID/mounts file that lists the mount points
+constituting its mount namespace, and /proc/mounts is just a symbolic link to
+/proc/self/mounts.
+z The mount(8) and umount(8) commands automatically maintain the file /etc/mtab,
+which contains information that is similar to that in /proc/mounts, but slightly
+more detailed. In particular, /etc/mtab includes file system–specific options
+given to mount(8), which are not shown in /proc/mounts. However, because the
+mount() and umount() system calls don’t update /etc/mtab, this file may be inaccurate if some application that mounts or unmounts devices fails to update it.
+z The /etc/fstab file, maintained manually by the system administrator, contains
+descriptions of all of the available file systems on a system, and is used by the
+mount(8), umount(8), and fsck(8) commands.
+The /proc/mounts, /etc/mtab, and /etc/fstab files share a common format, described
+in the fstab(5) manual page. Here is an example of a line from the /proc/mounts file:
+/dev/sda9 /boot ext3 rw 0 0
+This line contains six fields:
+1. The name of the mounted device.
+2. The mount point for the device.
+3. The file-system type.
+4. Mount flags. In the above example, rw indicates that the file system was
+mounted read-write.
+5. A number used to control the operation of file-system backups by dump(8).
+This field and the next are used only in the /etc/fstab file; for /proc/mounts
+and /etc/mtab, these fields are always 0.
+6. A number used to control the order in which fsck(8) checks file systems at system
+boot time.
+The getfsent(3) and getmntent(3) manual pages document functions that can be used
+to read records from these files.
+264 Chapter 14
+14.8.1 Mounting a File System: mount()
+The mount() system call mounts the file system contained on the device specified by
+source under the directory (the mount point) specified by target.
+The names source and target are used for the first two arguments because mount()
+can perform other tasks than mounting a disk file system under a directory.
+The fstype argument is a string identifying the type of file system contained on
+the device, such as ext4 or btrfs.
+The mountflags argument is a bit mask constructed by ORing (|) zero or more
+of the flags shown in Table 14-1, which are described in more detail below.
+The final mount() argument, data, is a pointer to a buffer of information whose
+interpretation depends on the file system. For most file-system types, this argument
+is a string consisting of comma-separated option settings. A full list of these options
+can be found in the mount(8) manual page (or the documentation for the file system
+concerned, if it is not described in mount(8)).
+#include <sys/mount.h>
+int mount(const char *source, const char *target, const char *fstype,
+ unsigned long mountflags, const void *data);
+Returns 0 on success, or –1 on error
+Table 14-1: mountflags values for mount()
+Flag Purpose
+MS_BIND Create a bind mount (since Linux 2.4)
+MS_DIRSYNC Make directory updates synchronous (since Linux 2.6)
+MS_MANDLOCK Permit mandatory locking of files
+MS_MOVE Atomically move mount point to new location
+MS_NOATIME Don’t update last access time for files
+MS_NODEV Don’t allow access to devices
+MS_NODIRATIME Don’t update last access time for directories
+MS_NOEXEC Don’t allow programs to be executed
+MS_NOSUID Disable set-user-ID and set-group-ID programs
+MS_RDONLY Read-only mount; files can’t be created or modified
+MS_REC Recursive mount (since Linux 2.6.20)
+MS_RELATIME Update last access time only if older than last modification time or last
+status change time (since Linux 2.4.11)
+MS_REMOUNT Remount with new mountflags and data
+MS_STRICTATIME Always update last access time (since Linux 2.6.30)
+MS_SYNCHRONOUS Make all file and directory updates synchronous
+File Systems 265
+The mountflags argument is a bit mask of flags that modify the operation of mount().
+Zero or more of the following flags can be specified in mountflags:
+MS_BIND (since Linux 2.4)
+Create a bind mount. We describe this feature in Section 14.9.4. If this flag
+is specified, then the fstype, mountflags, and data arguments are ignored.
+MS_DIRSYNC (since Linux 2.6)
+Make directory updates synchronous. This is similar to the effect of the
+open() O_SYNC flag (Section 13.3), but applies only to directory updates. The
+MS_SYNCHRONOUS flag described below provides a superset of the functionality
+of MS_DIRSYNC, ensuring that both file and directory updates are performed
+synchronously. The MS_DIRSYNC flag allows an application to ensure that
+directory updates (e.g., open(pathname, O_CREAT), rename(), link(),
+unlink(), symlink(), and mkdir()) are synchronized without incurring the
+expense of synchronizing all file updates. The FS_DIRSYNC_FL flag
+(Section 15.5) serves a similar purpose to MS_DIRSYNC, with the difference
+that FS_DIRSYNC_FL can be applied to individual directories. In addition, on
+Linux, calling fsync() on a file descriptor that refers to a directory provides
+a means of synchronizing directory updates on a per-directory basis. (This
+Linux-specific fsync() behavior is not specified in SUSv3.)
+MS_MANDLOCK
+Permit mandatory record locking on files in this file system. We describe
+record locking in Chapter 55.
+MS_MOVE
+Atomically move the existing mount point specified by source to the new
+location specified by target. This corresponds to the ––move option to
+mount(8). This is equivalent to unmounting the subtree and then remounting at a different location, except that there is no point in time when the
+subtree is unmounted. The source argument should be a string specified as
+a target in a previous mount() call. When this flag is specified, the fstype,
+mountflags, and data arguments are ignored.
+MS_NOATIME
+Don’t update the last access time for files in this file system. The purpose
+of this flag, as well as the MS_NODIRATIME flag described below, is to eliminate
+the extra disk access required to update the file i-node each time a file is
+accessed. In some applications, maintaining this timestamp is not critical,
+and avoiding doing so can significantly improve performance. The
+MS_NOATIME flag serves a similar purpose to the FS_NOATIME_FL flag
+(Section 15.5), with the difference that FS_NOATIME_FL can be applied to single
+files. Linux also provides similar functionality via the O_NOATIME open() flag,
+which selects this behavior for individual open files (Section 4.3.1).
+266 Chapter 14
+MS_NODEV
+Don’t allow access to block and character devices on this file system. This is
+a security feature designed to prevent users from doing things such as
+inserting a removable disk containing device special files that would allow
+arbitrary access to the system.
+MS_NODIRATIME
+Don’t update the last access time for directories on this file system. (This
+flag provides a subset of the functionality of MS_NOATIME, which prevents
+updates to the last access time for all file types.)
+MS_NOEXEC
+Don’t allow programs (or scripts) to be executed from this file system. This
+is useful if the file system contains non-Linux executables.
+MS_NOSUID
+Disable set-user-ID and set-group-ID programs on this file system. This is a
+security feature to prevent users from running set-user-ID and set-groupID programs from removable devices.
+MS_RDONLY
+Mount the file system read-only, so that no new files can be created and no
+existing files can be modified.
+MS_REC (since Linux 2.4.11)
+This flag is used in conjunction with other flags (e.g., MS_BIND) to recursively
+apply the mount action to all of the mounts in a subtree.
+MS_RELATIME (since Linux 2.6.20)
+Update the last access timestamp for files on this file system only if the current setting of this timestamp is less than or equal to either the last modification or the last status change timestamp. This provides some of the
+performance benefits of MS_NOATIME, but is useful for programs that need to
+know if a file has been read since it was last updated. Since Linux 2.6.30,
+the behavior provided by MS_RELATIME is the default (unless the MS_NOATIME
+flag is specified), and the MS_STRICTATIME flag is required to obtain classical
+behavior. In addition, since Linux 2.6.30, the last access timestamp is
+always updated if its current value is more than 24 hours in the past, even if
+the current value is more recent than the last modification and last status
+change timestamps. (This is useful for certain system programs that monitor directories to see whether files have recently been accessed.)
+MS_REMOUNT
+Alter the mountflags and data for a file system that is already mounted (e.g.,
+to make a read-only file system writable). When using this flag, the source and
+target arguments should be the same as for the original mount() call, and the
+fstype argument is ignored. This flag avoids the need to unmount and
+remount the disk, which may not be possible in some cases. For example, we
+can’t unmount a file system if any process has files open on, or its current
+File Systems 267
+working directory located within, the file system (this will always be true of
+the root file system). Another example of where we need to use MS_REMOUNT is
+with tmpfs (memory-based) file systems (Section 14.10), which can’t be
+unmounted without losing their contents. Not all mountflags are modifiable;
+see the mount(2) manual page for details.
+MS_STRICTATIME (since Linux 2.6.30)
+Always update the last access timestamp when files on this file system are
+accessed. This was the default behavior before Linux 2.6.30. If MS_STRICTATIME
+is specified, then MS_NOATIME and MS_RELATIME are ignored if they are also
+specified in mountflags.
+MS_SYNCHRONOUS
+Make all file and directory updates on this file system synchronous. (In the
+case of files, this is as though files were always opened with the open()
+O_SYNC flag.)
+Starting with kernel 2.6.15, Linux provides four new mount flags to support
+the notion of shared subtrees. The new flags are MS_PRIVATE, MS_SHARED, MS_SLAVE,
+and MS_UNBINDABLE. (These flags can be used in conjunction with MS_REC to propagate their effects to all of the submounts under a mount subtree.) Shared subtrees are designed for use with certain advanced file-system features, such as
+per-process mount namespaces (see the description of CLONE_NEWNS in
+Section 28.2.1), and the Filesystem in Userspace (FUSE) facility. The shared subtree facility permits file-system mounts to be propagated between mount
+namespaces in a controlled fashion. Details on shared subtrees can be found in
+the kernel source code file Documentation/filesystems/sharedsubtree.txt and
+[Viro & Pai, 2006].
+Example program
+The program in Listing 14-1 provides a command-level interface to the mount(2)
+system call. In effect, it is a crude version of the mount(8) command. The following
+shell session log demonstrates the use of this program. We begin by creating a
+directory to be used as a mount point and mounting a file system:
+$ su Need privilege to mount a file system
+Password:
+# mkdir /testfs
+# ./t_mount -t ext2 -o bsdgroups /dev/sda12 /testfs
+# cat /proc/mounts | grep sda12 Verify the setup
+/dev/sda12 /testfs ext3 rw 0 0 Doesn’t show bsdgroups
+# grep sda12 /etc/mtab
+We find that the preceding grep command produces no output because our program doesn’t update /etc/mtab. We continue, remounting the file system read-only:
+# ./t_mount -f Rr /dev/sda12 /testfs
+# cat /proc/mounts | grep sda12 Verify change
+/dev/sda12 /testfs ext3 ro 0 0
+The string ro in the line displayed from /proc/mounts indicates that this is a read-only
+mount.
+268 Chapter 14
+Finally, we move the mount point to a new location within the directory hierarchy:
+# mkdir /demo
+# ./t_mount -f m /testfs /demo
+# cat /proc/mounts | grep sda12 Verify change
+/dev/sda12 /demo ext3 ro 0
+Listing 14-1: Using mount()
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––– filesys/t_mount.c
+#include <sys/mount.h>
+#include "tlpi_hdr.h"
+static void
+usageError(const char *progName, const char *msg)
+{
+ if (msg != NULL)
+ fprintf(stderr, "%s", msg);
+ fprintf(stderr, "Usage: %s [options] source target\n\n", progName);
+ fprintf(stderr, "Available options:\n");
+#define fpe(str) fprintf(stderr, " " str) /* Shorter! */
+ fpe("-t fstype [e.g., 'ext2' or 'reiserfs']\n");
+ fpe("-o data [file system-dependent options,\n");
+ fpe(" e.g., 'bsdgroups' for ext2]\n");
+ fpe("-f mountflags can include any of:\n");
+#define fpe2(str) fprintf(stderr, " " str)
+ fpe2("b - MS_BIND create a bind mount\n");
+ fpe2("d - MS_DIRSYNC synchronous directory updates\n");
+ fpe2("l - MS_MANDLOCK permit mandatory locking\n");
+ fpe2("m - MS_MOVE atomically move subtree\n");
+ fpe2("A - MS_NOATIME don't update atime (last access time)\n");
+ fpe2("V - MS_NODEV don't permit device access\n");
+ fpe2("D - MS_NODIRATIME don't update atime on directories\n");
+ fpe2("E - MS_NOEXEC don't allow executables\n");
+ fpe2("S - MS_NOSUID disable set-user/group-ID programs\n");
+ fpe2("r - MS_RDONLY read-only mount\n");
+ fpe2("c - MS_REC recursive mount\n");
+ fpe2("R - MS_REMOUNT remount\n");
+ fpe2("s - MS_SYNCHRONOUS make writes synchronous\n");
+ exit(EXIT_FAILURE);
+}
+int
+main(int argc, char *argv[])
+{
+ unsigned long flags;
+ char *data, *fstype;
+ int j, opt;
+ flags = 0;
+ data = NULL;
+ fstype = NULL;
+ while ((opt = getopt(argc, argv, "o:t:f:")) != -1) {
+ switch (opt) {
+File Systems 269
+ case 'o':
+ data = optarg;
+ break;
+ case 't':
+ fstype = optarg;
+ break;
+ case 'f':
+ for (j = 0; j < strlen(optarg); j++) {
+ switch (optarg[j]) {
+ case 'b': flags |= MS_BIND; break;
+ case 'd': flags |= MS_DIRSYNC; break;
+ case 'l': flags |= MS_MANDLOCK; break;
+ case 'm': flags |= MS_MOVE; break;
+ case 'A': flags |= MS_NOATIME; break;
+ case 'V': flags |= MS_NODEV; break;
+ case 'D': flags |= MS_NODIRATIME; break;
+ case 'E': flags |= MS_NOEXEC; break;
+ case 'S': flags |= MS_NOSUID; break;
+ case 'r': flags |= MS_RDONLY; break;
+ case 'c': flags |= MS_REC; break;
+ case 'R': flags |= MS_REMOUNT; break;
+ case 's': flags |= MS_SYNCHRONOUS; break;
+ default: usageError(argv[0], NULL);
+ }
+ }
+ break;
+ default:
+ usageError(argv[0], NULL);
+ }
+ }
+ if (argc != optind + 2)
+ usageError(argv[0], "Wrong number of arguments\n");
+ if (mount(argv[optind], argv[optind + 1], fstype, flags, data) == -1)
+ errExit("mount");
+ exit(EXIT_SUCCESS);
+}
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––– filesys/t_mount.c
+14.8.2 Unmounting a File System: umount() and umount2()
+The umount() system call unmounts a mounted file system.
+The target argument specifies the mount point of the file system to be unmounted.
+#include <sys/mount.h>
+int umount(const char *target);
+Returns 0 on success, or –1 on error
+270 Chapter 14
+On Linux 2.2 and earlier, the file system can be identified in two ways: by the
+mount point or by the name of the device containing the file system. Since
+kernel 2.4, Linux doesn’t allow the latter possibility, because a single file system can now be mounted at multiple locations, so that specifying a file system
+for target would be ambiguous. We explain this point in further detail in
+Section 14.9.1.
+It is not possible to unmount a file system that is busy; that is, if there are open files
+on the file system, or a process’s current working directory is somewhere in the file
+system. Calling umount() on a busy file system yields the error EBUSY.
+The umount2() system call is an extended version of umount(). It allows finer
+control over the unmount operation via the flags argument.
+This flags bit-mask argument consists of zero or more of the following values ORed
+together:
+MNT_DETACH (since Linux 2.4.11)
+Perform a lazy unmount. The mount point is marked so that no process
+can make new accesses to it, but processes that are already using it can continue to do so. The file system is actually unmounted when all processes
+cease using the mount.
+MNT_EXPIRE (since Linux 2.6.8)
+Mark the mount point as expired. If an initial umount2() call is made specifying this flag, and the mount point is not busy, then the call fails with the
+error EAGAIN, but the mount point is marked to expire. (If the mount point
+is busy, then the call fails with the error EBUSY, and the mount point is not
+marked to expire.) A mount point remains expired as long as no process
+subsequently makes use of it. A second umount2() call specifying MNT_EXPIRE
+will unmount an expired mount point. This provides a mechanism to
+unmount a file system that hasn’t been used for some period of time. This
+flag can’t be specified with MNT_DETACH or MNT_FORCE.
+MNT_FORCE
+Force an unmount even if the device is busy (NFS mounts only). Employing this option can cause data loss.
+UMOUNT_NOFOLLOW (since Linux 2.6.34)
+Don’t dereference target if it is a symbolic link. This flag is designed for use
+in certain set-user-ID-root programs that allow unprivileged users to perform unmounts, in order to avoid the security problems that could occur if
+target is a symbolic link that is changed to point to a different location.
+#include <sys/mount.h>
+int umount2(const char *target, int flags);
+Returns 0 on success, or –1 on error
+File Systems 271
+14.9 Advanced Mount Features
+We now look at a number of more advanced features that can be employed when
+mounting file systems. We demonstrate the use of most of these features using the
+mount(8) command. The same effects can also be accomplished from a program via
+calls to mount(2).
+14.9.1 Mounting a File System at Multiple Mount Points
+In kernel versions before 2.4, a file system could be mounted only on a single
+mount point. From kernel 2.4 onward, a file system can be mounted at multiple
+locations within the file system. Because each of the mount points shows the same
+subtree, changes made via one mount point are visible through the other(s), as
+demonstrated by the following shell session:
+$ su Privilege is required to use mount(8)
+Password:
+# mkdir /testfs Create two directories for mount points
+# mkdir /demo
+# mount /dev/sda12 /testfs Mount file system at one mount point
+# mount /dev/sda12 /demo Mount file system at second mount point
+# mount | grep sda12 Verify the setup
+/dev/sda12 on /testfs type ext3 (rw)
+/dev/sda12 on /demo type ext3 (rw)
+# touch /testfs/myfile Make a change via first mount point
+# ls /demo View files at second mount point
+lost+found myfile
+The output of the ls command shows that the change made via the first mount
+point (/testfs) was visible via the second mount point (/demo).
+We present one example of why it is useful to mount a file system at multiple
+points when we describe bind mounts in Section 14.9.4.
+It is because a device can be mounted at multiple points that the umount() system
+call can’t take a device as its argument in Linux 2.4 and later.
+14.9.2 Stacking Multiple Mounts on the Same Mount Point
+In kernel versions before 2.4, a mount point could be used only once. Since
+kernel 2.4, Linux allows multiple mounts to be stacked on a single mount point.
+Each new mount hides the directory subtree previously visible at that mount point.
+When the mount at the top of the stack is unmounted, the previously hidden
+mount becomes visible once more, as demonstrated by the following shell session:
+$ su Privilege is required to use mount(8)
+Password:
+# mount /dev/sda12 /testfs Create first mount on /testfs
+# touch /testfs/myfile Make a file in this subtree
+# mount /dev/sda13 /testfs Stack a second mount on /testfs
+# mount | grep testfs Verify the setup
+/dev/sda12 on /testfs type ext3 (rw)
+/dev/sda13 on /testfs type reiserfs (rw)
+272 Chapter 14
+# touch /testfs/newfile Create a file in this subtree
+# ls /testfs View files in this subtree
+newfile
+# umount /testfs Pop a mount from the stack
+# mount | grep testfs
+/dev/sda12 on /testfs type ext3 (rw) Now only one mount on /testfs
+# ls /testfs Previous mount is now visible
+lost+found myfile
+One use of mount stacking is to stack a new mount on an existing mount point that
+is busy. Processes that hold file descriptors open, that are chroot()-jailed, or that
+have current working directories within the old mount point continue to operate
+under that mount, but processes making new accesses to the mount point use the
+new mount. Combined with a MNT_DETACH unmount, this can provide a smooth
+migration off a file system without needing to take the system into single-user
+mode. We’ll see another example of how stacking mounts is useful when we discuss
+the tmpfs file system in Section 14.10.
+14.9.3 Mount Flags That Are Per-Mount Options
+In kernel versions before 2.4, there was a one-to-one correspondence between file
+systems and mount points. Because this no longer holds in Linux 2.4 and later,
+some of the mountflags values described in Section 14.8.1 can be set on a per-mount
+basis. These flags are MS_NOATIME (since Linux 2.6.16), MS_NODEV, MS_NODIRATIME (since
+Linux 2.6.16), MS_NOEXEC, MS_NOSUID, MS_RDONLY (since Linux 2.6.26), and MS_RELATIME.
+The following shell session demonstrates this effect for the MS_NOEXEC flag:
+$ su
+Password:
+# mount /dev/sda12 /testfs
+# mount -o noexec /dev/sda12 /demo
+# cat /proc/mounts | grep sda12
+/dev/sda12 /testfs ext3 rw 0 0
+/dev/sda12 /demo ext3 rw,noexec 0 0
+# cp /bin/echo /testfs
+# /testfs/echo "Art is something which is well done"
+Art is something which is well done
+# /demo/echo "Art is something which is well done"
+bash: /demo/echo: Permission denied
+14.9.4 Bind Mounts
+Starting with kernel 2.4, Linux permits the creation of bind mounts. A bind mount
+(created using the mount() MS_BIND flag) allows a directory or a file to be mounted at
+some other location in the file-system hierarchy. This results in the directory or file
+being visible in both locations. A bind mount is somewhat like a hard link, but differs in two respects:
+z A bind mount can cross file-system mount points (and even chroot jails).
+z It is possible to make a bind mount for a directory.
+File Systems 273
+We can create a bind mount from the shell using the ––bind option to mount(8), as
+shown in the following examples.
+In the first example, we bind mount a directory at another location and show
+that files created in one directory are visible at the other location:
+$ su Privilege is required to use mount(8)
+Password:
+# pwd
+/testfs
+# mkdir d1 Create directory to be bound at another location
+# touch d1/x Create file in the directory
+# mkdir d2 Create mount point to which d1 will be bound
+# mount --bind d1 d2 Create bind mount: d1 visible via d2
+# ls d2 Verify that we can see contents of d1 via d2
+x
+# touch d2/y Create second file in directory d2
+# ls d1 Verify that this change is visible via d1
+x y
+In the second example, we bind mount a file at another location and demonstrate
+that changes to the file via one mount are visible via the other mount:
+# cat > f1 Create file to be bound to another location
+Chance is always powerful. Let your hook be always cast.
+Type Control-D
+# touch f2 This is the new mount point
+# mount --bind f1 f2 Bind f1 as f2
+# mount | egrep '(d1|f1)' See how mount points look
+/testfs/d1 on /testfs/d2 type none (rw,bind)
+/testfs/f1 on /testfs/f2 type none (rw,bind)
+# cat >> f2 Change f2
+In the pool where you least expect it, will be a fish.
+# cat f1 The change is visible via original file f1
+Chance is always powerful. Let your hook be always cast.
+In the pool where you least expect it, will be a fish.
+# rm f2 Can’t do this because it is a mount point
+rm: cannot unlink `f2': Device or resource busy
+# umount f2 So unmount
+# rm f2 Now we can remove f2
+One example of when we might use a bind mount is in the creation of a chroot jail
+(Section 18.12). Rather than replicating various standard directories (such as /lib)
+in the jail, we can simply create bind mounts for these directories (possibly
+mounted read-only) within the jail.
+14.9.5 Recursive Bind Mounts
+By default, if we create a bind mount for a directory using MS_BIND, then only that
+directory is mounted at the new location; if there are any submounts under the
+source directory, they are not replicated under the mount target. Linux 2.4.11 added
+the MS_REC flag, which can be ORed with MS_BIND as part of the flags argument to
+mount() so that submounts are replicated under the mount target. This is referred
+to as a recursive bind mount. The mount(8) command provides the ––rbind option to
+achieve the same effect from the shell, as shown in the following shell session.
+274 Chapter 14
+We begin by creating a directory tree (src1) mounted under top. This tree
+includes a submount (src2) at top/sub.
+$ su
+Password:
+# mkdir top This is our top-level mount point
+# mkdir src1 We’ll mount this under top
+# touch src1/aaa
+# mount --bind src1 top Create a normal bind mount
+# mkdir top/sub Create directory for a submount under top
+# mkdir src2 We’ll mount this under top/sub
+# touch src2/bbb
+# mount --bind src2 top/sub Create a normal bind mount
+# find top Verify contents under top mount tree
+top
+top/aaa
+top/sub This is the submount
+top/sub/bbb
+Now we create another bind mount (dir1) using top as the source. Since this new
+mount is nonrecursive, the submount is not replicated.
+# mkdir dir1
+# mount --bind top dir1 Here we use a normal bind mount
+# find dir1
+dir1
+dir1/aaa
+dir1/sub
+The absence of dir1/sub/bbb in the output of find shows that the submount top/sub
+was not replicated.
+Now we create a recursive bind mount (dir2) using top as the source.
+# mkdir dir2
+# mount --rbind top dir2
+# find dir2
+dir2
+dir2/aaa
+dir2/sub
+dir2/sub/bbb
+The presence of dir2/sub/bbb in the output of find shows that the submount top/sub
+was replicated.
+14.10 A Virtual Memory File System: tmpfs
+All of the file systems we have described so far in this chapter reside on disks. However, Linux also supports the notion of virtual file systems that reside in memory. To
+applications, these look just like any other file system—the same operations (open(),
+read(), write(), link(), mkdir(), and so on) can be applied to files and directories in
+such file systems. There is, however, one important difference: file operations are
+much faster, since no disk access is involved.
+File Systems 275
+Various memory-based file systems have been developed for Linux. The most
+sophisticated of these to date is the tmpfs file system, which first appeared in
+Linux 2.4. The tmpfs file system differs from other memory-based file systems in
+that it is a virtual memory file system. This means that tmpfs uses not only RAM, but
+also the swap space, if RAM is exhausted. (Although the tmpfs file system described
+here is Linux-specific, most UNIX implementations provide some form of memorybased file system.)
+The tmpfs file system is an optional Linux kernel component that is configured
+via the CONFIG_TMPFS option.
+To create a tmpfs file system, we use a command of the following form:
+# mount -t tmpfs source target
+The source can be any name; its only significance is that it appears in /proc/mounts
+and is displayed by the mount and df commands. As usual, target is the mount point
+for the file system. Note that it is not necessary to use mkfs to create a file system
+first, because the kernel automatically builds a file system as part of the mount() system call.
+As an example of the use of tmpfs, we could employ mount stacking (so that we
+don’t need to care if /tmp is already in use) and create a tmpfs file system mounted
+on /tmp as follows:
+# mount -t tmpfs newtmp /tmp
+# cat /proc/mounts | grep tmp
+newtmp /tmp tmpfs rw 0 0
+A command such as the above (or an equivalent entry in /etc/fstab) is sometimes
+used to improve the performance of applications (e.g., compilers) that make heavy
+use of the /tmp directory for creating temporary files.
+By default, a tmpfs file system is permitted to grow to half the size of RAM, but
+the size=nbytes mount option can be used to set a different ceiling for the file-system
+size, either when the file system is created or during a later remount. (A tmpfs file
+system consumes only as much memory and swap space as is currently required for
+the files it holds.)
+If we unmount a tmpfs file system, or the system crashes, then all data in the file
+system is lost; hence the name tmpfs.
+Aside from use by user applications, tmpfs file systems also serve two special
+purposes:
+z An invisible tmpfs file system, mounted internally by the kernel, is used for
+implementing System V shared memory (Chapter 48) and shared anonymous
+memory mappings (Chapter 49).
+z A tmpfs file system mounted at /dev/shm is used for the glibc implementation of
+POSIX shared memory and POSIX semaphores.
+276 Chapter 14
+14.11 Obtaining Information About a File System: statvfs()
+The statvfs() and fstatvfs() library functions obtain information about a mounted file
+system.
+The only difference between these two functions is in how the file system is identified. For statvfs(), we use pathname to specify the name of any file in the file system.
+For fstatvfs(), we specify an open file descriptor, fd, referring to any file in the file
+system. Both functions return a statvfs structure containing information about the
+file system in the buffer pointed to by statvfsbuf. This structure has the following
+form:
+struct statvfs {
+ unsigned long f_bsize; /* File-system block size (in bytes) */
+ unsigned long f_frsize; /* Fundamental file-system block size
+(in bytes) */
+ fsblkcnt_t f_blocks; /* Total number of blocks in file
+system (in units of 'f_frsize') */
+ fsblkcnt_t f_bfree; /* Total number of free blocks */
+ fsblkcnt_t f_bavail; /* Number of free blocks available to
+unprivileged process */
+ fsfilcnt_t f_files; /* Total number of i-nodes */
+ fsfilcnt_t f_ffree; /* Total number of free i-nodes */
+ fsfilcnt_t f_favail; /* Number of i-nodes available to unprivileged
+process (set to 'f_ffree' on Linux) */
+ unsigned long f_fsid; /* File-system ID */
+ unsigned long f_flag; /* Mount flags */
+ unsigned long f_namemax; /* Maximum length of filenames on
+this file system */
+};
+The purpose of most of the fields in the statvfs structure is made clear in the comments above. We note a few further points regarding some fields:
+z The fsblkcnt_t and fsfilcnt_t data types are integer types specified by SUSv3.
+z For most file Linux systems, the values of f_bsize and f_frsize are the same. However, some file systems support the notion of block fragments, which can be
+used to allocate a smaller unit of storage at the end of the file if a full block is
+not required. This avoids the waste of space that would otherwise occur if a full
+block was allocated. On such file systems, f_frsize is the size of a fragment, and
+f_bsize is the size of a whole block. (The notion of fragments in UNIX file systems first appeared in the early 1980s with the 4.2BSD Fast File System,
+described in [McKusick et al., 1984].)
+#include <sys/statvfs.h>
+int statvfs(const char *pathname, struct statvfs *statvfsbuf);
+int fstatvfs(int fd, struct statvfs *statvfsbuf);
+Both return 0 on success, or –1 on error
+File Systems 277
+z Many native UNIX and Linux file systems support the notion of reserving a
+certain portion of the blocks of a file system for the superuser, so that if the file
+system fills up, the superuser can still log in to the system and do some work to
+resolve the problem. If there are reserved blocks in the file system, then the difference in values of the f_bfree and f_bavail fields in the statvfs structure tells us
+how many blocks are reserved.
+z The f_flag field is a bit mask of the flags used to mount the file system; that is, it
+contains information similar to the mountflags argument given to mount(2).
+However, the constants used for the bits in this field have names starting with
+ST_ instead of the MS_ used for mountflags. SUSv3 requires only the ST_RDONLY and
+ST_NOSUID constants, but the glibc implementation supports a full range of constants with names corresponding to the MS_* constants described for the
+mount() mountflags argument.
+z The f_fsid field is used on some UNIX implementations to return a unique
+identifier for the file system—for example, a value based on the identifier of the
+device on which the file system resides. For most Linux file systems, this field
+contains 0.
+SUSv3 specifies both statvfs() and fstatvfs(). On Linux (as on several other UNIX
+implementations), these functions are layered on top of the quite similar statfs()
+and fstatfs() system calls. (Some UNIX implementations provide a statfs() system
+call, but don’t provide statvfs().) The principal differences (aside from some differently named fields) are as follows
+z The statvfs() and fstatvfs() functions return the f_flag field, giving information
+about the file-system mount flags. (The glibc implementation obtains this information by scanning /proc/mounts or /etc/mtab.)
+z The statfs() and fstatfs() system calls return the field f_type, giving the type of the
+file system (e.g., the value 0xef53 indicates that this is an ext2 file system).
+The filesys subdirectory in the source code distribution for this book contains
+two files, t_statvfs.c and t_statfs.c, demonstrating the use of statvfs() and statfs().
+14.12 Summary
+Devices are represented by entries in the /dev directory. Each device has a corresponding device driver, which implements a standard set of operations, including
+those corresponding to the open(), read(), write(), and close() system calls. A device
+may be real, meaning that there is a corresponding hardware device, or virtual,
+meaning that no hardware device exists, but the kernel nevertheless provides a
+device driver that implements an API that is the same as a real device.
+A hard disk is divided into one or more partitions, each of which may contain a
+file system. A file system is an organized collection of regular files and directories.
+Linux implements a wide variety of file systems, including the traditional ext2 file
+system. The ext2 file system is conceptually similar to early UNIX file systems, consisting of a boot block, a superblock, an i-node table, and a data area containing file
+data blocks. Each file has an entry in the file system’s i-node table. This entry contains
+278 Chapter 14
+various information about the file, including its type, size, link count, ownership,
+permissions, timestamps, and pointers to the file’s data blocks.
+Linux provides a range of journaling file systems, including Reiserfs, ext3, ext4,
+XFS, JFS, and Btrfs. A journaling file system records metadata updates (and optionally on some file systems, data updates) to a log file before the actual file updates
+are performed. This means that in the event of a system crash, the log file can be
+replayed to quickly restore the file system to a consistent state. The key benefit of
+journaling file systems is that they avoid the lengthy file-system consistency checks
+required by conventional UNIX file systems after a system crash.
+All file systems on a Linux system are mounted under a single directory tree,
+with the directory / at its root. The location at which a file system is mounted in the
+directory tree is called its mount point.
+A privileged process can mount and unmount a file system using the mount()
+and umount() system calls. Information about a mounted file system can be
+retrieved using statvfs().
+
+
+
+
+
+CHAPTER 15 - FILE ATTRIBUTES
+
+
+<h3>Retrieving File Information</h3>
+
+#include <sys/stat.h>
+
+int stat(const char *pathname, struct stat *statbuf);
+int lstat(const char *pathname, struct stat *statbuf);
+int fstat(int fd, struct stat *statbuf);
+
+struct stat {
+  dev_t st_dev; /* IDs of device on which file resides */
+  ino_t st_ino; /* I-node number of file */
+  mode_t st_mode; /* File type and permissions */
+  nlink_t st_nlink;  // Number of (hard) links to file */
+  uid_t st_uid; /* User ID of file owner */
+  gid_t st_gid; /* Group ID of file owner */
+  dev_t st_rdev; /* IDs for device special files */
+  off_t st_size; /* Total file size (bytes) */
+  blksize_t st_blksize; /* Optimal block size for I/O (bytes) */
+  blkcnt_t st_blocks; /* Number of (512B) blocks allocated */
+  time_t st_atime; /* Time of last file access */
+  time_t st_mtime; /* Time of last file modification */
+  time_t st_ctime; /* Time of last status change */
+};
+
+- The stat(), lstat(), and fstat() system calls retrieve information about a file mostly drawn from the file i-node.
+- stat() takes a pathname; lstat() is similar to stat(), except that if the named file is a symbolic link information about the link itself is returned; and fstat() takes an open file descriptor.
+- All of these system calls return a stat structure in the buffer pointed to by statbuf.
+- All return 0 on success or -1 on error.
+
+
+
+Device IDs and i-node number
+The st_dev field identifies the device on which the file resides. The st_ino field contains the i-node number of the file. The combination of st_dev and st_ino uniquely
+identifies a file across all file systems. The dev_t type records the major and minor
+IDs of a device (Section 14.1).
+If this is the i-node for a device, then the st_rdev field contains the major and
+minor IDs of the device.
+The major and minor IDs of a dev_t value can be extracted using two macros:
+major() and minor(). The header file required to obtain the declarations of these two
+macros varies across UNIX implementations. On Linux, they are exposed by
+<sys/types.h> if the _BSD_SOURCE macro is defined.
+The size of the integer values returned by major() and minor() varies across
+UNIX implementations. For portability, we always cast the returned values to long
+when printing them (see Section 3.6.2).
+File ownership
+The st_uid and st_gid fields identify, respectively, the owner (user ID) and group
+(group ID) to which the file belongs.
+Link count
+The st_nlink field is the number of (hard) links to the file. We describe links in
+detail in Chapter 18.
+File type and permissions
+The st_mode field is a bit mask serving the dual purpose of identifying the file type
+and specifying the file permissions. The bits of this field are laid out as shown in
+Figure 15-1.
+Figure 15-1: Layout of st_mode bit mask
+The file type can be extracted from this field by ANDing (&) with the constant
+S_IFMT. (On Linux, 4 bits are used for the file-type component of the st_mode field.
+However, because SUSv3 makes no specification about how the file type is represented, this detail may vary across implementations.) The resulting value can then
+be compared with a range of constants to determine the file type, like so:
+if ((statbuf.st_mode & S_IFMT) == S_IFREG)
+ printf("regular file\n");
+Because this is a common operation, standard macros are provided to simplify the
+above to the following:
+if (S_ISREG(statbuf.st_mode))
+ printf("regular file\n");
+UGT RWX
+User Group Other
+File type Permissions
+RWX RWX
+282 Chapter 15
+The full set of file-type macros (defined in <sys/stat.h>) is shown in Table 15-1. All
+of the file-type macros in Table 15-1 are specified in SUSv3 and appear on Linux.
+Some other UNIX implementations define additional file types (e.g., S_IFDOOR, for
+door files on Solaris). The type S_IFLNK is returned only by calls to lstat(), since calls
+to stat() always follow symbolic links.
+The original POSIX.1 standard did not specify the constants shown in the first
+column of Table 15-1, although most of them appeared on most UNIX implementations. SUSv3 requires these constants.
+In order to obtain the definitions of S_IFSOCK and S_ISSOCK() from <sys/stat.h>,
+we must either define the _BSD_SOURCE feature test macro or define
+_XOPEN_SOURCE with a value greater than or equal to 500. (The rules have varied
+somewhat across glibc versions: in some cases, _XOPEN_SOURCE must be defined
+with a value of 600 or greater.)
+The bottom 12 bits of the st_mode field define the permissions for the file. We
+describe the file permission bits in Section 15.4. For now, we simply note that the 9
+least significant of the permission bits are the read, write, and execute permissions
+for each of the categories owner, group, and other.
+File size, blocks allocated, and optimal I/O block size
+For regular files, the st_size field is the total size of the file in bytes. For a symbolic
+link, this field contains the length (in bytes) of the pathname pointed to by the link.
+For a shared memory object (Chapter 54), this field contains the size of the object.
+The st_blocks field indicates the total number of blocks allocated to the file, in
+512-byte block units. This total includes space allocated for pointer blocks (see Figure 14-2, on page 258). The choice of the 512-byte unit of measurement is historical—this is the smallest block size on any of the file systems that have been
+implemented under UNIX. More modern file systems use larger logical block sizes.
+For example, under ext2, the value in st_blocks is always a multiple of 2, 4, or 8,
+depending on whether the ext2 logical block size is 1024, 2048, or 4096 bytes.
+SUSv3 doesn’t define the units in which st_blocks is measured, allowing the possibility that an implementation uses a unit other than 512 bytes. Most UNIX
+implementations do use 512-byte units, but HP-UX 11 uses file system–specific
+units (e.g., 1024 bytes in some cases).
+Table 15-1: Macros for checking file types in the st_mode field of the stat structure
+Constant Test macro File type
+S_IFREG S_ISREG() Regular file
+S_IFDIR S_ISDIR() Directory
+S_IFCHR S_ISCHR() Character device
+S_IFBLK S_ISBLK() Block device
+S_IFIFO S_ISFIFO() FIFO or pipe
+S_IFSOCK S_ISSOCK() Socket
+S_IFLNK S_ISLNK() Symbolic link
+File Attributes 283
+The st_blocks field records the number of disk blocks actually allocated. If the file contains holes (Section 4.7), this will be smaller than might be expected from the corresponding number of bytes (st_size) in the file. (The disk usage command, du –k file,
+displays the actual space allocated for a file, in kilobytes; that is, a figure calculated
+from the st_blocks value for the file, rather than the st_size value.)
+The st_blksize field is somewhat misleadingly named. It is not the block size of
+the underlying file system, but rather the optimal block size (in bytes) for I/O on
+files on this file system. I/O in blocks smaller than this size is less efficient (refer to
+Section 13.1). A typical value returned in st_blksize is 4096.
+File timestamps
+The st_atime, st_mtime, and st_ctime fields contain, respectively, the times of last file
+access, last file modification, and last status change. These fields are of type time_t,
+the standard UNIX time format of seconds since the Epoch. We say more about
+these fields in Section 15.2.
+Example program
+The program in Listing 15-1 uses stat() to retrieve information about the file named
+on its command line. If the –l command-line option is specified, then the program
+instead uses lstat() so that we can retrieve information about a symbolic link instead
+of the file to which it refers. The program prints all fields of the returned stat structure. (For an explanation of why we cast the st_size and st_blocks fields to long long,
+see Section 5.10.) The filePermStr() function used by this program is shown in Listing 15-4, on page 296.
+Here is an example of the use of the program:
+$ echo 'All operating systems provide services for programs they run' > apue
+$ chmod g+s apue Turn on set-group-ID bit; affects last status change time
+$ cat apue Affects last file access time
+All operating systems provide services for programs they run
+$ ./t_stat apue
+File type: regular file
+Device containing i-node: major=3 minor=11
+I-node number: 234363
+Mode: 102644 (rw-r--r--)
+ special bits set: set-GID
+Number of (hard) links: 1
+Ownership: UID=1000 GID=100
+File size: 61 bytes
+Optimal I/O block size: 4096 bytes
+512B blocks allocated: 8
+Last file access: Mon Jun 8 09:40:07 2011
+Last file modification: Mon Jun 8 09:39:25 2011
+Last status change: Mon Jun 8 09:39:51 2011
+284 Chapter 15
+Listing 15-1: Retrieving and interpreting file stat information
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/t_stat.c
+#define _BSD_SOURCE /* Get major() and minor() from <sys/types.h> */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
+#include "file_perms.h"
+#include "tlpi_hdr.h"
+static void
+displayStatInfo(const struct stat *sb)
+{
+ printf("File type: ");
+switch (sb->st_mode & S_IFMT) {
+ case S_IFREG: printf("regular file\n"); break;
+ case S_IFDIR: printf("directory\n"); break;
+ case S_IFCHR: printf("character device\n"); break;
+ case S_IFBLK: printf("block device\n"); break;
+ case S_IFLNK: printf("symbolic (soft) link\n"); break;
+ case S_IFIFO: printf("FIFO or pipe\n"); break;
+ case S_IFSOCK: printf("socket\n"); break;
+ default: printf("unknown file type?\n"); break;
+ }
+ printf("Device containing i-node: major=%ld minor=%ld\n",
+ (long) major(sb->st_dev), (long) minor(sb->st_dev));
+
+printf("I-node number: %ld\n", (long) sb->st_ino);
+ printf("Mode: %lo (%s)\n",
+ (unsigned long) sb->st_mode, filePermStr(sb->st_mode, 0));
+
+if (sb->st_mode & (S_ISUID | S_ISGID | S_ISVTX))
+ printf(" special bits set: %s%s%s\n",
+ (sb->st_mode & S_ISUID) ? "set-UID " : "",
+ (sb->st_mode & S_ISGID) ? "set-GID " : "",
+ (sb->st_mode & S_ISVTX) ? "sticky " : "");
+ printf("Number of (hard) links: %ld\n", (long) sb->st_nlink);
+
+printf("Ownership: UID=%ld GID=%ld\n",
+ (long) sb->st_uid, (long) sb->st_gid);
+ if (S_ISCHR(sb->st_mode) || S_ISBLK(sb->st_mode))
+ printf("Device number (st_rdev): major=%ld; minor=%ld\n",
+ (long) major(sb->st_rdev), (long) minor(sb->st_rdev));
+ printf("File size: %lld bytes\n", (long long) sb->st_size);
+ printf("Optimal I/O block size: %ld bytes\n", (long) sb->st_blksize);
+ printf("512B blocks allocated: %lld\n", (long long) sb->st_blocks);
+File Attributes 285
+ printf("Last file access: %s", ctime(&sb->st_atime));
+ printf("Last file modification: %s", ctime(&sb->st_mtime));
+ printf("Last status change: %s", ctime(&sb->st_ctime));
+}
+int
+main(int argc, char *argv[])
+{
+ struct stat sb;
+ Boolean statLink; /* True if "-l" specified (i.e., use lstat) */
+ int fname; /* Location of filename argument in argv[] */
+ statLink = (argc > 1) && strcmp(argv[1], "-l") == 0;
+ /* Simple parsing for "-l" */
+ fname = statLink ? 2 : 1;
+ if (fname >= argc || (argc > 1 && strcmp(argv[1], "--help") == 0))
+ usageErr("%s [-l] file\n"
+ " -l = use lstat() instead of stat()\n", argv[0]);
+ if (statLink) {
+ if (lstat(argv[fname], &sb) == -1)
+ errExit("lstat");
+ } else {
+ if (stat(argv[fname], &sb) == -1)
+ errExit("stat");
+ }
+ displayStatInfo(&sb);
+ exit(EXIT_SUCCESS);
+}
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/t_stat.c
+15.2 File Timestamps
+The st_atime, st_mtime, and st_ctime fields of the stat structure contain file timestamps.
+These fields record, respectively, the times of last file access, last file modification,
+and last file status change (i.e., last change to the file’s i-node information). Timestamps are recorded in seconds since the Epoch (1 January 1970; see Section 10.1).
+Most native Linux and UNIX file systems support all of the timestamp fields,
+but some non-UNIX file systems may not.
+Table 15-2 summarizes which of the timestamp fields (and in some cases, the
+analogous fields in the parent directory) are changed by various system calls and
+library functions described in this book. In the headings of this table, a, m, and c
+represent the st_atime, st_mtime, and st_ctime fields, respectively. In most cases, the
+relevant timestamp is set to the current time by the system call. The exceptions are
+utime() and similar calls (discussed in Sections 15.2.1 and 15.2.2), which can be used
+to explicitly set the last file access and modification times to arbitrary values.
+286 Chapter 15
+In Sections 14.8.1 and 15.5, we describe mount(2) options and per-file flags that prevent updates to the last access time of a file. The open() O_NOATIME flag described in
+Section 4.3.1 also serves a similar purpose. In some applications, this can be useful
+for performance reasons, since it reduces the number of disk operations that are
+required when a file is accessed.
+Although most UNIX systems don’t record the creation time of a file, on
+recent BSD systems, this time is recorded in a stat field named st_birthtime.
+Table 15-2: Effect of various functions on file timestamps
+Function
+File or
+directory
+Parent
+directory Notes
+a mc a mc
+chmod() • Same for fchmod()
+chown() • Same for lchown() and fchown()
+exec() •
+link() • •• Affects parent directory of second argument
+mkdir() ••• ••
+mkfifo() ••• ••
+mknod() ••• ••
+mmap() • • • st_mtime and st_ctime are changed only on updates
+to MAP_SHARED mapping
+msync() • • Changed only if file is modified
+open(), creat() ••• •• When creating new file
+open(), creat() • • When truncating existing file
+pipe() •••
+read() • Same for readv(), pread(), and preadv()
+readdir() • readdir() may buffer directory entries; timestamps
+updated only if directory is read
+removexattr() • Same for fremovexattr() and lremovexattr()
+rename() • • • Affects timestamps in both parent directories;
+SUSv3 doesn’t specify file st_ctime change, but
+notes that some implementations do this
+rmdir() • • Same for remove(directory)
+sendfile() • Timestamp changed for input file
+setxattr() • Same for fsetxattr() and lsetxattr()
+symlink() ••• •• Sets timestamps of link (not target file)
+truncate() • • Same for ftruncate(); timestamps change only if
+file size changes
+unlink() • •• Same for remove(file); file st_ctime changes if
+previous link count was > 1
+utime() ••• Same for utimes(), futimes(), futimens(), lutimes(),
+and utimensat()
+write() • • Same for writev(), pwrite(), and pwritev()
+File Attributes 287
+Nanosecond timestamps
+With version 2.6, Linux supports nanosecond resolution for the three timestamp
+fields of the stat structure. Nanosecond resolution improves the accuracy of programs
+that need to make decisions based on the relative order of file timestamps (e.g.,
+make(1)).
+SUSv3 doesn’t specify nanosecond timestamps for the stat structure, but SUSv4
+adds this specification.
+Not all file systems support nanosecond timestamps. JFS, XFS, ext4, and Btrfs
+do, but ext2, ext3, and Reiserfs do not.
+Under the glibc API (since version 2.3), the timestamp fields are each defined
+as a timespec structure (we describe this structure when we discuss utimensat() later
+in this section), which represents a time in seconds and nanoseconds components.
+Suitable macro definitions make the seconds component of these structures visible
+using the traditional field names (st_atime, st_mtime, and st_ctime). The nanosecond
+components can be accessed using field names such st_atim.tv_nsec, for the nanosecond component of the last file access time.
+15.2.1 Changing File Timestamps with utime() and utimes()
+The last file access and modification timestamps stored in a file i-node can be
+explicitly changed using utime() or one of a related set of system calls. Programs
+such as tar(1) and unzip(1) use these system calls to reset file timestamps when
+unpacking an archive.
+The pathname argument identifies the file whose times we wish to modify. If
+pathname is a symbolic link, it is dereferenced. The buf argument can be either NULL
+or a pointer to a utimbuf structure:
+struct utimbuf {
+ time_t actime; /* Access time */
+ time_t modtime; /* Modification time */
+};
+The fields in this structure measure time in seconds since the Epoch (Section 10.1).
+Two different cases determine how utime() works:
+z If buf is specified as NULL, then both the last access and the last modification
+times are set to the current time. In this case, either the effective user ID of the
+process must match the file’s user ID (owner), the process must have write permission on the file (logical, since a process with write permission on a file could
+employ other system calls that would have the side effect of changing these file
+timestamps), or the process must be privileged (CAP_FOWNER or CAP_DAC_OVERRIDE).
+#include <utime.h>
+int utime(const char *pathname, const struct utimbuf *buf);
+Returns 0 on success, or –1 on error
+288 Chapter 15
+(To be accurate, on Linux, it is the process’s file-system user ID, rather than
+its effective user ID, that is checked against the file’s user ID, as described in
+Section 9.5.)
+z If buf is specified as pointer to a utimbuf structure, then the last file access and
+modification times are updated using the corresponding fields of this structure. In this case, the effective user ID of the process must match the file’s user
+ID (having write permission on the file is not sufficient) or the caller must be
+privileged (CAP_FOWNER).
+To change just one of the file timestamps, we first use stat() to retrieve both times,
+use one of these times to initialize the utimbuf structure, and then set the other as
+desired. This is demonstrated in the following code, which makes the last modification time of a file the same as the last access time:
+struct stat sb;
+struct utimbuf utb;
+if (stat(pathname, &sb) == -1)
+ errExit("stat");
+utb.actime = sb.st_atime; /* Leave access time unchanged */
+utb.modtime = sb.st_atime;
+if (utime(pathname, &utb) == -1)
+ errExit("utime");
+A successful call to utime() always sets the last status change time to the current
+time.
+Linux also provides the BSD-derived utimes() system call, which performs a similar task to utime().
+The most notable difference between utime() and utimes() is that utimes() allows
+time values to be specified with microsecond accuracy (the timeval structure is
+described in Section 10.1). This provides (partial) access to the nanosecond accuracy with which file timestamps are provided in Linux 2.6. The new file access time
+is specified in tv[0], and the new modification time is specified in tv[1].
+An example of the use of utimes() is provided in the file files/t_utimes.c in the
+source code distribution for this book.
+The futimes() and lutimes() library functions perform a similar task to utimes(). They
+differ from utimes() in the argument used to specify the file whose timestamps are
+to be changed.
+#include <sys/time.h>
+int utimes(const char *pathname, const struct timeval tv[2]);
+Returns 0 on success, or –1 on error
+File Attributes 289
+With futimes(), the file is specified via an open file descriptor, fd.
+With lutimes(), the file is specified via a pathname, with the difference from
+utimes() that if the pathname refers to a symbolic link, then the link is not dereferenced; instead, the timestamps of the link itself are changed.
+The futimes() function is supported since glibc 2.3. The lutimes() function is
+supported since glibc 2.6.
+15.2.2 Changing File Timestamps with utimensat() and futimens()
+The utimensat() system call (supported since kernel 2.6.22) and the futimens() library
+function (supported since glibc 2.6) provide extended functionality for setting a
+file’s last access and last modification timestamps. Among the advantages of these
+interfaces are the following:
+z We can set timestamps with nanosecond precision. This improves on the
+microsecond precision provided by utimes().
+z It is possible to set the timestamps independently (i.e., one at a time). As shown
+earlier, to change just one of the timestamps using the older interfaces, we
+must first call stat() to retrieve the value of the other timestamp, and then specify the retrieved value along with the timestamp whose value we want to
+change. (This could lead to a race condition if another process performed an
+operation that updated the timestamp between these two steps.)
+z We can independently set either of the timestamps to the current time. To
+change just one timestamp to the current time with the older interfaces, we
+need to employ a call to stat() to retrieve the setting of the timestamp whose
+value we wish to leave unchanged, and a call to gettimeofday() to obtain the current time.
+These interfaces are not specified in SUSv3, but are included in SUSv4.
+The utimensat() system call updates the timestamps of the file specified by
+pathname to the values specified in the array times.
+#include <sys/time.h>
+int futimes(int fd, const struct timeval tv[2]);
+int lutimes(const char *pathname, const struct timeval tv[2]);
+Both return 0 on success, or –1 on error
+#define _XOPEN_SOURCE 700 /* Or define _POSIX_C_SOURCE >= 200809 */
+#include <sys/stat.h>
+int utimensat(int dirfd, const char *pathname,
+ const struct timespec times[2], int flags);
+Returns 0 on success, or –1 on error
+290 Chapter 15
+If times is specified as NULL, then both file timestamps are updated to the current
+time. If times is not NULL, then the new last access timestamp is specified in times[0]
+and the new last modification timestamp is specified in times[1]. Each of the elements of the array times is a structure of the following form:
+struct timespec {
+ time_t tv_sec; /* Seconds ('time_t' is an integer type) */
+ long tv_nsec; /* Nanoseconds */
+};
+The fields in this structure specify a time in seconds and nanoseconds since the
+Epoch (Section 10.1).
+To set one of the timestamps to the current time, we specify the special value
+UTIME_NOW in the corresponding tv_nsec field. To leave one of the timestamps
+unchanged, we specify the special value UTIME_OMIT in the corresponding tv_nsec
+field. In both cases, the value in the corresponding tv_sec field is ignored.
+The dirfd argument can either specify AT_FDCWD, in which case the pathname argument is interpreted as for utimes(), or it can specify a file descriptor referring to a
+directory. The purpose of the latter choice is described in Section 18.11.
+The flags argument can be either 0, or AT_SYMLINK_NOFOLLOW, meaning that
+pathname should not be dereferenced if it is a symbolic link (i.e., the timestamps of
+the symbolic link itself should be changed). By contrast, utimes() always dereferences symbolic links.
+The following code segment sets the last access time to the current time and
+leaves the last modification time unchanged:
+struct timespec times[2];
+times[0].tv_sec = 0;
+times[0].tv_nsec = UTIME_NOW;
+times[1].tv_sec = 0;
+times[1].tv_nsec = UTIME_OMIT;
+if (utimensat(AT_FDCWD, "myfile", times, 0) == -1)
+ errExit("utimensat");
+The permission rules for changing timestamps with utimensat() (and futimens()) are
+similar to those for the older APIs, and are detailed in the utimensat(2) manual
+page.
+The futimens() library function updates the timestamps of the file referred to by
+the open file descriptor fd.
+The times argument of futimens() is used in the same way as for utimensat().
+#include _GNU_SOURCE
+#include <sys/stat.h>
+int futimens(int fd, const struct timespec times[2]);
+Returns 0 on success, or –1 on error
+File Attributes 291
+
+
+
+<h3>File Ownership</h3>
+
+<!-- 
+- Each file has an associated user ID (UID) and group ID (GID) which determines which user and group the file belongs to.
+- When a new file is created, its user ID is taken from the effective user ID of the process.
+- The group ID of the new file may be taken from either the effective group ID of the process or the group ID of the parent directory.
+- Which of the two values is determined by various factors, including the type of file system on which the new file is created.
+- When an ext2 file system is mounted, either the –o grpid option or the –o nogrpid option may be specified.
+- If –o grpid is specified, then a new file always inherits its group ID from the parent directory. If –o nogrpid is specified, then, by default, a new file takes its group ID from the process’s effective group ID.
+- However, if the set-groupID bit is enabled for the directory (via chmod g+s), then the group ID of the file is inherited from the parent directory.
+- When the set-group-ID bit is set on a directory then it is also set on new subdirectories created within that directory. In this manner, the set-group-ID behavior described in the main text is propagated down through an entire directory tree.
+-->
+
+
+<h3>Changing File ownership</h3>
+
+
+
+
+
+- The chown(), lchown(), and fchown() system calls change the owner (user ID) and group (group ID) of a file.
+- The distinction between these three system calls is similar to the stat() family of system calls.
+- The owner argument specifies the new user ID for the file and the group argument specifies the new group ID for the file. We can specify –1 for the other argument to leave that ID unchanged.
+- Only a privileged (CAP_CHOWN) process may use chown() to change the user ID of a file.
+- An unprivileged process can use chown() to change the group ID of a file that it owns to any of the groups of which they are a member. A privileged process can change the group ID of a file to any value.
+
+
+#include <unistd.h>
+int chown(const char *pathname, uid_t owner, gid_t group);
+#define _XOPEN_SOURCE 500 /* Or: #define _BSD_SOURCE */
+#include <unistd.h>
+int lchown(const char *pathname, uid_t owner, gid_t group);
+int fchown(int fd, uid_t owner, gid_t group);
+All return 0 on success, or –1 on error
+When changing the owner or group of a file, the set-group-ID permission bit is not
+turned off if the group-execute permission bit is already off or if we are changing
+the ownership of a directory. In both of these cases, the set-group-ID bit is being
+used for a purpose other than the creation of a set-group-ID program, and therefore it is undesirable to turn the bit off. These other uses of the set-group-ID bit are
+as follows:
+z If the group-execute permission bit is off, then the set-group-ID permission bit
+is being used to enable mandatory file locking (discussed in Section 55.4).
+z In the case of a directory, the set-group-ID bit is being used to control the ownership of new files created in the directory (Section 15.3.1).
+The use of chown() is demonstrated in Listing 15-2, a program that allows the user to
+change the owner and group of an arbitrary number of files, specified as commandline arguments. (This program uses the userIdFromName() and groupIdFromName()
+functions from Listing 8-1, on page 159, to convert user and group names into corresponding numeric IDs.)
+Listing 15-2: Changing the owner and group of a file
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/t_chown.c
+#include <pwd.h>
+#include <grp.h>
+#include "ugid_functions.h" /* Declarations of userIdFromName()
+ and groupIdFromName() */
+#include "tlpi_hdr.h"
+int
+main(int argc, char *argv[])
+{
+ uid_t uid;
+ gid_t gid;
+ int j;
+ Boolean errFnd;
+ if (argc < 3 || strcmp(argv[1], "--help") == 0)
+ usageErr("%s owner group [file...]\n"
+ " owner or group can be '-', "
+ "meaning leave unchanged\n", argv[0]);
+ if (strcmp(argv[1], "-") == 0) { /* "-" ==> don't change owner */
+ uid = -1;
+ } else { /* Turn user name into UID */
+ uid = userIdFromName(argv[1]);
+ if (uid == -1)
+ fatal("No such user (%s)", argv[1]);
+ }
+ if (strcmp(argv[2], "-") == 0) { /* "-" ==> don't change group */
+ gid = -1;
+294 Chapter 15
+ } else { /* Turn group name into GID */
+ gid = groupIdFromName(argv[2]);
+ if (gid == -1)
+ fatal("No group user (%s)", argv[1]);
+ }
+ /* Change ownership of all files named in remaining arguments */
+ errFnd = FALSE;
+ for (j = 3; j < argc; j++) {
+ if (chown(argv[j], uid, gid) == -1) {
+ errMsg("chown: %s", argv[j]);
+ errFnd = TRUE;
+ }
+ }
+ exit(errFnd ? EXIT_FAILURE : EXIT_SUCCESS);
+}
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/t_chown.c
+
+
+<h3>File Permissions</h3>
+
+In this section, we describe the permission scheme applied to files and directories.
+
+15.4.1 Permissions on Regular Files
+As noted in Section 15.1, the bottom 12 bits of the st_mode field of the stat structure
+define the permissions for a file. The first 3 of these bits are special bits known as
+the set-user-ID, set-group-ID, and sticky bits (labeled U, G, and T, respectively, in
+Figure 15-1). We say more about these bits in Section 15.4.5. The remaining 9 bits
+form the mask defining the permissions that are granted to various categories of users
+accessing the file. The file permissions mask divides the world into three categories:
+z Owner (also known as user): The permissions granted to the owner of the file.
+The term user is used by commands such as chmod(1), which uses the abbreviation u to refer to this permission category.
+z Group: The permissions granted to users who are members of the file’s group.
+z Other: The permissions granted to everyone else.
+Three permissions may be granted to each user category:
+z Read: The contents of the file may be read.
+z Write: The contents of the file may be changed.
+File Attributes 295
+z Execute: The file may be executed (i.e., it is a program or a script). In order to
+execute a script file (e.g., a bash script), both read and execute permissions are
+required.
+The permissions and ownership of a file can be viewed using the command ls –l, as
+in the following example:
+$ ls -l myscript.sh
+-rwxr-x--- 1 mtk users 1667 Jan 15 09:22 myscript.sh
+In the above example, the file permissions are displayed as rwxr-x--- (the initial
+hyphen preceding this string indicates the type of this file: a regular file). To interpret this string, we break these 9 characters into sets of 3 characters, which respectively indicate whether read, write, and execute permission are enabled. The first
+set indicates the permissions for owner, which has read, write, and execute permissions enabled. The next set indicates the permissions for group, which has read
+and execute enabled, but not write. The final set are the permissions for other,
+which doesn’t have any permissions enabled.
+The <sys/stat.h> header file defines constants that can be ANDed (&) with
+st_mode of the stat structure, in order to check whether particular permission bits
+are set. (These constants are also defined via the inclusion of <fcntl.h>, which prototypes the open() system call.) These constants are shown in Table 15-4.
+In addition to the constants shown in Table 15-4, three constants are defined to
+equate to masks for all three permissions for each of the categories owner, group,
+and other: S_IRWXU (0700), S_IRWXG (070), and S_IRWXO (07).
+The header file in Listing 15-3 declares a function, filePermStr(), which, given a
+file permissions mask, returns a statically allocated string representation of that
+mask in the same style as is used by ls(1).
+Table 15-4: Constants for file permission bits
+Constant Octal value Permission bit
+S_ISUID 04000 Set-user-ID
+S_ISGID 02000 Set-group-ID
+S_ISVTX 01000 Sticky
+S_IRUSR 0400 User-read
+S_IWUSR 0200 User-write
+S_IXUSR 0100 User-execute
+S_IRGRP 040 Group-read
+S_IWGRP 020 Group-write
+S_IXGRP 010 Group-execute
+S_IROTH 04 Other-read
+S_IWOTH 02 Other-write
+S_IXOTH 01 Other-execute
+296 Chapter 15
+Listing 15-3: Header file for file_perms.c
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/file_perms.h
+#ifndef FILE_PERMS_H
+#define FILE_PERMS_H
+#include <sys/types.h>
+#define FP_SPECIAL 1 /* Include set-user-ID, set-group-ID, and sticky
+ bit information in returned string */
+char *filePermStr(mode_t perm, int flags);
+#endif
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/file_perms.h
+If the FP_SPECIAL flag is set in the filePermStr() flags argument, then the returned
+string includes the settings of the set-user-ID, set-group-ID, and sticky bits, again in
+the style of ls(1).
+The implementation of the filePermStr() function is shown in Listing 15-4. We
+employ this function in the program in Listing 15-1.
+Listing 15-4: Convert file permissions mask to string
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/file_perms.c
+#include <sys/stat.h>
+#include <stdio.h>
+#include "file_perms.h" /* Interface for this implementation */
+#define STR_SIZE sizeof("rwxrwxrwx")
+char * /* Return ls(1)-style string for file permissions mask */
+filePermStr(mode_t perm, int flags)
+{
+ static char str[STR_SIZE];
+ snprintf(str, STR_SIZE, "%c%c%c%c%c%c%c%c%c",
+ (perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
+ (perm & S_IXUSR) ?
+ (((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
+ (((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 'S' : '-'),
+ (perm & S_IRGRP) ? 'r' : '-', (perm & S_IWGRP) ? 'w' : '-',
+ (perm & S_IXGRP) ?
+ (((perm & S_ISGID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
+ (((perm & S_ISGID) && (flags & FP_SPECIAL)) ? 'S' : '-'),
+ (perm & S_IROTH) ? 'r' : '-', (perm & S_IWOTH) ? 'w' : '-',
+ (perm & S_IXOTH) ?
+ (((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 't' : 'x') :
+ (((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 'T' : '-'));
+ return str;
+}
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/file_perms.c
+File Attributes 297
+15.4.2 Permissions on Directories
+Directories have the same permission scheme as files. However, the three permissions are interpreted differently:
+z Read: The contents (i.e., the list of filenames) of the directory may be listed
+(e.g., by ls).
+If experimenting to verify the operation of the directory read permission bit,
+be aware that some Linux distributions alias the ls command to include flags
+(e.g., –F) that require access to i-node information for files in the directory,
+and this requires execute permission on the directory. To ensure that we are
+using an unadulterated ls, we can specify the full pathname of the command
+(/bin/ls).
+z Write: Files may be created in and removed from the directory. Note that it is
+not necessary to have any permission on a file itself in order to be able to
+delete it.
+z Execute: Files within the directory may be accessed. Execute permission on a
+directory is sometimes called search permission.
+When accessing a file, execute permission is required on all of the directories listed
+in the pathname. For example, reading the file /home/mtk/x would require execute
+permission on /, /home, and /home/mtk (as well as read permission on the file x itself).
+If the current working directory is /home/mtk/sub1 and we access the relative pathname ../sub2/x, then we need execute permission on /home/mtk and /home/mtk/sub2
+(but not on / or /home).
+Read permission on a directory only lets us view the list of filenames in the
+directory. We must have execute permission on the directory in order to access the
+contents or the i-node information of files in the directory.
+Conversely, if we have execute permission on a directory, but not read permission,
+then we can access a file in the directory if we know its name, but we can’t list the
+contents of (i.e., the other filenames in) the directory. This is a simple and frequently used technique to control access to the contents of a public directory.
+To add or remove files in a directory, we need both execute and write permissions on the directory.
+15.4.3 Permission-Checking Algorithm
+The kernel checks file permissions whenever we specify a pathname in a system
+call that accesses a file or directory. When the pathname given to the system call
+includes a directory prefix, then, in addition to checking for the required permissions on the file itself, the kernel also checks for execute permission on each of the
+directories in this prefix. Permission checks are made using the process’s effective
+user ID, effective group ID, and supplementary group IDs. (To be strictly accurate,
+for file permission checks on Linux, the file-system user and group IDs are used
+instead of the corresponding effective IDs, as described in Section 9.5.)
+Once a file has been opened with open(), no permission checking is performed
+by subsequent system calls that work with the returned file descriptor (such as
+read(), write(), fstat(), fcntl(), and mmap()).
+298 Chapter 15
+The rules applied by the kernel when checking permissions are as follows:
+1. If the process is privileged, all access is granted.
+2. If the effective user ID of the process is the same as the user ID (owner) of the
+file, then access is granted according to the owner permissions on the file. For
+example, read access is granted if the owner-read permission bit is turned on in
+the file permissions mask; otherwise, read access is denied.
+3. If the effective group ID of the process or any of the process supplementary
+group IDs matches the group ID (group owner) of the file, then access is
+granted according to the group permissions on the file.
+4. Otherwise, access is granted according to the other permissions on the file.
+In the kernel code, the above tests are actually constructed so that the test to
+see whether a process is privileged is performed only if the process is not
+granted the permissions it needs via one of the other tests. This is done to
+avoid unnecessarily setting the ASU process accounting flag, which indicates
+that the process made use of superuser privileges (Section 28.1).
+The checks against owner, group, and other permissions are done in order, and
+checking stops as soon as the applicable rule is found. This can have an unexpected
+consequence: if, for example, the permissions for group exceed those of owner,
+then the owner will actually have fewer permissions on the file than members of
+the file’s group, as illustrated by the following example:
+$ echo 'Hello world' > a.txt
+$ ls -l a.txt
+-rw-r--r-- 1 mtk users 12 Jun 18 12:26 a.txt
+$ chmod u-rw a.txt Remove read and write permission from owner
+$ ls -l a.txt
+----r--r-- 1 mtk users 12 Jun 18 12:26 a.txt
+$ cat a.txt
+cat: a.txt: Permission denied Owner can no longer read file
+$ su avr Become someone else…
+Password:
+$ groups who is in the group owning the file…
+users staff teach cs
+$ cat a.txt and thus can read the file
+Hello world
+Similar remarks apply if other grants more permissions than owner or group.
+Since file permissions and ownership information are maintained within a file
+i-node, all filenames (links) that refer to the same i-node share this information.
+Linux 2.6 provides access control lists (ACLs), which make it possible to define
+file permissions on a per-user and per-group basis. If a file has an ACL, then a modified version of the above algorithm is used. We describe ACLs in Chapter 17.
+Permission checking for privileged processes
+Above, we said that if a process is privileged, all access is granted when checking
+permissions. We need to add one proviso to this statement. For a file that is not a
+directory, Linux grants execute permission to a privileged process only if that permission is granted to at least one of the permission categories for the file. On some
+File Attributes 299
+other UNIX implementations, a privileged process can execute a file even when no
+permission category grants execute permission. When accessing a directory, a
+privileged process is always granted execute (search) permission.
+We can rephrase our description of a privileged process in terms of two
+Linux process capabilities: CAP_DAC_READ_SEARCH and CAP_DAC_OVERRIDE (Section
+39.2). A process with the CAP_DAC_READ_SEARCH capability always has read permission for any type of file, and always has read and execute permissions for a
+directory (i.e., can always access files in a directory and read the list of files in a
+directory). A process with the CAP_DAC_OVERRIDE capability always has read and
+write permissions for any type of file, and also has execute permission if the
+file is a directory or if execute permission is granted to at least one of the permission categories for the file.
+15.4.4 Checking File Accessibility: access()
+As noted in Section 15.4.3, the effective user and group IDs, as well as supplementary group IDs, are used to determine the permissions a process has when accessing a file. It is also possible for a program (e.g., a set-user-ID or set-group-ID
+program) to check file accessibility based on the real user and group IDs of the process.
+The access() system call checks the accessibility of the file specified in pathname
+based on a process’s real user and group IDs (and supplementary group IDs).
+If pathname is a symbolic link, access() dereferences it.
+The mode argument is a bit mask consisting of one or more of the constants
+shown in Table 15-5, ORed (|) together. If all of the permissions specified in mode
+are granted on pathname, then access() returns 0; if at least one of the requested permissions is not available (or an error occurred), then access() returns –1.
+The time gap between a call to access() and a subsequent operation on a file means
+that there is no guarantee that the information returned by access() will still be true
+at the time of the later operation (no matter how brief the interval). This situation
+could lead to security holes in some application designs.
+Suppose, for example, that we have a set-user-ID-root program that uses access()
+to check that a file is accessible to the real user ID of the program, and, if so, performs an operation on the file (e.g., open() or exec()).
+#include <unistd.h>
+int access(const char *pathname, int mode);
+Returns 0 if all permissions are granted, otherwise –1
+Table 15-5: mode constants for access()
+Constant Description
+F_OK Does the file exist?
+R_OK Can the file be read?
+W_OK Can the file be written?
+X_OK Can the file be executed?
+300 Chapter 15
+The problem is that if the pathname given to access() is a symbolic link, and a
+malicious user manages to change the link so that it refers to a different file before
+the second step, then the set-user-ID-root may end up operating on a file for which the
+real user ID does not have permission. (This is an example of the type of time-ofcheck, time-of-use race condition described in Section 38.6.) For this reason, recommended practice is to avoid the use of access() altogether (see, for example,
+[Borisov, 2005]). In the example just given, we can achieve this by temporarily
+changing the effective (or file system) user ID of the set-user-ID process, attempting
+the desired operation (e.g., open() or exec()), and then checking the return value and
+errno to determine whether the operation failed because of a permissions problem.
+The GNU C library provides an analogous, nonstandard function, euidaccess()
+(or synonymously, eaccess()), that checks file access permissions using the effective user ID of the process.
+15.4.5 Set-User-ID, Set-Group-ID, and Sticky Bits
+As well as the 9 bits used for owner, group, and other permissions, the file permissions mask contains 3 additional bits, known as the set-user-ID (bit 04000), set-groupID (bit 02000), and sticky (bit 01000) bits. We have already discussed the use of the
+set-user-ID and set-group-ID permission bits for creating privileged programs in
+Section 9.3. The set-group-ID bit also serves two other purposes that we describe
+elsewhere: controlling the group ownership of new files created in a directory
+mounted with the nogrpid option (Section 15.3.1), and enabling mandatory locking
+on a file (Section 55.4). In the remainder of this section, we limit our discussion to
+the use of the sticky bit.
+On older UNIX implementations, the sticky bit was provided as a way of making commonly used programs run faster. If the sticky bit was set on a program file,
+then the first time the program was executed, a copy of the program text was saved
+in the swap area—thus it sticks in swap, and loads faster on subsequent executions.
+Modern UNIX implementations have more sophisticated memory-management
+systems, which have rendered this use of the sticky permission bit obsolete.
+The name of the constant for the sticky permission bit shown in Table 15-4,
+S_ISVTX, derives from an alternative name for the sticky bit: the saved-text bit.
+In modern UNIX implementations (including Linux), the sticky permission bit
+serves another, quite different purpose. For directories, the sticky bit acts as the
+restricted deletion flag. Setting this bit on a directory means that an unprivileged
+process can unlink (unlink(), rmdir()) and rename (rename()) files in the directory
+only if it has write permission on the directory and owns either the file or the directory.
+(A process with the CAP_FOWNER capability can bypass the latter ownership check.)
+This makes it possible to create a directory that is shared by many users, who can
+each create and delete their own files in the directory but can’t delete files owned
+by other users. The sticky permission bit is commonly set on the /tmp directory for
+this reason.
+File Attributes 301
+A file’s sticky permission bit is set via the chmod command (chmod +t file) or via
+the chmod() system call. If the sticky bit for a file is set, ls –l shows a lowercase or
+uppercase letter T in the other-execute permission field, depending on whether the
+other-execute permission bit is on or off, as in the following:
+$ touch tfile
+$ ls -l tfile
+-rw-r--r-- 1 mtk users 0 Jun 23 14:44 tfile
+$ chmod +t tfile
+$ ls -l tfile
+-rw-r--r-T 1 mtk users 0 Jun 23 14:44 tfile
+$ chmod o+x tfile
+$ ls -l tfile
+-rw-r--r-t 1 mtk users 0 Jun 23 14:44 tfile
+15.4.6 The Process File Mode Creation Mask: umask()
+We now consider in more detail the permissions that are placed on a newly created
+file or directory. For new files, the kernel uses the permissions specified in the mode
+argument to open() or creat(). For new directories, permissions are set according to
+the mode argument to mkdir(). However, these settings are modified by the file
+mode creation mask, also known simply as the umask. The umask is a process
+attribute that specifies which permission bits should always be turned off when new
+files or directories are created by the process.
+Often, a process just uses the umask it inherits from its parent shell, with the
+(usually desirable) consequence that the user can control the umask of programs
+executed from the shell using the shell built-in command umask, which changes the
+umask of the shell process.
+The initialization files for most shells set the default umask to the octal value
+022 (----w--w-). This value specifies that write permission should always be turned
+off for group and other. Thus, assuming the mode argument in a call to open() is
+0666 (i.e., read and write permitted for all users, which is typical), then new files are
+created with read and write permissions for owner, and only read permission for
+everyone else (displayed by ls –l as rw-r--r--). Correspondingly, assuming that the
+mode argument to mkdir() is specified as 0777 (i.e., all permissions granted to all
+users), new directories are created with all permissions granted for owner, and just
+read and execute permissions for group and other (i.e., rwxr-xr-x).
+The umask() system call changes a process’s umask to the value specified in mask.
+The mask argument can be specified either as an octal number or by ORing (|)
+together the constants listed in Table 15-4.
+A call to umask() is always successful, and returns the previous umask.
+#include <sys/stat.h>
+mode_t umask(mode_t mask);
+Always successfully returns the previous process umask
+302 Chapter 15
+Listing 15-5 illustrates the use of umask() in conjunction with open() and
+mkdir(). When we run this program, we see the following:
+$ ./t_umask
+Requested file perms: rw-rw---- This is what we asked for
+Process umask: ----wx-wx This is what we are denied
+Actual file perms: rw-r----- So this is what we end up with
+Requested dir. perms: rwxrwxrwx
+Process umask: ----wx-wx
+Actual dir. perms: rwxr--r--
+In Listing 15-5, we employ the mkdir() and rmdir() system calls to create and
+remove a directory, and the unlink() system call to remove a file. We describe
+these system calls in Chapter 18.
+Listing 15-5: Using umask()
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/t_umask.c
+#include <sys/stat.h>
+#include <fcntl.h>
+#include "file_perms.h"
+#include "tlpi_hdr.h"
+#define MYFILE "myfile"
+#define MYDIR "mydir"
+#define FILE_PERMS (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)
+#define DIR_PERMS (S_IRWXU | S_IRWXG | S_IRWXO)
+#define UMASK_SETTING (S_IWGRP | S_IXGRP | S_IWOTH | S_IXOTH)
+int
+main(int argc, char *argv[])
+{
+ int fd;
+ struct stat sb;
+ mode_t u;
+ umask(UMASK_SETTING);
+ fd = open(MYFILE, O_RDWR | O_CREAT | O_EXCL, FILE_PERMS);
+ if (fd == -1)
+ errExit("open-%s", MYFILE);
+ if (mkdir(MYDIR, DIR_PERMS) == -1)
+ errExit("mkdir-%s", MYDIR);
+ u = umask(0); /* Retrieves (and clears) umask value */
+ if (stat(MYFILE, &sb) == -1)
+ errExit("stat-%s", MYFILE);
+ printf("Requested file perms: %s\n", filePermStr(FILE_PERMS, 0));
+ printf("Process umask: %s\n", filePermStr(u, 0));
+ printf("Actual file perms: %s\n\n", filePermStr(sb.st_mode, 0));
+File Attributes 303
+ if (stat(MYDIR, &sb) == -1)
+ errExit("stat-%s", MYDIR);
+ printf("Requested dir. perms: %s\n", filePermStr(DIR_PERMS, 0));
+ printf("Process umask: %s\n", filePermStr(u, 0));
+ printf("Actual dir. perms: %s\n", filePermStr(sb.st_mode, 0));
+ if (unlink(MYFILE) == -1)
+ errMsg("unlink-%s", MYFILE);
+ if (rmdir(MYDIR) == -1)
+ errMsg("rmdir-%s", MYDIR);
+ exit(EXIT_SUCCESS);
+}
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––– files/t_umask.c
+15.4.7 Changing File Permissions: chmod() and fchmod()
+The chmod() and fchmod() system calls change the permissions of a file.
+The chmod() system call changes the permissions of the file named in pathname. If
+this argument is a symbolic link, chmod() changes the permissions of the file to
+which it refers, rather than the permissions of the link itself. (A symbolic link is
+always created with read, write, and execute permissions enabled for all users, and
+these permission can’t be changed. These permissions are ignored when dereferencing the link.)
+The fchmod() system call changes the permissions on the file referred to by the
+open file descriptor fd.
+The mode argument specifies the new permissions of the file, either numerically
+(octal) or as a mask formed by ORing (|) the permission bits listed in Table 15-4. In
+order to change the permissions on a file, either the process must be privileged
+(CAP_FOWNER) or its effective user ID must match the owner (user ID) of the file. (To
+be strictly accurate, on Linux, for an unprivileged process, it is the process’s filesystem user ID, rather than its effective user ID, that must match the user ID of the
+file, as described in Section 9.5.)
+To set the permissions on a file so that only read permission is granted to all
+users, we could use the following call:
+if (chmod("myfile", S_IRUSR | S_IRGRP | S_IROTH) == -1)
+ errExit("chmod");
+/* Or equivalently: chmod("myfile", 0444); */
+#include <sys/stat.h>
+int chmod(const char *pathname, mode_t mode);
+#define _XOPEN_SOURCE 500 /* Or: #define _BSD_SOURCE */
+#include <sys/stat.h>
+int fchmod(int fd, mode_t mode);
+Both return 0 on success, or –1 on error
+304 Chapter 15
+In order to modify selected bits of the file permissions, we first retrieve the existing
+permissions using stat(), tweak the bits we want to change, and then use chmod() to
+update the permissions:
+struct stat sb;
+mode_t mode;
+if (stat("myfile", &sb) == -1)
+ errExit("stat");
+mode = (sb.st_mode | S_IWUSR) & ~S_IROTH;
+ /* owner-write on, other-read off, remaining bits unchanged */
+if (chmod("myfile", mode) == -1)
+ errExit("chmod");
+The above is equivalent to the following shell command:
+$ chmod u+w,o-r myfile
+In Section 15.3.1, we noted that if a directory resides on an ext2 system mounted
+with the –o bsdgroups option, or on one mounted with the –o sysvgroups option and
+the set-group-ID permission bit is turned on for the directory, then a newly created
+file in the directory takes its ownership from the parent directory, not the effective
+group ID of the creating process. It may be the case that the group ID of such a file
+doesn’t match any of the group IDs of the creating process. For this reason, when
+an unprivileged process (one that doesn’t have the CAP_FSETID capability) calls
+chmod() (or fchmod()) on a file whose group ID is not equal to the effective group ID
+or any of the supplementary group IDs of the process, the kernel always clears the
+set-group-ID permission bit. This is a security measure designed to prevent a user
+from creating a set-group-ID program for a group of which they are not a member.
+The following shell commands show the attempted exploit that this measure prevents:
+$ mount | grep test Hmmm, /test is mounted with –o bsdgroups
+/dev/sda9 on /test type ext3 (rw,bsdgroups)
+$ ls -ld /test Directory has GID root, writable by anyone
+drwxrwxrwx 3 root root 4096 Jun 30 20:11 /test
+$ id I’m an ordinary user, not part of root group
+uid=1000(mtk) gid=100(users) groups=100(users),101(staff),104(teach)
+$ cd /test
+$ cp ~/myprog . Copy some mischievous program here
+$ ls -l myprog Hey! It’s in the root group!
+-rwxr-xr-x 1 mtk root 19684 Jun 30 20:43 myprog
+$ chmod g+s myprog Can I make it set-group-ID to root?
+$ ls -l myprog Hmm, no…
+-rwxr-xr-x 1 mtk root 19684 Jun 30 20:43 myprog
+15.5 I-node Flags (ext2 Extended File Attributes)
+Some Linux file systems allow various i-node flags to be set on files and directories.
+This feature is a nonstandard Linux extension.
+The modern BSDs provide a similar feature to i-node flags in the form of file
+flags set using chflags(1) and chflags(2).
+File Attributes 305
+The first Linux file system to support i-node flags was ext2, and these flags are sometimes referred to as ext2 extended file attributes. Subsequently, support for i-node flags
+has been added on other file systems, including Btrfs, ext3, ext4, Reiserfs (since
+Linux 2.4.19), XFS (since Linux 2.4.25 and 2.6), and JFS (since Linux 2.6.17).
+The range of i-node flags supported varies somewhat across file systems. In
+order to use i-node flags on a Reiserfs file system, we must use the mount –o attrs
+option when mounting the file system.
+From the shell, i-node flags can be set and viewed using the chattr and lsattr commands, as shown in the following example:
+$ lsattr myfile
+-------- myfile
+$ chattr +ai myfile Turn on Append Only and Immutable flags
+$ lsattr myfile
+----ia-- myfile
+Within a program, i-node flags can be retrieved and modified using the ioctl() system
+call, as detailed shortly.
+I-node flags can be set on both regular files and directories. Most i-node flags
+are intended for use with regular files, although some of them also (or only) have
+meaning for directories. Table 15-6 summarizes the range of available i-node flags,
+showing the corresponding flag name (defined in <linux/fs.h>) that is used from
+programs in ioctl() calls, and the option letter that is used with the chattr command.
+Before Linux 2.6.19, the FS_* constants shown in Table 15-6 were not defined
+in <linux/fs.h>. Instead, there was a set of file system–specific header files that
+defined file system–specific constant names, all with the same value. Thus, ext2
+had EXT2_APPEND_FL, defined in <linux/ext2_fs.h>; Reiserfs had REISERFS_APPEND_FL,
+defined with the same value in <linux/reiser_fs.h>; and so on. Since each of
+the header files defines the corresponding constants with the same value, on
+older systems that don’t provide the definitions in <linux/fs.h>, it is possible to
+include any of the header files and use the file system–specific names.
+Table 15-6: I-node flags
+Constant chattr
+option
+Purpose
+FS_APPEND_FL a Append only (privilege required)
+FS_COMPR_FL c Enable file compression (not implemented)
+FS_DIRSYNC_FL D Synchronous directory updates (since Linux 2.6)
+FS_IMMUTABLE_FL i Immutable (privilege required)
+FS_JOURNAL_DATA_FL j Enable data journaling (privilege required)
+FS_NOATIME_FL A Don’t update file last access time
+FS_NODUMP_FL d No dump
+FS_NOTAIL_FL t No tail packing
+FS_SECRM_FL s Secure deletion (not implemented)
+FS_SYNC_FL S Synchronous file (and directory) updates
+FS_TOPDIR_FL T Treat as top-level directory for Orlov (since Linux 2.6)
+FS_UNRM_FL u File can be undeleted (not implemented)
+306 Chapter 15
+The various FL_* flags and their meanings are as follows:
+FS_APPEND_FL
+The file can be opened for writing only if the O_APPEND flag is specified (thus
+forcing all file updates to append to the end of the file). This flag could be
+used for a log file, for example. Only privileged (CAP_LINUX_IMMUTABLE) processes can set this flag.
+FS_COMPR_FL
+Store the file on disk in a compressed format. This feature is not implemented as a standard part of any of the major native Linux file systems.
+(There are packages that implement this feature for ext2 and ext3.) Given
+the low cost of disk storage, the CPU overhead involved in compression
+and decompression, and the fact that compressing a file means that it is no
+longer a simple matter to randomly access the file’s contents (via lseek()),
+file compression is undesirable for many applications.
+FS_DIRSYNC_FL (since Linux 2.6)
+Make directory updates (e.g., open(pathname, O_CREAT), link(), unlink(),
+and mkdir()) synchronous. This is analogous to the synchronous file update
+mechanism described in Section 13.3. As with synchronous file updates,
+there is a performance impact associated with synchronous directory
+updates. This setting can be applied only to directories. (The MS_DIRSYNC
+mount flag described in Section 14.8.1 provides similar functionality, but
+on a per-mount basis.)
+FS_IMMUTABLE_FL
+Make the file immutable. File data can’t be updated (write() and truncate())
+and metadata changes are prevented (e.g., chmod(), chown(), unlink(), link(),
+rename(), rmdir(), utime(), setxattr(), and removexattr()). Only privileged
+(CAP_LINUX_IMMUTABLE) processes can set this flag for a file. When this flag is
+set, even a privileged process can’t change the file contents or metadata.
+FS_JOURNAL_DATA_FL
+Enable journaling of data. This flag is supported only on the ext3 and ext4
+file systems. These file systems provide three levels of journaling: journal,
+ordered, and writeback. All modes journal updates to file metadata, but the
+journal mode additionally journals updates to file data. On a file system
+that is journaling in ordered or writeback mode, a privileged (CAP_SYS_RESOURCE)
+process can enable journaling of data updates on a per-file basis by setting
+this flag. (The mount(8) manual page describes the difference between the
+ordered and writeback modes.)
+FS_NOATIME_FL
+Don’t update the file last access time when the file is accessed. This eliminates the need to update the file’s i-node each time the file is accessed, thus
+improving I/O performance (see the description of the MS_NOATIME flag in
+Section 14.8.1).
+File Attributes 307
+FS_NODUMP_FL
+Don’t include this file in backups made using dump(8). The effect of this
+flag is dependent on the –h option described in the dump(8) manual page.
+FS_NOTAIL_FL
+Disable tail packing. This flag is supported only on the Reiserfs file system.
+It disables the Reiserfs tail-packing feature, which tries to pack small files
+(and the final fragment of larger files) into the same disk block as the file
+metadata. Tail packing can also be disabled for an entire Reiserfs file system
+by mounting it with the mount –notail option.
+FS_SECRM_FL
+Delete the file securely. The intended purpose of this unimplemented feature
+is that, when removed, a file is securely deleted, meaning that it is first
+overwritten to prevent a disk-scanning program from reading or re-creating
+it. (The issue of truly secure deletion is rather complex: it can actually
+require multiple writes on magnetic media to securely erase previously
+recorded data; see [Gutmann, 1996].)
+FS_SYNC_FL
+Make file updates synchronous. When applied to files, this flag causes
+writes to the file to be synchronous (as though the O_SYNC flag was specified
+on all opens of this file). When applied to a directory, this flag has the same
+effect as the synchronous directory updates flag described above.
+FS_TOPDIR_FL (since Linux 2.6)
+This marks a directory for special treatment under the Orlov blockallocation strategy. The Orlov strategy is a BSD-inspired modification of
+the ext2 block-allocation strategy that tries to improve the chances that
+related files (e.g., the files within a single directory) are placed close to each
+other on disk, which can improve disk seek times. For details, see [Corbet,
+2002] and [Kumar, et al. 2008]. FS_TOPDIR_FL has an effect only for ext2 and
+its descendants, ext3 and ext4.
+FS_UNRM_FL
+Allow this file to be recovered (undeleted) if it is deleted. This feature is
+not implemented, since it is possible to implement file-recovery mechanisms outside the kernel.
+Generally, when i-node flags are set on a directory, they are automatically inherited
+by new files and subdirectories created in that directory. There are exceptions to
+this rule:
+z The FS_DIRSYNC_FL (chattr +D) flag, which can be applied only to a directory, is
+inherited only by subdirectories created in that directory.
+z When the FS_IMMUTABLE_FL (chattr +i) flag is applied to a directory, it is not inherited by files and subdirectories created within that directory, since this flag prevents new entries being added to the directory.
+308 Chapter 15
+Within a program, i-node flags can be retrieved and modified using the ioctl()
+FS_IOC_GETFLAGS and FS_IOC_SETFLAGS operations. (These constants are defined in
+<linux/fs.h>.) The following code shows how to enable the FS_NOATIME_FL flag on the
+file referred to by the open file descriptor fd:
+int attr;
+if (ioctl(fd, FS_IOC_GETFLAGS, &attr) == -1) /* Fetch current flags */
+ errExit("ioctl");
+attr |= FS_NOATIME_FL;
+if (ioctl(fd, FS_IOC_SETFLAGS, &attr) == -1) /* Update flags */
+ errExit("ioctl");
+In order to change the i-node flags of a file, either the effective user ID of the process must match the user ID (owner) of the file, or the process must be privileged
+(CAP_FOWNER). (To be strictly accurate, on Linux, for an unprivileged process it is the
+process’s file-system user ID, rather than its effective user ID, that must match the user
+ID of the file, as described in Section 9.5.)
+15.6 Summary
+The stat() system call retrieves information about a file (metadata), most of which is
+drawn from the file i-node. This information includes file ownership, file permissions, and file timestamps.
+A program can update a file’s last access time and last modification time using
+utime(), utimes(), and various similar interfaces.
+Each file has an associated user ID (owner) and group ID, as well as a set of permission bits. For permissions purposes, file users are divided into three categories:
+owner (also known as user), group, and other. Three permissions may be granted to
+each category of user: read, write, and execute. The same scheme is used with directories, although the permission bits have slightly different meanings. The chown() and
+chmod() system calls change the ownership and permissions of a file. The umask()
+system call sets a mask of permission bits that are always turned off when the calling process creates a file.
+Three additional permission bits are used for files and directories. The setuser-ID and set-group-ID permission bits can be applied to program files to create
+programs that cause the executing process to gain privilege by assuming a different
+effective user or group identity (that of the program file). For directories residing
+on file systems mounted using the nogrpid (sysvgroups) option, the set-group-ID permission bit can be used to control whether new files created in the directory inherit
+their group ID from the process’s effective group ID or from the parent directory’s
+group ID. When applied to directories, the sticky permission bit acts as the
+restricted deletion flag.
+I-node flags control the various behaviors of files and directories. Although
+originally defined for ext2, these flags are now supported on several other file systems.
+
+
+
+CHAPTER 16 - EXTENDED ATTRIBUTES
+
+
+Extended attributes (EAs) allow arbitrary metadata,
+in the form of name-value pairs, to be associated with file i-nodes.
+
+EAs require support from the underlying file system. This support is provided
+in Btrfs, ext2, ext3, ext4, JFS, Reiserfs, and XFS.
+Support for EAs is optional for each file system, and is controlled by kernel
+configuration options under the File systems menu. EAs are supported on Reiserfs
+since Linux 2.6.7.
+312 Chapter 16
+EA namespaces
+EAs have names of the form namespace.name. The namespace component serves to
+separate EAs into functionally distinct classes. The name component uniquely identifies an EA within the given namespace.
+Four values are supported for namespace: user, trusted, system, and security. These
+four types of EAs are used as follows:
+z User EAs may be manipulated by unprivileged processes, subject to file permission checks: to retrieve the value of a user EA requires read permission on the
+file; to change the value of a user EA requires write permission. (Lack of the
+required permission results in an EACCES error.) In order to associate user EAs
+with a file on ext2, ext3, ext4, or Reiserfs file systems, the underlying file system
+must be mounted with the user_xattr option:
+$ mount -o user_xattr device directory
+z Trusted EAs are like user EAs in that they can be manipulated by user processes.
+The difference is that a process must be privileged (CAP_SYS_ADMIN) in order to
+manipulate trusted EAs.
+z System EAs are used by the kernel to associate system objects with a file. Currently,
+the only supported object type is an access control list (Chapter 17).
+z Security EAs are used to store file security labels for operating system security
+modules, and to associate capabilities with executable files (Section 39.3.2).
+Security EAs were initially devised to support Security-Enhanced Linux
+(SELinux, http://www.nsa.gov/research/selinux/).
+An i-node may have multiple associated EAs, in the same namespace or in different
+namespaces. The EA names within each namespace are distinct sets. In the user and
+trusted namespaces, EA names can be arbitrary strings. In the system namespace,
+only names explicitly permitted by the kernel (e.g., those used for access control
+lists) are allowed.
+JFS supports another namespace, os2, that is not implemented in other file systems. The os2 namespace is provided to support legacy OS/2 file-system EAs.
+A process doesn’t need to be privileged in order to create os2 EAs.
+Creating and viewing EAs from the shell
+From the shell, we can use the setfattr(1) and getfattr(1) commands to set and view
+the EAs on a file:
+$ touch tfile
+$ setfattr -n user.x -v "The past is not dead." tfile
+$ setfattr -n user.y -v "In fact, it's not even past." tfile
+$ getfattr -n user.x tfile Retrieve value of a single EA
+# file: tfile Informational message from getfattr
+user.x="The past is not dead." The getfattr command prints a blank
+ line after each file’s attributes
+$ getfattr -d tfile Dump values of all user EAs
+# file: tfile
+Extended Attributes 313
+user.x="The past is not dead."
+user.y="In fact, it's not even past."
+$ setfattr -n user.x tfile Change value of EA to be an empty string
+$ getfattr -d tfile
+# file: tfile
+user.x
+user.y="In fact, it's not even past."
+$ setfattr -x user.y tfile Remove an EA
+$ getfattr -d tfile
+# file: tfile
+user.x
+One of the points that the preceding shell session demonstrates is that the value of
+an EA may be an empty string, which is not the same as an EA that is undefined.
+(At the end of the shell session, the value of user.x is an empty string and user.y is
+undefined.)
+By default, getfattr lists only the values of user EAs. The –m option can be used
+to specify a regular expression pattern that selects the EA names that are to be
+displayed:
+$ getfattr -m 'pattern' file
+The default value for pattern is ^user\.. We can list all EAs on a file using the following command:
+$ getfattr -m - file
+16.2 Extended Attribute Implementation Details
+In this section, we extend the overview of the preceding section to fill in a few details
+of the implementation of EAs.
+Restrictions on user extended attributes
+It is only possible to place user EAs on files and directories. Other file types are
+excluded for the following reasons:
+z For a symbolic link, all permissions are enabled for all users, and these permissions can’t be changed. (Symbolic link permissions have no meaning on Linux,
+as detailed in Section 18.2.) This means that permissions can’t be used to prevent arbitrary users from placing user EAs on a symbolic link. The resolution of
+this problem is to prevent all users from creating user EAs on the symbolic link.
+z For device files, sockets, and FIFOs, the permissions control the access that
+users are granted for the purpose of performing I/O on the underlying object.
+Manipulating these permissions to control the creation of user EAs would conflict with this purpose.
+Furthermore, it is not possible for an unprivileged process to place a user EA on a
+directory owned by another user if the sticky bit (Section 15.4.5) is set on the directory.
+314 Chapter 16
+This prevents arbitrary users from attaching EAs to directories such as /tmp, which
+are publicly writable (and so would allow arbitrary users to manipulate EAs on the
+directory), but which have the sticky bit set to prevent users from deleting files
+owned by other users in the directory.
+Implementation limits
+The Linux VFS imposes the following limits on EAs on all file systems:
+z The length of an EA name is limited to 255 characters.
+z An EA value is limited to 64 kB.
+In addition, some file systems impose more restrictive limits on the size and number
+of EAs that can be associated with a file:
+z On ext2, ext3, and ext4, the total bytes used by the names and values of all EAs
+on a file is limited to the size of a single logical disk block (Section 14.3): 1024,
+2048, or 4096 bytes.
+z On JFS, there is an upper limit of 128 kB on the total bytes used by the names
+and values of all EAs on a file.
+16.3 System Calls for Manipulating Extended Attributes
+In this section, we look at the system calls used to update, retrieve, and remove EAs.
+Creating and modifying EAs
+The setxattr(), lsetxattr(), and fsetxattr() system calls set the value of one of a file’s EAs.
+The differences between these three calls are analogous to those between stat(),
+lstat(), and fstat() (Section 15.1):
+z setxattr() identifies a file by pathname, and dereferences the filename if it is a
+symbolic link;
+z lsetxattr() identifies a file by pathname, but doesn’t dereference symbolic links;
+and
+z fsetxattr() identifies a file by the open file descriptor fd.
+The same distinction applies to the other groups of system calls described in the
+remainder of this section.
+#include <sys/xattr.h>
+int setxattr(const char *pathname, const char *name, const void *value,
+ size_t size, int flags);
+int lsetxattr(const char *pathname, const char *name, const void *value,
+ size_t size, int flags);
+int fsetxattr(int fd, const char *name, const void *value,
+ size_t size, int flags);
+All return 0 on success, or –1 on error
+Extended Attributes 315
+The name argument is a null-terminated string that defines the name of the EA.
+The value argument is a pointer to a buffer that defines the new value for the EA. The
+size argument specifies the length of this buffer.
+By default, these system calls create a new EA if one with the given name
+doesn’t already exist, or replace the value of an EA if it does already exist. The flags
+argument provides finer control over this behavior. It may be specified as 0 to
+obtain the default behavior, or as one of the following constants:
+XATTR_CREATE
+Fail (EEXIST) if an EA with the given name already exists.
+XATTR_REPLACE
+Fail (ENODATA) if an EA with the given name doesn’t already exist.
+Here an example of the use of setxattr() to create a user EA:
+char *value;
+value = "The past is not dead.";
+if (setxattr(pathname, "user.x", value, strlen(value), 0) == -1)
+ errExit("setxattr");
+Retrieving the value of an EA
+The getxattr(), lgetxattr(), and fgetxattr() system calls retrieve the value of an EA.
+The name argument is a null-terminated string that identifies the EA whose value
+we want to retrieve. The EA value is returned in the buffer pointed to by value. This
+buffer must be allocated by the caller, and its length must be specified in size. On
+success, these system calls return the number of bytes copied into value.
+If the file doesn’t have an attribute with the given name, these system calls fail
+with the error ENODATA. If size is too small, these system calls fail with the error ERANGE.
+It is possible to specify size as 0, in which case value is ignored but the system
+call still returns the size of the EA value. This provides a mechanism to determine
+the size of the value buffer required for a subsequent call to actually retrieve the EA
+value. Note, however, that we still have no guarantee that the returned size will be
+big enough when subsequently trying to retrieve the value. Another process may
+have assigned a bigger value to the attribute in the meantime, or removed the
+attribute altogether.
+#include <sys/xattr.h>
+ssize_t getxattr(const char *pathname, const char *name, void *value,
+ size_t size);
+ssize_t lgetxattr(const char *pathname, const char *name, void *value,
+ size_t size);
+ssize_t fgetxattr(int fd, const char *name, void *value,
+size_t size);
+All return (nonnegative) size of EA value on success, or –1 on error
+316 Chapter 16
+Removing an EA
+The removexattr(), lremovexattr(), and fremovexattr() system calls remove an EA from
+a file.
+The null-terminated string given in name identifies the EA that is to be removed.
+An attempt to remove an EA that doesn’t exist fails with the error ENODATA.
+Retrieving the names of all EAs associated with a file
+The listxattr(), llistxattr(), and flistxattr() system calls return a list containing the
+names of all of the EAs associated with a file.
+The list of EA names is returned as a series of null-terminated strings in the buffer
+pointed to by list. The size of this buffer must be specified in size. On success, these
+system calls return the number of bytes copied into list.
+As with getxattr(), it is possible to specify size as 0, in which case list is ignored,
+but the system call returns the size of the buffer that would be required for a subsequent call to actually retrieve the EA name list (assuming it remains unchanged).
+To retrieve a list of the EA names associated with a file requires only that the
+file be accessible (i.e., that we have execute access to all of the directories included
+in pathname). No permissions are required on the file itself.
+For security reasons, the EA names returned in list may exclude attributes to
+which the calling process doesn’t have access. For example, most file systems omit
+trusted attributes from the list returned by a call to listxattr() in an unprivileged process.
+But note the “may” in the earlier sentence, indicating that a file-system implementation is not obliged to do this. Therefore, we need to allow for the possibility that a
+subsequent call to getxattr() using an EA name returned in list may fail because the
+process doesn’t have the privilege required to obtain the value of that EA. (A similar
+failure could also happen if another process deleted an attribute between the calls
+to listxattr() and getxattr().)
+#include <sys/xattr.h>
+int removexattr(const char *pathname, const char *name);
+int lremovexattr(const char *pathname, const char *name);
+int fremovexattr(int fd, const char *name);
+All return 0 on success, or –1 on error
+#include <sys/xattr.h>
+ssize_t listxattr(const char *pathname, char *list, size_t size);
+ssize_t llistxattr(const char *pathname, char *list, size_t size);
+ssize_t flistxattr(int fd, char *list, size_t size);
+All return number of bytes copied into list on success, or –1 on error
+Extended Attributes 317
+Example program
+The program in Listing 16-1 retrieves and displays the names and values of all EAs
+of the files listed on its command line. For each file, the program uses listxattr() to
+retrieve the names of all EAs associated with the file, and then executes a loop
+calling getxattr() once for each name, to retrieve the corresponding value. By
+default, attribute values are displayed as plain text. If the –x option is supplied,
+then the attribute values are displayed as hexadecimal strings. The following shell
+session log demonstrates the use of this program:
+$ setfattr -n user.x -v "The past is not dead." tfile
+$ setfattr -n user.y -v "In fact, it's not even past." tfile
+$ ./xattr_view tfile
+tfile:
+ name=user.x; value=The past is not dead.
+ name=user.y; value=In fact, it's not even past.
+Listing 16-1: Display file extended attributes
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––– xattr/xattr_view.c
+#include <sys/xattr.h>
+#include "tlpi_hdr.h"
+#define XATTR_SIZE 10000
+static void
+usageError(char *progName)
+{
+ fprintf(stderr, "Usage: %s [-x] file...\n", progName);
+ exit(EXIT_FAILURE);
+}
+int
+main(int argc, char *argv[])
+{
+ char list[XATTR_SIZE], value[XATTR_SIZE];
+ ssize_t listLen, valueLen;
+ int ns, j, k, opt;
+ Boolean hexDisplay;
+ hexDisplay = 0;
+ while ((opt = getopt(argc, argv, "x")) != -1) {
+ switch (opt) {
+ case 'x': hexDisplay = 1; break;
+ case '?': usageError(argv[0]);
+ }
+ }
+ if (optind >= argc + 2)
+ usageError(argv[0]);
+318 Chapter 16
+ for (j = optind; j < argc; j++) {
+ listLen = listxattr(argv[j], list, XATTR_SIZE);
+ if (listLen == -1)
+ errExit("listxattr");
+ printf("%s:\n", argv[j]);
+ /* Loop through all EA names, displaying name + value */
+ for (ns = 0; ns < listLen; ns += strlen(&list[ns]) + 1) {
+ printf(" name=%s; ", &list[ns]);
+ valueLen = getxattr(argv[j], &list[ns], value, XATTR_SIZE);
+ if (valueLen == -1) {
+ printf("couldn't get value");
+ } else if (!hexDisplay) {
+ printf("value=%.*s", (int) valueLen, value);
+ } else {
+ printf("value=");
+ for (k = 0; k < valueLen; k++)
+ printf("%02x ", (unsigned int) value[k]);
+ }
+ printf("\n");
+ }
+ printf("\n");
+ }
+ exit(EXIT_SUCCESS);
+}
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––– xattr/xattr_view.c
+16.4 Summary
+From version 2.6 onward, Linux supports extended attributes, which allow arbitrary metadata to be associated with a file, in the form of name-value pairs.
+16.5 Exercise
+16-1. Write a program that can be used to create or modify a user EA for a file (i.e., a
+simple version of setfattr(1)). The filename and the EA name and value should be
+supplied as command-line arguments to the program.
+
+
+<!-- 
+  COVERAGE: 4
+  PASTED: 5, 13, 14, 15, 16
+-->

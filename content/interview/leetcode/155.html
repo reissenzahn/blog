@@ -1,0 +1,67 @@
+---
+title: "155. Min Stack"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+<p>
+  Each element stores the minimum value of its value and all elements below it which allows it to report the minimum value in the stack when it is at the top.
+</p>
+
+{{% code java %}}class MinStack {
+  
+  private Node top;
+
+  public MinStack() {
+  }
+
+  public void push(int val) {
+    Node node = new Node();
+    node.val = val;
+    node.next = top;
+    
+    if (top == null) {
+      node.min = val;
+    } else {
+      node.min = Math.min(val, top.min);
+    }
+
+    top = node;
+  }
+
+  public void pop() {
+    top = top.next;
+  }
+
+  public int top() {
+    return top.val;
+  }
+
+  public int getMin() {
+    return top.min;
+  }
+  
+  private static class Node {
+    private int val;
+    private Node next;
+    private int min;
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+<p>
+  All operations are O(1).
+</p>
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/min-stack/">Original Problem</a>
+  </li>
+</ul>

@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+
   int fd = open(argv[1], O_RDONLY);
 
   if (fd == -1) {
@@ -30,6 +31,11 @@ int main(int argc, char *argv[]) {
   }
 
   close(fd);
+
+
+  // there are macros for obtaining the filename and line number which can be useful for debugging
+  fprintf(stderr, "something went wrong in %s on line %d!\n", __FILE__, __LINE__);
+  
 
   // a return value of zero implies normal termination
   return 0;

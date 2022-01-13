@@ -1,0 +1,435 @@
+---
+title: "Really Simple Syndication"
+date: 2021-12-29
+draft: false
+---
+
+<ul>
+  <li>
+    RSS is a web feed that provides access to updates to websites in a standardized machine-readable format.
+  </li>
+  <li>
+    Users subscribe to RSS feeds using a news aggregator which monitors the sites for new content and displays it in one place.
+  </li>
+  <li>
+    Websites usually use RSS feeds to publish frequently updated information such as blog entries, news headlines, episodes of audio and video series or for distributing podcasts.
+  </li>
+</ul>
+
+<!-- 
+  On the World Wide Web, a web feed (or news feed) is a data format used for providing users with frequently updated content. Content distributors syndicate a web feed, thereby allowing users to subscribe a channel to it by adding the feed resource address to a news aggregator client (also called a feed reader or a news reader). Users typically subscribe to a feed by manually entering the URL of a feed or clicking a link in a web browser or by dragging the link from the web browser to the aggregator, thus "RSS and Atom files provide news updates from a website in a simple form for your computer."[1]
+
+The kinds of content delivered by a web feed are typically HTML (webpage content) or links to webpages and other kinds of digital media. Often when websites provide web feeds to notify users of content updates, they only include summaries in the web feed rather than the full content itself. Many news websites, weblogs, schools, and podcasters operate web feeds. As web feeds are designed to be machine-readable rather than human-readable they can also be used to automatically transfer information from one website to another without any human intervention.
+ -->
+
+
+<h3>File Format</h3>
+
+<!--
+- An RSS file is called a web feed or channel and must conform to the XML 1.0 specification.
+- At the top level, a RSS document is a <rss> element with a mandatory version attribute.
+- Subordinate to the <rss> element is a single <channel> element which contains metadata about the channel.
+- A channel may contain any number of <item> elements.
+-->
+
+
+<h3>Channel Elements</h3>
+
+<!--
+The required channel elements are:
+
+- title: The name of the channel. This should match the title of the corresponding HTML website.
+- link: The URL to the HTML website corresponding to the channel.
+- description: Phrase or sentence describing the channel.
+
+The optional channel elements are:
+
+- language: The language code corresponding to the language the channel is written in (e.g. en-us).
+- copyright: Copyright notice for content in the channel.
+- managingEditor: Email address for person responsible for editorial content.
+- webMaster: Email address for person responsible for technical issues relating to channel.
+- pubDate: The publication date for the content in the channel. (e.g. Sat, 07 Sep 2002 00:00:01 GMT).
+- lastBuildDate: The last time the content of the channel changed.
+- category: Specifies one or more categories that the channel belongs to.
+- generator: A string indicating the program used to generate the channel.
+- doc: A URL that points to the documentation for the format used in the RSS file (e.g. https://www.rssboard.org/rss-specification).
+- cloud: Allows processes to register with a cloud to be notified of updates to the channel.
+- ttl: Number of minutes that indicates how long a channel can be cached before refreshing from the source.
+- image: Specifies a GIF, JPEG or PNG image that can be displayed with the channel.
+- rating: The PICS rating for the channel.	
+- textInput: Specifies a text input box that can be displayed with the channel.
+- skipHours: A hint for aggregators telling them which hours they can skip. The hour beginning at midnight is hour zero. Aggregators may not read the channel on hours listed.
+- skipDays: A hint for aggregators telling them which days they can skip. Aggregators may not read the channel during days listed.
+-->
+
+
+
+<h3>Item Elements</h3>
+
+<!--
+The item elements are:
+
+- title: The title of the item.
+- link: The URL of the item.
+- description: A description of the item.
+- author: Email address of the author of the item.	
+- category: Specifies a category that the item belongs to. It has one optional domain attribute that identifies a categorization taxonomy.	
+- comments: The URL of a page for comments relating to the item.
+- enclosure: Describes a media object that is attached to the item.
+- guid: A string that uniquely identifies the item.
+- pubDate: The date when the item was published.
+- source: The title of the RSS channel that the item came from. It has one required url attribute which links to the XMLization of the source.
+
+All elements of an item are optional, however at least one of title or description must be present.
+-->
+
+
+
+<h3>Example</h3>
+
+{{% code xml %}}<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+  <channel>
+    <title>RSS Title</title>
+    <description>This is an example of an RSS feed</description>
+    <link>http://www.example.com/main.html</link>
+    <copyright>2020 Example.com All rights reserved</copyright>
+    <lastBuildDate>Mon, 06 Sep 2010 00:01:00 +0000</lastBuildDate>
+    <pubDate>Sun, 06 Sep 2009 16:20:00 +0000</pubDate>
+    <ttl>1800</ttl>
+    <item>
+      <title>Example entry</title>
+      <description>Here is some text containing an interesting description.</description>
+      <link>http://www.example.com/blog/post/1</link>
+      <guid isPermaLink="false">7bd204c6-1655-4c27-aeee-53f933c5395f</guid>
+      <pubDate>Sun, 06 Sep 2009 16:20:00 +0000</pubDate>
+    </item>
+  </channel>
+</rss>{{% /code %}}
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.rssboard.org/rss-specification">RSS Specification</a>
+  </li>
+  <li>
+    <a href="https://www.rssboard.org/rss-validator/">RSS Feed Validator</a>
+  </li>
+  <li>
+    <a href="https://www.rssboard.org/rss-language-codes">RSS Language Code</a>
+  </li>
+</ul>
+
+<!-- 
+  All date-times in RSS conform to RFC 822 with the exception that the year may be expressed with two or four characters or four characters
+-->
+
+<!-- <image>
+<url> is the URL of a GIF, JPEG or PNG image that represents the channel.
+<title> describes the image, it's used in the ALT attribute of the HTML <img> tag when the channel is rendered in HTML.
+<link> is the URL of the site, when the channel is rendered, the image is a link to the site. (Note, in practice the image <title> and <link> should have the same value as the channel's <title> and <link>.
+Optional elements include <width> and <height>, numbers, indicating the width and height of the image in pixels. <description> contains text that is included in the TITLE attribute of the link formed around the image in the HTML rendering.
+Maximum value for width is 144, default value is 88.
+Maximum value for height is 400, default value is 31. -->
+
+<!-- <enclosure>
+
+It has three required attributes. url says where the enclosure is located, length says how big it is in bytes, and type says what its type is, a standard MIME type.
+
+The url must be an http url.
+
+<enclosure url="http://www.scripting.com/mp3s/weatherReportSuite.mp3" length="12216320" type="audio/mpeg" />
+
+
+<guid>
+
+guid stands for globally unique identifier. It's a string that uniquely identifies the item. When present, an aggregator may choose to use this string to determine if an item is new.
+
+<guid>http://some.server.com/weblogItem3207</guid>
+
+There are no rules for the syntax of a guid. Aggregators must view them as a string. It's up to the source of the feed to establish the uniqueness of the string.
+
+If the guid element has an attribute named isPermaLink with a value of true, the reader may assume that it is a permalink to the item, that is, a url that can be opened in a Web browser, that points to the full item described by the <item> element. An example:
+
+<guid isPermaLink="true">http://inessential.com/2002/09/01.php#a2</guid>
+
+isPermaLink is optional, its default value is true. If its value is false, the guid may not be assumed to be a url, or a url to anything in particular.
+
+A frequently asked question about <guid>s is how do they compare to <link>s. Aren't they the same thing? Yes, in some content systems, and no in others. In some systems, <link> is a permalink to a weblog item. However, in other systems, each <item> is a synopsis of a longer article, <link> points to the article, and <guid> is the permalink to the weblog entry. In all cases, it's recommended that you provide the guid, and if possible make it a permalink. This enables aggregators to not repeat items, even if there have been editing changes.
+-->
+
+
+
+<!--
+https://www.xul.fr/en-xml-rss.html
+
+  What is RSS?
+It is a format to share data, defined in the 1.0 version of XML. You can deliver information in this format et one can get this information, and information from other various sources, in this format. Information provided by a website in an XML file is called an RSS feed.
+Recent browsers can read directly RSS files, but a special RSS reader or aggregator may be used too.
+
+History
+Created by Netscape in 1999. The first version is 0.90. Followed by the 0.91 version that has been improved by the Userland company in 2000.
+In 2000 the version 1.0 based on RDF was created by O'Reilly and further maintained by the RSS-DEV group, and named RDF Site Summary.
+RSS 2.0 was defined by Dave Winer (previously worker at Userland) at Harvard University in 2002.
+This page is based on the Really Simple Syndication, 2.01 specification from Harvard.
+
+Why use RSS?
+To get information or news provided by websites in a format computers can process. To display it on a website or to read it yourself.
+And for the provider of the content, this allows it to send news about its site.
+
+RSS, how it works?
+The RSS system to publish articles and news over the web is very simple:
+
+There are firstly some web pages, one want to be displayed by other websites.
+This set of pages is the RSS feed.
+An XML file that defines the RSS feed. This file holds URL, title and summary of each page to display.
+A person which want to read the feed on its computer. He (she) uses an RSS reader or its browser and just adds the feed with the proper command of its software.
+Or another website that wants to display the feed. It has to load the RSS file from the provider, to extract URL of pages, and display titles and summaries. This may be performed by a PHP script.
+When someone visits the website of the receiver, the script is launched, it recalls the RSS file from the provider's website and displays a list of news from extracted data.
+By a click on a line of the list, visitors display a page from the provider.
+Structure of an RSS document
+It is an XML file and the global container is the "RSS" tag for the 2.0 format.
+The file holds one channel at least, this is the website that provides the information.
+The channel provides some articles or data. These are web pages from the same site, or from other sites.
+
+How to use RSS?
+1 - Using RSS on a desktop
+RSS feeds are displayed by Internet Explorer 7 and Firefox 2. An RSS reader (or aggregator) may also be installed on the operating system (Windows, Linux, Mac OS, etc...). See in resources. There is one that is built with XUL.
+Accessing the content depends upon the reader. This may be accomplished just by a click on an "add" button to get the URL of the RSS feed, and let it added to a list of feeds.
+2 - Using a feed on a website
+The RSS feed is displayed as a list of titles (and optionally summaries). A click on a title displays the new. Titles are updated automatically. A script in PHP or other language, builds the list each time the page is displayed by loading the RSS file and extracting the data from it. Some links to such tools are provided in resources.
+
+How to publish news in an RSS feed?
+There are several means to generate RSS feeds.
+
+Using the RSS library of PHP. A PHP script will build the XML file from titles and descriptions of pages from the content of a page.
+Use a specialized tool to extract the data from a page.
+To give access to the XML file, a link is displayed: or 
+
+1
+2
+3
+<a type="application/rss+xml" href="https://ww.xul.fr/rss.xml"> 
+    RSS feed for this site
+</a>
+Feeds in Atom format use the "application/atom+xml" value instead.
+Replace xul.fr by the domain name of your site.
+Vocabulary
+Feed. It is a set of "item" tags, a set of infos or news.
+RDF. See at the RDF page on this site.
+Syndicated. Published through an RSS feed.
+Syndication. Publishing data by RSS feeds.
+Main RSS tags
+rss. The global container.
+channel. A distributing channel. It has several descriptive tags and holds one or several items.
+
+1
+2
+3
+4
+5
+<rss version="2.0">
+<channel>
+...
+</channel>
+</rss>
+Required tags for the channel
+title. The title of the channel. Should contains the name.
+link. URL of the website that provides this channel.
+description. Summary of what the provider is.
+one item tag at least, for the content.
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+<rss version="2.0">
+<channel>
+    <title>XUL</title>
+    <link>https://www.xul.fr</link>
+    <description></description>
+    <item>
+    ...
+    </item>
+</channel>
+</rss>
+Optional tags for the channel
+language. The human language used for the text.
+docs. Where to find the doc for the format of the file, may be Harvard.
+webMaster. E-mail.
+pubDate. Publishing date.
+etc. See in the specification for more.
+Items of the channel
+Each item tag must hold these tags:
+
+title. Title of the article.
+link. The URL of the page.
+description. Summary of the article.
+1
+2
+3
+4
+5
+<item>
+  <title>XUL news</title>
+  <link>https://www.xul.fr/index.php</link>
+  <description>... some text...</description>
+</item> 
+And some optional info for this article
+pubDate. Publishing date.
+guid. A string of character that is unique to designate this item.
+category. The category of the article.
+etc.
+Building its personal RSS feed, step by step
+At start, this is just a simple text file, created with any text editor. But an XML editor is more convenient. (see at the "software" page). The name may be, for example: "feed.xml".
+The overall structure is as that:
+
+1
+2
+3
+4
+<?xml version="1.0" ?>
+<rss version="2.0">
+<channel>
+</channel>
+1) Define the source, by the channel tag
+The channel will be the same for all your RSS feeds. These tags are required:
+- title: the title of your website, may be the one in the title tag of the home page.
+- link: the URL of your website: example: https://www.xul.fr
+- description: description of your website, about 200 characters, this may be the text assigned to the content attribute of the description tag, in the head section of the home page.
+1
+2
+3
+4
+5
+<channel>
+<title>XUL and XML</title>
+<link>https://www.xul.fr/en/</link>
+<description>XML graphical interface etc...</description>
+</channel> 
+2) Add an image
+This is optional. Design a small image (88x31 for example) in a common format (gif, jpg, png) and put in into the same directory that the RSS file.
+The "image" tag is a sub-element of the channel tag
+- url is the address of the image itself.
+- link is the address of the page displayed when one clicks on the image.
+1
+2
+3
+4
+5
+6
+7
+8
+<channel>
+<title> </title>
+<link> </link>
+<image>
+    <url>https://www.xul.fr/xul.gif</url>
+   <link>https://www.xul.fr/en/index.php</link>
+</image>
+</channel>
+3) Add a new
+Now, we will add a web page to display an information. This is an "item" tag, a sub-element of channel, and this components are required:
+- title: the title of the article.
+- link: the URL of the page.
+- description: a summary of the article, about 200 characters.
+1
+2
+3
+4
+5
+<item>
+<title>News of today</title>
+<link>https://www.xul.fr/en-xml-rss.html</link>
+<description>All you need to  know about RSS</description>
+</item> 
+4) Add more items
+More items may be added to this channel.
+5) Upload the file
+Put the feed.xml file into your website, among other web pages.
+
+6) Validate the file
+You may use this online RSS feed validator.
+
+7) Make it available
+This is accomplished by adding an RSS button on the home page. A click on the button should display the XML file you have created. 
+
+1
+2
+3
+<a href="https://www.xul.fr/rss.xml">
+   <img src="rss.gif">
+</a>
+If the image is not displayed, use a complete URL, as https://www.xul.fr/rss.gif, for example.
+
+8) Updating the feed
+To publish further articles, you have just to add items, and remove older ones to keep the number of articles constant.
+
+Example: the complete file
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+<?xml version="1.0" ?>
+<rss version="2.0">
+<channel>
+  <title>Ajax and XUL</title>
+  <link>https://www.xul.fr/en/</link>
+  <description>XML graphical interface etc...</description>
+  <image>
+      <url>https://www.xul.fr/xul-icon.gif</url>
+      <link>https://www.xul.fr/en/index.php</link>
+  </image>
+  <item>
+      <title>News  of today</title>
+      <link>https://www.xul.fr/en-xml-rss.html</link>
+      <description>All you need to know about RSS</description>
+  </item>
+  <item>
+      <title>News of tomorrows</title>
+      <link>https://www.xul.fr/en-xml-rdf.html</link>
+      <description>And now, all about RDF</description>
+    </item>
+</channel>
+</rss> 
+You can download the example and use it as a template, by replacing of course, xul.fr, by the name of your website.
+
+How browsers know there is an RSS feed on a website
+You have created an RSS feed and it is now stored at root of your website. You must let browsers knowing the existence of this file and its location, when they enter and display the home page (or any other page if you want). Firefox will display the feed icon into the URL field, Internet Explorer on the bar of commands.
+To activate them, insert the following line into the source code of the page, anywhere inside the <head> </head> section:
+
+1
+2
+<link rel="alternate" type="application/rss+xml"
+  href="https://www.xul.fr/rss.xml" title="Your title">
+Replace the URL by your domain name with the path and filename of your RSS feed.
+And if the file is in the atom format, replace rss+xml by atom+xml.
+
+
+ -->
+

@@ -1,0 +1,59 @@
+---
+title: "394. Decode String"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  public String decodeString(String s) {
+    Stack<Integer> istack = new Stack<>();
+    Stack<StringBuilder> stack = new Stack<>();
+    
+    StringBuilder sb = new StringBuilder();
+    int i = 0;
+    
+    for (char c : s.toCharArray()) {
+      if (Character.isDigit(c)) {
+        // 2. parse integer before [
+        i = i * 10 + (c - '0');
+      } else if (c == '[') {
+        // 3. push onto stack and reset upon reaching [
+        istack.push(i);
+        stack.push(sb);
+        
+        sb = new StringBuilder();
+        i = 0;
+      } else if (c == ']') {
+        // 4. combine repeated current characters with top of stack
+        StringBuilder tmp = sb;
+        
+        sb = stack.pop();
+        
+        for (int j = istack.pop(); j > 0; j--) {
+          sb.append(tmp);
+        }
+      } else {
+        // 1. accumulate characters before [
+        sb.append(c);
+      }
+    }
+    
+    return sb.toString();
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/decode-string/">Original Problem</a>
+  </li>
+</ul>

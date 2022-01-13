@@ -237,6 +237,25 @@ func Signum(x int) int {
 <h3 id="maps">Maps</h3>
 
 
+<h3 id="strings">Strings</h3>
+
+<!-- 
+UTF-8
+
+UTF-8 lets you use a single byte to represent the Unicode characters whose values are below 128 (which includes all of the letters, numbers, and punctuation commonly used in English), but expands to a maximum of four bytes to represent Unicode code points with larger values. The result is that the worst case for
+UTF-8 is the same as using UTF-32.
+
+You also don’t have to worry about little-endian versus big-endian. It also allows you to look at any byte in a sequence and tell if you are at the start of a
+UTF-8 sequence, or somewhere in the middle.
+
+The only downside is that you cannot randomly access a string encoded with UTF-8. While you can detect if you are in the middle of a character, you can’t tell how many characters in you are. You need to start at the beginning of the string and count.
+
+Go doesn’t require a string to be written in UTF-8, but it strongly encourages it.
+
+Rather than use the slice and index expressions with strings, you should extract substrings and code points from strings using the functions in the strings and unicode/utf8 packages in the standard library.
+-->
+
+
 <h3 id="functions">Functions</h3>
 
 

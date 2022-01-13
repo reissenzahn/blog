@@ -1,0 +1,50 @@
+---
+title: "71. Simplify Path"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  public String simplifyPath(String path) {
+    Deque<String> stack = new LinkedList<>();
+    
+    for (String s : path.split("/")) {
+      if (s.equals("..")) {
+        if (!stack.isEmpty()) {
+          stack.pop();
+        }
+      } else if (!s.equals("") && !s.equals(".")) {
+        stack.push(s);
+      }
+    }
+        
+    if (stack.isEmpty()) {
+      return "/";
+    }
+    
+    StringBuilder sb = new StringBuilder();
+    
+    while (!stack.isEmpty()) {
+      sb.append("/");
+      sb.append(stack.pollLast());
+    }
+    
+    return sb.toString();
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/simplify-path/">Original Problem</a>
+  </li>
+</ul>

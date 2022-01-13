@@ -74,69 +74,83 @@ Raft servers communicate using remote procedure calls (RPCs), and the basic cons
 
 
 
-LEADER ELECTION
+<h3>Leader Election</h3>
 
-Raft uses a heartbeat mechanism to trigger leader election.
+<!--
+- When servers start up, they begin as followers.
+- A server will remain a follower as long as it receives valid RPCs from a leader or candidate.
+- Indeed, leaders send periodic heartbeats (consisting of AppendEntries RPCs that carry no log entries) to all followers in order to maintain their authority.
 
-When servers start up, they begin as followers.
+- If a follower receives no communication over a period of time called the election timeout then it assumes there is no viable leader and begins an election to elect a new leader.
+- To begin an election, a follower increments its current term and transitions to the candidate state.
+- It then votes for itself and issues RequestVote RPCs in parallel to the other servers in the cluster.
+- Each server will vote for at most one candidate in a given term on a first-come-first-served basis.
 
-A server remains in follower state as long as it receives valid RPCs from a leader or candidate.
+- If many followers becomes candidates at the same time then we have have that votes get split so that no candidate obtains a majority.
+- To prevent this, election timeouts are chosen randomly from a fixed interval (e.g. 150-300ms).
+- This way, we will typically have that a single server will time out, win an election and send heartbeats before any other servers time out.
 
-Leaders send periodic heartbeats (AppendEntries RPCs that carry no log entries) to all followers in order to maintain their authority.
+- A candidate remains in the candidate state until one of three things happen:
+  a) It wins the election by receiving votes from a majority of the servers in the cluster for a given term.
+  b) Another server establishes itself as the leader.
+  c) A period of time goes by with no winner.
 
-If a follower receives no communication over a period of time called the election timeout, then it assumes there is no viable leader and begins an election to choose a new leader.
+- Once a candidate wins an election, it becomes the leader.
+- A new leader sends heartbeat messages to all of the other servers to establish its authority and prevent new elections.
+- The majority rule ensures that at most one candidate can win the election for a particular term.
 
-To begin an election, a follower increments its current term and transitions to candidate state.
+- While waiting for votes, a candidate may receive an AppendEntries RPC from another server claiming to be leader.
+- If the term of the leader (included in its RPC) is at least as large as the current term of the candidate then the candidate recognizes the leader as legitimate and returns to follower state.
+- If the term in the RPC is smaller then the candidate rejects the RPC and continues in candidate state.
 
-It then votes for itself and issues RequestVote RPCs in parallel to each of the other servers in the cluster.
-
-A candidate continues in this state until one of three things happens: (a) it wins the election, (b) another server establishes itself as leader, or (c) a period of time goes by with no winner.
-
-A candidate wins an election if it receives votes from a majority of the servers in the full cluster for the same term.
-
-Each server will vote for at most one candidate in a given term, on a first-come-first-served basis.
-
-The majority rule ensures that at most one candidate can win the election for a particular term.
-
-Once a candidate wins an election, it becomes leader.
-
-It then sends heartbeat messages to all of the other servers to establish its authority and prevent new elections.
-
-While waiting for votes, a candidate may receive an AppendEntries RPC from another server claiming to be leader.
-
-If the leader’s term (included in its RPC) is at least as large as the candidate’s current term, then the candidate recognizes the leader as legitimate and returns to follower state.
-
-If the term in the RPC is smaller than the candidate’s current term, then the candidate rejects the RPC and continues in candidate state.
-
-The third possible outcome is that a candidate neither wins nor loses the election: if many followers become candidates at the same time, votes could be split so that no candidate obtains a majority.
-
-When this happens, each candidate will time out and start a new election by incrementing its term and initiating another round of Request-Vote RPCs.
-
-However, without extra measures split votes could repeat indefinitely. Raft uses randomized election timeouts to ensure that split votes are rare and that they are resolved quickly. To prevent split votes in the first place, election timeouts are chosen randomly from a fixed interval (e.g., 150–300ms).
-
-This spreads out the servers so that in most cases only a single server will time out; it wins the election and sends heartbeats before any other servers time out.
-
-The same mechanism is used to handle split votes. Each candidate restarts its randomized election timeout at the start of an election, and it waits for that timeout to elapse before starting the next election; this reduces the likelihood of another split vote in the new election.
+- A candidate could neither win or lose an election.
+- When this happens, each candidate will time out and start a new election by incrementing its term and initiating another round of Request-Vote RPCs.
+- Randomized election timeouts are used to ensure that split votes are rare and that they are resolved quickly.
+- Each candidate restarts its randomized election timeout at the start of an election and it waits for that timeout to elapse before starting the next election.
+- This reduces the likelihood of another split vote in the new election.
+-->
 
 
 
-LOG REPLICATION
 
-Once a leader has been elected, it begins servicing client requests.
 
-Each client request contains a command to be executed by the replicated state machines.
 
-The leader appends the command to its log as a new entry then issues AppendEntries RPCs in parallel to each of the other servers to replicate the entry.
 
-When the entry has been safely replicated, the leader applies the entry to its state machine and returns the result of that execution to the client.
 
-If followers crash or run slowly, or if network packets are lost, the leader retries Append-Entries RPCs indefinitely (even after it has responded to the client) until all followers eventually store all log entries.
+<h3>Log Replication</h3>
+
+<!--
+- Once a leader has been elected, it begins servicing client requests.
+- Each client request contains a command to be executed by the replicated state machines.
+- The leader appends the command to its log as a new entry then issues AppendEntries RPCs in parallel to each of the other servers to replicate the entry.
+- When the entry has been safely replicated, the leader applies the entry to its state machine and returns the result of that execution to the client.
+- If followers crash or run slowly or if network packets are lost then the leader retries Append-Entries RPCs indefinitely until all followers eventually store all log entries.
+
+- 
+-->
+
+
 
 Each log entry stores a state machine command along with the term number when the entry was received by the leader.
 
 The term numbers in log entries are used to detect inconsistencies between logs.
 
-Each log entry also has an integer index identifying its position in the log. The leader decides when it is safe to apply a log en-try to the state machines; such an entry is called commit-ted. Raft guarantees that committed entries are durable and will eventually be executed by all of the available state machines. A log entry is committed once the leader that created the entry has replicated it on a majority of the servers (e.g., entry 7 in Figure 6). This also commits all preceding entries in the leader’s log, including entries created by previous leaders. Section 5.4 discusses some subtleties when applying this rule after leader changes, and it also shows that this definition of commitment is safe. The leader keeps track of the highest index it knows to be committed, and it includes that index in future AppendEntries RPCs (including heartbeats) so that the other servers eventually find out. Once a follower learns that a log entry is committed, it applies the entry to its local state machine (in log order). We designed the Raft log mechanism to maintain a high level of coherency between the logs on different servers. Not only does this simplify the system’s behavior and make it more predictable, but it is an important component of ensuring safety. Raft maintains the following proper-ties, which together constitute the Log Matching Property in Figure 3: • If two entries in different logs have the same index and term, then they store the same command. • If two entries in different logs have the same index and term, then the logs are identical in all preceding entries. The first property follows from the fact that a leader creates at most one entry with a given log index in a given term, and log entries never change their position in the log. The second property is guaranteed by a simple con-sistency check performed by AppendEntries. When send-ing an AppendEntries RPC, the leader includes the index and term of the entry in its log that immediately precedes the new entries. If the follower does not find an entry in its log with the same index and term, then it refuses the new entries. The consistency check acts as an induction step: the initial empty state of the logs satisfies the Log Matching Property, and the consistency check preserves the Log Matching Property whenever logs are extended. As a result, whenever AppendEntries returns successfully, the leader knows that the follower’s log is identical to its own log up through the new entries. During normal operation, the logs of the leader and followers stay consistent, so the AppendEntries consis-tency check never fails. However, leader crashes can leave the logs inconsistent (the old leader may not have fully replicated all of the entries in its log). These inconsisten-cies can compound over a series of leader and follower crashes. Figure 7 illustrates the ways in which followers’ logs may differ from that of a new leader. A follower may be missing entries that are present on the leader, it may have extra entries that are not present on the leader, or both. Missing and extraneous entries in a log may span multiple terms. In Raft, the leader handles inconsistencies by forcing the followers’ logs to duplicate its own. This means that conflicting entries in follower logs will be overwritten with entries from the leader’s log. Section 5.4 will show that this is safe when coupled with one more restriction. To bring a follower’s log into consistency with its own, the leader must find the latest log entry where the two logs agree, delete any entries in the follower’s log after that point, and send the follower all of the leader’s entries after that point. All of these actions happen in response to the consistency check performed by AppendEntries RPCs. The leader maintains anextIndexfor each follower, which is the index of the next log entry the leader will send to that follower. When a leader first comes to power, it initializes all nextIndex values to the index just after the last one in its log (11 in Figure 7). If a follower’s log is inconsistent with the leader’s, the AppendEntries consis-tency check will fail in the next AppendEntries RPC. Af-ter a rejection, the leader decrements nextIndex and retries the AppendEntries RPC. Eventually nextIndex will reach a point where the leader and follower logs match. When this happens, AppendEntries will succeed, whichremoves any conflicting entries in the follower’s log and appends entries from the leader’s log (if any). Once AppendEntries succeeds, the follower’s log is consistent with the leader’s, and it will remain that way for the rest of the term.
+Each log entry also has an integer index identifying its position in the log.
+
+The leader decides when it is safe to apply a log en-try to the state machines; such an entry is called committed.
+
+Raft guarantees that committed entries are durable and will eventually be executed by all of the available state machines.
+
+A log entry is committed once the leader that created the entry has replicated it on a majority of the servers.
+
+This also commits all preceding entries in the leader’s log, including entries created by previous leaders.
+
+The leader keeps track of the highest index it knows to be committed and it includes that index in future AppendEntries RPCs (including heartbeats) so that the other servers eventually find out.
+
+Once a follower learns that a log entry is committed, it applies the entry to its local state machine.
+
+
+Raft maintains the following proper-ties, which together constitute the Log Matching Property in Figure 3: • If two entries in different logs have the same index and term, then they store the same command. • If two entries in different logs have the same index and term, then the logs are identical in all preceding entries. The first property follows from the fact that a leader creates at most one entry with a given log index in a given term, and log entries never change their position in the log. The second property is guaranteed by a simple con-sistency check performed by AppendEntries. When send-ing an AppendEntries RPC, the leader includes the index and term of the entry in its log that immediately precedes the new entries. If the follower does not find an entry in its log with the same index and term, then it refuses the new entries. The consistency check acts as an induction step: the initial empty state of the logs satisfies the Log Matching Property, and the consistency check preserves the Log Matching Property whenever logs are extended. As a result, whenever AppendEntries returns successfully, the leader knows that the follower’s log is identical to its own log up through the new entries. During normal operation, the logs of the leader and followers stay consistent, so the AppendEntries consis-tency check never fails. However, leader crashes can leave the logs inconsistent (the old leader may not have fully replicated all of the entries in its log). These inconsisten-cies can compound over a series of leader and follower crashes. Figure 7 illustrates the ways in which followers’ logs may differ from that of a new leader. A follower may be missing entries that are present on the leader, it may have extra entries that are not present on the leader, or both. Missing and extraneous entries in a log may span multiple terms. In Raft, the leader handles inconsistencies by forcing the followers’ logs to duplicate its own. This means that conflicting entries in follower logs will be overwritten with entries from the leader’s log. Section 5.4 will show that this is safe when coupled with one more restriction. To bring a follower’s log into consistency with its own, the leader must find the latest log entry where the two logs agree, delete any entries in the follower’s log after that point, and send the follower all of the leader’s entries after that point. All of these actions happen in response to the consistency check performed by AppendEntries RPCs. The leader maintains a nextIndex for each follower, which is the index of the next log entry the leader will send to that follower. When a leader first comes to power, it initializes all nextIndex values to the index just after the last one in its log (11 in Figure 7). If a follower’s log is inconsistent with the leader’s, the AppendEntries consis-tency check will fail in the next AppendEntries RPC. Af-ter a rejection, the leader decrements nextIndex and retries the AppendEntries RPC. Eventually nextIndex will reach a point where the leader and follower logs match. When this happens, AppendEntries will succeed, which removes any conflicting entries in the follower’s log and appends entries from the leader’s log (if any). Once AppendEntries succeeds, the follower’s log is consistent with the leader’s, and it will remain that way for the rest of the term.
 
 If desired, the protocol can be optimized to reduce the number of rejected AppendEntries RPCs. For example, when rejecting an AppendEntries request, the follower can include the term of the conflicting entry and the first index it stores for that term. With this information, the leader can decrement nextIndex to bypass all of the con-flicting entries in that term; one AppendEntries RPC will be required for each term with conflicting entries, rather than one RPC per entry. In practice, we doubt this opti-mization is necessary, since failures happen infrequently and it is unlikely that there will be many inconsistent en-tries. With this mechanism, a leader does not need to take any special actions to restore log consistency when it comes to power. It just begins normal operation, and the logs auto-matically converge in response to failures of the Append-Entries consistency check. A leader never overwrites or deletes entries in its own log (the Leader Append-Only Property in Figure 3).
 

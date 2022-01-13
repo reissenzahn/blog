@@ -1,133 +1,991 @@
 ---
 title: "Pthreads"
-date: 2021-11-24
+date: 2022-01-11
 draft: false
 ---
 
-<p>
-  A single process can contain multiple threads all of which are independently and concurrently executing the same program. Threads have their own stack but share the same global memory including the initialized data, uninitialized data and heap segments. On a multi-processor system, multiple threads can execute in parallel.
-</p>
+<!-- #region introduction -->
+<ul>
+  <li>
+    A single process can contain multiple threads all of which execute concurrently. On a multiprocessor system, threads can execute in parallel.
+  </li>
+  <li>
+    Each thread within a process is uniquely identified by a thread identifier.
+  </li>
+  <li>
+    All of the threads share the same global and heap variables but each thread has a private stack for local variables.
+  </li>
+  <li>
+    The threads in a process share a number of other attributes: pid, open file descriptors, signal dispositions, current working directory, resource limits, etc.
+  </li>
+  <li>
+    The errno mechanism has been adapted for threads such as to prevent race conditions while leaving error reporting unchanged.
+  </li>
+  <li>
+    All functions in the PThreads API return 0 on success or a positive error number on error.
+  </li>
+  <li>
+    On Linux, programs that use the Pthreads API must be compiled with the cc –pthread option.
+  </li>
+</ul>
 
 <!-- 
-  In a multithreaded process, multiple threads are concurrently executing the same
-program. All of the threads share the same global and heap variables, but each
-thread has a private stack for local variables. The threads in a process also share a number of other attributes, including process ID, open file descriptors, signal dispositions, current working directory, and resource limits.
- -->
+TODO: All error handling
+-->
 
+<!-- #endregion -->
 
-<h3>Thread Creation</h3>
+<!-- #region threads -->
+<h3>Threads</h3>
 
-<p>
-  When a program is started, the resulting process consists of a single thread called the main thread. The pthread_create() function creates a new thread which commences execution by calling the function identified by start with the argument arg. The thread that calls pthread_create() continues execution with the next statement that follows the call. Typically, arg points to a global or heap variable, but it can also be specified as NULL.
-</p>
+<h4>pthread_create()</h4>
 
 {{% code c %}}#include <pthread.h>
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start)(void *), void *arg);{{% /code %}}
 
-<p>
-  The thread argument points to a buffer of type pthread_t into which the unique identifier for this thread is copied before pthread_create() returns. This identifier can be used in later Pthreads calls to refer to the thread. The attr argument is a pointer to a pthread_attr_t object that specifies various attributes for the new thread. If attr is specified as NULL, then the thread is created with various default attributes.
-</p>
+<ul>
+  <li>
+    The <code>pthread_create()</code> function creates a new thread that commences execution by calling the start function identified by <code>start</code> with the argument <code>arg</code>.
+  </li>
+  <li>
+    The thread identifier for the created thread is copied into the buffer pointed to by the <code>thread</code> argument.
+  </li>
+  <li>
+    The <code>attr</code> argument specifies various attributes for the new thread. If <code>attr</code> is specified as <code>NULL</code> then the thread is created with various default attributes.
+  </li>
+  <li>
+    Typically, the <code>arg</code> arguments points to a global or heap variable but it can also be specified as <code>NULL</code>.
+  </li>
+</ul>
 
 
-<h3>Thread Identifiers</h3>
-
-<p>
-  Each thread within a process is uniquely identified by a thread ID which is returned by pthread_create(). A thread can obtain its own ID using pthread_self(). The pthread_equal() function allows us check whether two thread IDs are the same. This returns a nonzero value if t1 and t2 are equal and otherwise 0.
-</p>
-
-{{% code c %}}#include <pthread.h>
-
-pthread_t pthread_self(void);
-
-int pthread_equal(pthread_t t1, pthread_t t2);{{% /code %}}
-
-
-<h3>Thread Termination</h3>
-
-<p>
-  The execution of a thread terminates if the start function performs a return specifying a return value for the thread. Equivalently, the thread can call pthread_exit() with the return value specified by the retval argument. The value used as the return value should not be located on the stack of the thread as the contents of that stack become undefined on thread termination. Finally, if any thread calls exit() or the main thread performs a return this causes all threads to terminate immediately.
-</p>
+<h4>pthread_exit()</h4>
 
 {{% code c %}}#include <pthread.h>
 
 void pthread_exit(void *retval);{{% /code %}}
 
+<ul>
+  <li>
+    The <code>pthread_exit()</code> function terminates the calling thread with a return value that can be obtained in another thread via a call to <code>pthread_join()</code>.
+  </li>
+  <li>
+    A call to <code>pthread_exit()</code> is equivalent to performing a return in the start function with the difference that <code>pthread_exit()</code> can be called from any function that has been called by the start function.
+  </li>
+  <li>
+    The <code>retval</code> argument specifies the return value for the thread.
+  </li>
+</ul>
 
-<h3>Joining with a Terminated Thread</h3>
 
-<p>
-  The pthread_join() function waits for the thread identified by thread to terminate. if that thread has already terminated then pthread_join() returns immediately. If retval is a non-NULL pointer then it receives a copy of the return value of the terminated thread. If a thread is not detached then we must join with it using pthread_join(). If we fail to do this, then, when the thread terminates, it produces the thread equivalent of a zombie process.
-</p>
+<h4>pthread_self()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+pthread_t pthread_self(void);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_self()</code> function returns the thread identifier of the calling thread.
+  </li>
+</ul>
+
+
+<h4>pthread_equal()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_equal(pthread_t t1, pthread_t t2);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_equal()</code> function returns a non-zero value if <code>t1</code> and <code>t2</code> are equal and <code>0</code> otherwise.
+  </li>
+  <li>
+    This function is necessary because the <code>pthread_t</code> type must be treated as opaque data. On Linux, it happens to be defined as an <code>unsigned long</code> but on other implementations it could be a pointer or a structure.
+  </li>
+</ul>
+
+
+<h4>pthread_join()</h4>
 
 {{% code c %}}#include <pthread.h>
 
 int pthread_join(pthread_t thread, void **retval);{{% /code %}}
 
+<ul>
+  <li>
+    The <code>pthread_join()</code> function waits for the thread identified by thread to terminate. If that thread has already terminated then <code>pthread_join()</code> returns immediately.
+  </li>
+  <li>
+    If the <code>retval</code> argument is a non-<code>NULL</code> pointer then it receives a copy of the return value of the terminated thread.
+  </li>
+  <li>
+    If a thread is not detached then we must join with it using <code>pthread_join()</code>. If we fail to do this then the thread will produce the thread equivalent of a zombie process when it terminates.
+  </li>
+  <li>
+    Aside from wasting system resources, if enough thread zombies accumulate, we will not be able to create additional threads.
+  </li>
+</ul>
 
-<h3>Detaching a Thread</h3>
 
-<p>
-  By default, a thread is joinable meaning that when it terminates another thread can join with it using pthread_join(). If we simply want the system to automatically clean up and remove the thread when it terminates we can call pthread_detach() to mark it as detached. Once a thread has been detached it is no longer possible to join with it.
-</p>
+<h4>pthread_detach()</h4>
 
 {{% code c %}}#include <pthread.h>
 
 int pthread_detach(pthread_t thread);{{% /code %}}
 
+<ul>
+  <li>
+    The pthread_detach() function marks the thread identified by <code>thread</code> as detached so that it will be automatically cleaned up and removed upon termination.
+  </li>
+  <li>
+    Once a thread has been detached, it is no longer possible to use <code>pthread_join()</code> to obtain its return status and the thread cannot be made joinable again.
+  </li>
+</ul>
 
-<h3></h3>
+
+<h4>pthread_once()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_once(pthread_once_t *once_control, void (*init)(void));{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_once()</code> function uses the state of the <code>once_control</code> argument to ensure that the function pointed to by <code>init</code> is called just once no matter how many times the <code>pthread_once()</code> call is made.
+  </li>
+  <li>
+    The <code>once_control</code> argument is a pointer to a variable that must be statically initialized with the value <code>PTHREAD_ONCE_INIT</code>.
+  </li>
+  <li>
+    The first call to <code>pthread_once()</code> modifies the value of the variable pointed to by <code>once_control</code> so that subsequent calls to <code>pthread_once()</code> do not invoke <code>init</code>.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region mutexes -->
+<h3>Mutexes</h3>
+
+<ul>
+  <li>
+    Mutexes allow threads to synchronize their use of a shared resource, so that, for example, one thread does not try to access a shared variable at the same time as another thread is modifying it.
+  </li>
+</ul>
 
 <!-- 
-  Mutexes allow threads to synchronize
-their use of a shared resource, so that, for example, one thread doesn’t try to access
-a shared variable at the same time as another thread is modifying it. Condition variables perform a complementary task: they allow threads to inform each other that a
-shared variable (or other shared resource) has changed state.
+- There are three important cases to consider: 1) a single thread may not lock the same mutex twice, 2) a thread may not unlock a mutex that it did not lock and 3) a thread may not unlock a mutex that is not currently locked.
+- Precisely what happens in each of these cases depends on the type of the mutex:
+  - PTHREAD_MUTEX_DEFAULT: The behavior of this mutex type is undefined in all three of the above scenarios.
+  - PTHREAD_MUTEX_NORMAL: If a thread tries to lock a mutex that it has already locked then deadlock results. Cases 2) and 3) produce undefined results.
+  - PTHREAD_MUTEX_ERRORCHECK: All three of the above scenarios cause the relevant function to return an error. This type of mutex is typically slower than a normal mutex.
+  - PTHREAD_MUTEX_RECURSIVE: Maintains a lock count that is incremented by each subsequent lock operation and decremented by each unlock operation. The mutex is released only when the lock count falls to 0. Cases 2) and 3) fail.
+-->
 
-A mutex has two states: locked and unlocked. At any moment, at most one
-thread may hold the lock on a mutex. Attempting to lock a mutex that is already
-locked either blocks or fails with an error, depending on the method used to place
-the lock.
-When a thread locks a mutex, it becomes the owner of that mutex. Only the
-mutex owner can unlock the mutex. This property improves the structure of code
-that uses mutexes and also allows for some optimizations in the implementation of
-mutexes. Because of this ownership property, the terms acquire and release are
-sometimes used synonymously for lock and unlock.
+
+<h4>pthread_mutex_init()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_mutex_init()</code> function dynamically initializes the mutex identfied by <code>mutex</code>. After initialization, a mutex is unlocked.
+  </li>
+  <li>
+    The <code>attr</code> argument is a pointer to a <code>pthread_mutexattr_t</code> object that has previously been initialized to define the attributes for the mutex. If <code>attr</code> is specified as <code>NULL</code> then the mutex is assigned various default attributes.
+  </li>
+  <li>
+    The <code>PTHREAD_MUTEX_INITIALIZER</code> value is provided to initialize a statically allocated mutex with default attributes.
+  </li>
+</ul>
+
+
+<h4>pthread_mutex_destroy()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_mutex_destroy(pthread_mutex_t *mutex);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_mutex_destroy()</code> function destroys a mutex allocated by <code>pthread_mutex_init()</code>.
+  </li>
+  <li>
+    It is safe to destroy a mutex only when it is unlocked and no thread will subsequently try to lock it.
+  </li>
+  <li>
+    An automatically or dynamically allocated mutex should be destroyed using <code>pthread_mutex_destroy()</code> when it is no longer required.
+  </li>
+  <li>
+    If the mutex resides in a region of dynamically allocated memory then it should be destroyed before freeing that memory region. An automatically allocated mutex should be destroyed before its host function returns.
+  </li>
+</ul>
+
+
+<h4>pthread_mutex_lock()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_mutex_lock(pthread_mutex_t *mutex);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_mutex_lock()</code> function is used to lock a mutex.
+  </li>
+  <li>
+    If the mutex is currently unlocked then the call locks the mutex and returns immediately. 
+  </li>
+  <li>
+    If the mutex is currently locked then the call blocks until the mutex is unlocked at which point it locks the mutex and returns.
+  </li>
+</ul>
+
+
+<h4>pthread_mutex_unlock()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_mutex_unlock(pthread_mutex_t *mutex);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_mutex_unlock()</code> function unlocks a mutex previously locked by the calling thread.
+  </li>
+  <li>
+    It is an error to unlock a mutex that is not currently locked or to unlock a mutex that is locked by another thread.
+  </li>
+  <li>
+    If more than one other thread is waiting to acquire the mutex unlocked by a call to <code>pthread_mutex_unlock()</code> then it is indeterminate which thread will succeed in acquiring it.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region condition variables -->
+<h3>Condition Variables</h3>
+
+<!-- 
+- A condition variable allows a thread to sleep (wait) until another thread notifies (signal) it that it must do something (i.e. that some condition has arisen that the sleeper must now respond to).
+- A condition variable is always used in conjunction with a mutex. The mutex provides mutual exclusion for accessing the shared variable while the condition variable is used to signal changes in the state of the shared variable.
+- The principal condition variable operations are signal and wait. The signal operation is a notification to one or more waiting threads that the state of a shared variable has changed. The wait operation is the means of blocking until such a notification is received.
+- If no thread is waiting on the condition variable at the time that it is signaled then the signal is lost. A thread that later waits on the condition variable will unblock only when the variable is signaled once more.
+- There are no guarantees about the state of the predicate on return from the wait operation as:
+  - Another thread might have woken up first, acquired the mutex and changed the state of the associated shared variable and thus the state of the predicate.
+  - Designing for loose predicates may be simpler. In this case, signaling a condition variable would indicate that there may
+  be something for the signaled thread to do.
+  -  On some implementations, a thread waiting on a condition variable may be woken up even though no other thread actually signaled the condition variable.
+- We should immediately recheck the predicate and resume sleeping if it is not in the desired state.
+-->
+
+<!-- 
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+static int available = 0;
+
+// producer
+pthread_mutex_lock(&mutex);
+
+available++;
+
+pthread_mutex_unlock(&mutex);
+
+// wake sleeping consumer
+pthread_cond_signal(&cond);
+
+// unlocking and signaling can be performed in reverse order
+// pthread_cond_signal(&cond);
+// pthread_mutex_unlock(&mutex);
+
+
+// consumer
+pthread_mutex_lock(&mutex);
+
+// check that the shared variable is not in the desired state
+while (available == 0) {
+  pthread_cond_wait(&cond, &mutex);
+}
+
+// now  shared variable is in desired state
+available--;
+
+pthread_mutex_unlock(&mutex);
+-->
+
+
+<h4>pthread_cond_init()</h4>
+
+<!--
+#include <pthread.h>
+
+int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);
+
+- The pthread_cond_init() function is used to dynamically initialize a condition variable.
+- The cond argument identifies the condition variable to be initialized.
+- We can specify an attr argument that has been previously initialized to determine attributes for the condition variable. If attr is NULL then a default set of attributes is assigned to the condition variable.
+- The <code>PTHREAD_COND_INITIALIZER</code> value is provided to initialize a statically allocated condition variable with default attributes.
+- The pthread_cond_init() function returns 0 on success or a positive error number on error.
+-->
+
+
+<h4>pthread_cond_destroy()</h4>
+
+<!--
+#include <pthread.h>
+
+int pthread_cond_destroy(pthread_cond_t *cond);
+
+- When an automatically or dynamically allocated condition variable is no longer required then it should be destroyed using pthread_cond_destroy().
+- It is safe to destroy a condition variable only when no threads are waiting on it.
+- If the condition variable resides in a region of dynamically allocated memory then it should be destroyed before freeing that memory region. An automatically allocated condition variable should be destroyed before its host function returns.
+- A condition variable that has been destroyed with pthread_cond_destroy() can subsequently be reinitialized by pthread_cond_init().
+- It is not necessary to call pthread_cond_destroy() on a condition variable that was statically initialized using PTHREAD_COND_INITIALIZER.
+- The pthread_cond_destroy() function returns 0 on success or a positive error number on error.
  -->
 
 
-<h3>Return Values and errno with Threads</h3>
-
-<p>
-  In threaded programs, each thread has it sown errno value and so error reporting is unchanged. Indeed, the traditional method of returning status from system calls is to return 0 on success and -1 on error, with errno being set to indicate the error. However, all Pthreads functions return 0 on success or a positive value on failure. The failure value is one of the same values that can be placed in errno by traditional system calls.
-</p>
-
-
+<h4>pthread_cond_signal()</h4>
 
 <!-- 
-  Asynchronous: Any two operations are asynchronous when they can proceed independently of each other.
+#include <pthread.h>
 
-  Concurrency: Used to refer to things that appear to happen at the same time but which may occur serially. Concurrent operations may be arbitrarily interleaved so that they make progress independently.
+int pthread_cond_signal(pthread_cond_t *cond);
 
-  Parallelism: Concurrent sequences that proceed simultaneously. True parallelism can occur only on a multiprocessor system but concurrency can occur on both uniprocessor and multiprocessor systems.
-
-  Thread-safe: Code can be called from multiple threads without destructive results. Functions can be made thread-safe by serializing the entire function so that only one thread can truly perform the function at a time. More usefully, thread-safe functions can be broken down into smaller critical sections. That allows more than one thread to execute within the function although not within the same part.
-
-  Reentrant: Sometimes used to mean efficiently thread-safe. That is, the code was made thread-safe by some more sophisticated measures than converting it into a single serial region.
-
-  Synchronization: Provides mechanisms for concurrent execution contexts to coordinate their use of shared resources. A mutex provides a mechanism to prevent threads from colliding unexpectedly, and a condition variable allows a thread, once it has avoided such a collision, to wait until it is safe to proceed.
- -->
-
- <!-- 
-  pthread_create creates a thread running the routine specified in the third argument (alarm_thread), returning an identifier for the new thread to the variable referenced by thread.
-
-  pthread_detach allows Pthreads to reclaim the thread’s resources as soon as it terminates.
-  
-  pthread_exit terminates the calling thread.
-  
-  pthread_self returns the calling thread’s identifier.
+- The pthread_cond_signal() function signals the condition variable specified by cond.
+- With pthread_cond_signal(), we are guaranteed that at least one of the blocked threads is woken up and so pthread_cond_signal() should be used only if just one of the waiting threads needs to be woken up to handle the change in state of the shared variable.
+- Returns 0 on success or a positive error number on error.
 -->
 
 
 
+<h4>pthread_cond_broadcast()</h4>
 
+<!-- 
+#include <pthread.h>
+  
+int pthread_cond_broadcast(pthread_cond_t *cond);
+
+- The pthread_cond_broadcast() function signals the condition variable specified by cond.
+- pthread_cond_broadcast() handles the case where the waiting threads are designed to perform different tasks.
+- Returns 0 on success or a positive error number on error.
+ -->
+
+
+<h4>pthread_cond_wait()</h4>
+
+<!-- 
+#include <pthread.h>
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
+
+- The pthread_cond_wait() function blocks a thread until the condition variable cond is signaled.
+- The mutex argument corresponds to the mutex associated with the condition variable cond.
+- A call to pthread_cond_wait() performs the following steps: 1) unlock the mutex specified by mutex, 2) block the calling thread until another thread signals the condition variable cond and 3) re-lock the mutex.
+- Releasing the mutex and blocking on the condition variable are performed atomically so it is not possible for some other thread to acquire the mutex and signal the condition variable before the thread calling pthread_cond_wait() has blocked on the condition variable.
+- Returns 0 on success or a positive error number on error.
+ -->
+
+
+<h4>pthread_cond_timedwait()</h4>
+
+<!-- 
+#include <pthread.h>
+
+int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime);
+
+- The pthread_cond_timedwait() function is the same as pthread_cond_wait() except that the abstime argument specifies an upper limit on the time that the thread will sleep while waiting for the condition variable to be signaled.
+- The abstime argument is a timespec structure specifying an absolute time expressed as seconds and nanoseconds since the Epoch. 
+- If the time interval specified by abstime expires without the condition variable being signaled then pthread_cond_timedwait() returns the error ETIMEDOUT.
+- Returns 0 on success or a positive error number on error.
+ -->
+
+<!-- #endregion -->
+
+<!-- #region barriers -->
+
+<h3>Barriers</h3>
+
+<h4>pthread_barrier_init()</h4>
+
+#include <pthread.h>
+  
+int pthread_barrier_init(pthread_barrier_t *restrict barrier, const pthread_barrierattr_t *restrict attr, unsigned count);
+
+- The pthread_barrier_init() function initializes a barrier.
+- The attr argument specifies attributes for the barrier. If attr is NULL then the default barrier attributes are used.
+- The count argument specifies the number of threads that must call pthread_barrier_wait() before any of them successfully return from the call. The value must be greater than zero.
+
+
+<h4>pthread_barrier_destroy()</h4>
+
+#include <pthread.h>
+
+int pthread_barrier_destroy(pthread_barrier_t *barrier);
+
+- The pthread_barrier_destroy() function destroys the barrier referenced by barrier.
+
+
+<h4>pthread_barrier_wait()</h4>
+
+#include <pthread.h>
+
+int pthread_barrier_wait(pthread_barrier_t *barrier);
+
+- The pthread_barrier_wait() function will block until the required number of threads have called pthread_barrier_wait() specifying the barrier after which PTHREAD_BARRIER_SERIAL_THREAD will be returned to one unspecified thread and zero shall be returned to each of the other threads.
+- 
+
+At this point, the barrier shall be reset to the
+       state  it  had as a result of the most recent pthread_barrier_init() func‐
+       tion that referenced it.
+
+       If  a  signal  is  delivered to a thread blocked on a barrier, upon return
+       from the signal handler the thread shall resume waiting at the barrier  if
+       the  barrier  wait  has  not completed (that is, if the required number of
+       threads have not arrived at the barrier during the execution of the signal
+       handler);  otherwise,  the  thread  shall continue as normal from the com‐
+       pleted barrier wait. Until the thread in the signal handler  returns  from
+       it,  it  is unspecified whether other threads may proceed past the barrier
+       once they have all reached it.
+
+       A thread that has blocked on a barrier shall  not  prevent  any  unblocked
+       thread  that is eligible to use the same processing resources from eventu‐
+       ally making forward progress in its execution. Eligibility for  processing
+       resources shall be determined by the scheduling policy.
+
+
+Upon  successful completion, the pthread_barrier_wait() function shall re‐
+turn PTHREAD_BARRIER_SERIAL_THREAD for a single  (arbitrary)  thread  syn‐
+chronized  at  the  barrier and zero for each of the other threads. Other‐
+wise, an error number shall be returned to indicate the error.
+
+
+
+<!-- #endregion -->
+
+<!-- #region cancellation -->
+<h3>Cancellation</h3>
+
+<ul>
+
+</ul>
+
+<!-- 
+- The pthread_cancel() function allows one thread to send another thread a cancellation request.
+- How the target thread reacts to this request is determined by its cancelability state and type.
+- If the cancelability state is currently set to disabled then the request will remain pending until the cancelability state is set to enabled. If cancelability is enabled then the cancelability type determines when the target thread reacts to the request.
+- If the type is deferred then the cancellation occurs when the thread reaches a cancellation point. If the type is asynchronous then cancellation may occur at any time.
+- A cancellation point is a call to one of a set of functions defined by the implementation (e.g. accept(), open(), pthread_join(), poll(), write()). Most of these are functions that are capable of blocking for an indefinite period of time.
+- A thread can establish a stack of cleanup handlers that are automatically executed if the thread is canceled. The cleanup handlers are executed working down from the top of the stack.
+- If a cancelled thread was not detached then some other thread must join with it in order to prevent it from becoming a zombie thread. When a canceled thread is joined, the value returned via <code>pthread_join()</code> is <code>PTHREAD_CANCELED</code>.
+
+- When a thread calls fork(), the child inherits the calling thread’s cancelability type and state.
+-->
+
+
+<h4>pthread_cancel()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_cancel(pthread_t thread);{{% /code %}}
+
+<ul>
+  <li>
+    The pthread_cancel() function sends a cancellation request to the specified thread and returns immediately (without waiting for the target thread to terminate).
+  </li>
+  <li>
+    Precisely what happens to the target thread, and when it happens, depends on the cancellation state and type of the thread.
+  </li>
+</ul>
+
+
+<h4>pthread_setcancelstate()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_setcancelstate(int state, int *oldstate);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_setcancelstate()</code> function sets the cancelability state of the calling thread. The <code>state</code> argument has one of the following values:
+
+    <ul>
+      <li>
+        <code>PTHREAD_CANCEL_ENABLE</code>: The thread is cancelable. This is the default cancelability state in newly created threads.
+      </li>
+      <li>
+        <code>PTHREAD_CANCEL_DISABLE</code>: The thread is not cancelable. If a cancellation request is received then it remains pending until cancelability is enabled.
+      </li>
+    </ul>
+  </li>
+  <li>
+    The previous cancelability state is returned in the location pointed to by <code>oldstate</code>. We should always specify a non-<code>NULL</code> value for <code>oldstate</code>.
+  </li>
+</ul>
+
+
+<h4>pthread_setcanceltype()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+int pthread_setcanceltype(int type, int *oldtype);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_setcanceltype()</code> function sets the cancelability type of the thread. The <code>type</code> argument has one of the following values:
+
+    <ul>
+      <li>
+        <code>PTHREAD_CANCEL_DEFERRED</code>: The cancellation remains pending until a cancellation point is reached. This is the default cancelability type in newly created threads.
+      </li>
+      <li>
+        <code>PTHREAD_CANCEL_ASYNCHRONOUS</code>: The thread may be canceled at any time (perhaps, but not necessarily, immediately).
+      </li>
+    </ul>
+  </li>
+  <li>
+    The previous cancelability type is returned in the location pointed to by <code>oldtype</code>. We should always specify a non-<code>NULL</code> value for <code>oldtype</code>.
+  </li>
+</ul>
+
+
+<h4>pthread_testcancel()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+void pthread_testcancel(void);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_testcancel()</code> function has the purpose of being a cancellation point. If a cancellation is pending when this function is called then the calling thread is terminated.
+  </li>
+  <li>
+    A thread that is executing code that does not otherwise include cancellation points can periodically call <code>pthread_testcancel()</code> to ensure that it responds in a timely fashion to a cancellation request.
+  </li>
+</ul>
+
+
+<h4>pthread_cleanup_push()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+void pthread_cleanup_push(void (*routine)(void*), void *arg);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_cleanup_push()</code> function pushes the function specified by <code>routine</code> onto the cleanup handler stack of the calling thread.
+  </li>
+  <li>
+    The <code>arg</code> argument specifies the value passed as the argument of the cleanup handler when it is invoked.
+  </li>
+</ul>
+
+
+<h4>pthread_cleanup_pop()</h4>
+
+{{% code c %}}#include <pthread.h>
+
+void pthread_cleanup_pop(int execute);{{% /code %}}
+
+<ul>
+  <li>
+    The <code>pthread_cleanup_pop()</code> function pops a function off the cleanup handler stack of the calling thread.
+  </li>
+  <li>
+    If the <code>execute</code> argument is nonzero then the handler is also executed.
+  </li>
+  <li>
+    Typically, a cleanup action is needed only if a thread is canceled during the execution of a particular section of code and so each each call to <code>pthread_cleanup_push()</code> has an accompanying call to <code>pthread_cleanup_pop()</code>.
+  </li>
+  <li>
+    Both <code>pthread_cleanup_push()</code> and <code>pthread_cleanup_pop()</code> can be implemented as macros that expand to test containing <code>{</code> and <code>}</code>, respectively. For this reason, each use of <code>pthread_cleanup_push()</code> must be paired with exactly one corresponding <code>pthread_cleanup_pop()</code> in the same lexical block.
+  </li>
+  <li>
+    Any cleanup handlers that have not been popped are also executed automatically if a thread terminates by calling <code>pthread_exit()</code> (but not if it does a simple return).
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region resources -->
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=0sVGnxg6Z3k">Condition Variables in C (CodeVault)</a>
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- 33. THREADS: FURTHER DETAILS
+============================================================
+
+
+Threads and Signals
+
+- There are some significant conflicts between the signal and thread models. Combining signals and threads is complex and should be avoided whenever possible.
+
+
+The following list summarizes the key points:
+
+- Signal actions are process-wide. If any unhandled signal whose default action is stop or terminate is delivered to any thread in a process then all of the threads in the process are stopped or terminated.
+
+- Signal dispositions are process-wide; all threads in a process share the same disposition for each signal. If one thread uses sigaction() to establish a handler for, say, SIGINT, then that handler may be invoked from any thread to which the
+SIGINT is delivered.
+
+- A signal may be directed to either the process as a whole or to a specific thread. A signal is thread-directed if:
+– it is generated as the direct result of the execution of a specific hardware
+instruction within the context of the thread (i.e., the hardware exceptions
+described in Section 22.4: SIGBUS, SIGFPE, SIGILL, and SIGSEGV);
+– it is a SIGPIPE signal generated when the thread tried to write to a broken
+pipe; or
+– it is sent using pthread_kill() or pthread_sigqueue(), which are functions
+(described in Section 33.2.3) that allow one thread to send a signal to
+another thread within the same process.
+All signals generated by other mechanisms are process-directed. 
+
+Examples are
+signals sent from another process using kill() or sigqueue(); signals such as
+SIGINT and SIGTSTP, generated when the user types one of the terminal special
+characters that generate a signal; and signals generated for software events
+such as the resizing of a terminal window (SIGWINCH) or the expiration of a timer
+(e.g., SIGALRM).
+z When a signal is delivered to a multithreaded process that has established a signal handler, the kernel arbitrarily selects one thread in the process to which to
+deliver the signal and invokes the handler in that thread. This behavior is consistent with maintaining the traditional signal semantics. It would not make
+sense for a process to perform the signal handling actions multiple times in
+response to a single signal.
+z The signal mask is per-thread. (There is no notion of a process-wide signal
+mask that governs all threads in a multithreaded process.) Threads can independently block or unblock different signals using pthread_sigmask(), a new
+function defined by the Pthreads API. By manipulating the per-thread signal
+masks, an application can control which thread(s) may handle a signal that is
+directed to the whole process.
+z The kernel maintains a record of the signals that are pending for the process as a
+whole, as well as a record of the signals that are pending for each thread. A call to
+sigpending() returns the union of the set of signals that are pending for the process and those that are pending for the calling thread. In a newly created thread,
+the per-thread set of pending signals is initially empty. A thread-directed signal
+can be delivered only to the target thread. If the thread is blocking the signal, it
+will remain pending until the thread unblocks the signal (or terminates).
+z If a signal handler interrupts a call to pthread_mutex_lock(), then the call is always
+automatically restarted. If a signal handler interrupts a call to pthread_cond_wait(),
+then the call either is restarted automatically (this is what Linux does) or
+returns 0, indicating a spurious wake-up (in which case a well-designed application will recheck the corresponding predicate and restart the call, as described
+in Section 30.2.3). SUSv3 requires these two functions to behave as described here.
+z The alternate signal stack is per-thread (refer to the description of sigaltstack()
+in Section 21.3). A newly created thread doesn’t inherit the alternate signal
+stack from its creator.
+More precisely, SUSv3 specifies that there is a separate alternate signal stack
+for each kernel scheduling entity (KSE). On a system with a 1:1 threading
+implementation, as on Linux, there is one KSE per thread (see Section 33.4).
+33.2.2 Manipulating the Thread Signal Mask
+When a new thread is created, it inherits a copy of the signal mask of the thread
+that created it. A thread can use pthread_sigmask() to change its signal mask, to retrieve
+the existing mask, or both.
+Other than the fact that it operates on the thread signal mask, the use of
+pthread_sigmask() is the same as the use of sigprocmask() (Section 20.10).
+SUSv3 notes that the use of sigprocmask() within a multithreaded program is
+unspecified. We can’t portably employ sigprocmask() in a multithreaded program. In practice, sigprocmask() and pthread_sigmask() are identical on many
+implementations, including Linux.
+
+
+33.2.3 Sending a Signal to a Thread
+The pthread_kill() function sends the signal sig to another thread in the same process.
+The target thread is identified by the argument thread.
+Because a thread ID is guaranteed to be unique only within a process (see
+Section 29.5), we can’t use pthread_kill() to send a signal to a thread in another
+process.
+The pthread_kill() function is implemented using the Linux-specific tgkill(tgid,
+tid, sig) system call, which sends the signal sig to the thread identified by tid (a
+kernel thread ID of the type returned by gettid()) within the thread group identified by tgid. See the tgkill(2) manual page for further details.
+The Linux-specific pthread_sigqueue() function combines the functionality of
+pthread_kill() and sigqueue() (Section 22.8.1): it sends a signal with accompanying
+data to another thread in the same process.
+#include <signal.h>
+int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset);
+Returns 0 on success, or a positive error number on error
+#include <signal.h>
+int pthread_kill(pthread_t thread, int sig);
+Returns 0 on success, or a positive error number on error
+Threads: Further Details 685
+As with pthread_kill(), sig specifies the signal to be sent, and thread identifies the target
+thread. The value argument specifies the data to accompany the signal, and is used
+in the same way as the equivalent argument of sigqueue().
+The pthread_sigqueue() function was added to glibc in version 2.11 and requires
+support from the kernel. This support is provided by the rt_tgsigqueueinfo() system call, which was added in Linux 2.6.31.
+
+
+33.2.4 Dealing with Asynchronous Signals Sanely
+
+Multithreaded programs that must deal with asynchronously generated signals generally should not use a signal handler as the mechanism to receive notification of signal delivery.
+
+nstead, the preferred approach is the following:
+- All threads block all of the asynchronous signals that the process might receive. The simplest way to do this is to block the signals in the main thread before any
+other threads are created. Each subsequently created thread will inherit a copy
+of the main thread’s signal mask.
+z Create a single dedicated thread that accepts incoming signals using sigwaitinfo(),
+sigtimedwait(), or sigwait(). We described sigwaitinfo() and sigtimedwait() in Section 22.10. We describe sigwait() below.
+The advantage of this approach is that asynchronously generated signals are
+received synchronously. As it accepts incoming signals, the dedicated thread can
+safely modify shared variables (under mutex control) and call non-async-signal-safe
+functions. It can also signal condition variables, and employ other thread and process communication and synchronization mechanisms.
+The sigwait() function waits for the delivery of one of the signals in the signal
+set pointed to by set, accepts that signal, and returns it in sig.
+#define _GNU_SOURCE
+#include <signal.h>
+int pthread_sigqueue(pthread_t thread, int sig, const union sigval value);
+Returns 0 on success, or a positive error number on error
+#include <signal.h>
+int sigwait(const sigset_t *set, int *sig);
+Returns 0 on success, or a positive error number on error
+686 Chapter 33
+The operation of sigwait() is the same as sigwaitinfo(), except that:
+z instead of returning a siginfo_t structure describing the signal, sigwait() returns
+just the signal number; and
+z the return value is consistent with other thread-related functions (rather than
+the 0 or –1 returned by traditional UNIX system calls).
+If multiple threads are waiting for the same signal with sigwait(), only one of the
+threads will actually accept the signal when it arrives. Which of the threads this will
+be is indeterminate.
+
+---
+
+33.3 Threads and Process Control
+
+- When any thread calls one of the exec() functions, the calling program is completely replaced. All threads, except the one that called exec(), vanish immediately. None of the threads executes destructors for thread-specific data or calls cleanup handlers. All of the (process-private) mutexes and condition variables belonging to the process also disappear. After an exec(), the thread ID of the remaining thread is unspecified.
+
+When a multithreaded process calls fork(), only the calling thread is replicated in the child process. (The ID of the thread in the child is the same as the ID of the
+thread that called fork() in the parent.) All of the other threads vanish in the child;
+no thread-specific data destructors or cleanup handlers are executed for those
+threads.
+
+This can lead to various problems:
+z Although only the calling thread is replicated in the child, the states of global
+variables, as well as all Pthreads objects such as mutexes and condition variables, are preserved in the child. (This is so because these Pthreads objects are
+allocated within the parent’s memory, and the child gets a duplicate of that
+memory.) This can lead to tricky scenarios. For example, suppose that another
+thread had locked a mutex at the time of the fork() and is part-way through
+updating a global data structure. In this case, the thread in the child would not
+be able to unlock the mutex (since it is not the mutex owner) and would block
+if it tried to acquire the mutex. Furthermore, the child’s copy of the global data
+structure is probably in an inconsistent state, because the thread that was
+updating it vanished part-way through the update.
+z Since destructors for thread-specific data and cleanup handlers are not called,
+a fork() in a multithreaded program can cause memory leaks in the child. Furthermore, the thread-specific data items created by other threads are likely to
+be inaccessible to the thread in the new child, since it doesn’t have pointers
+referring to these items.
+Because of these problems, the usual recommendation is that the only use of fork()
+in a multithreaded process should be one that is followed by an immediate exec().
+The exec() causes all of the Pthreads objects in the child process to disappear as the
+new program overwrites the memory of the process.
+For programs that must use a fork() that is not followed by an exec(), the
+Pthreads API provides a mechanism for defining fork handlers. Fork handlers are
+established using a pthread_atfork() call of the following form:
+pthread_atfork(prepare_func, parent_func, child_func);
+Each pthread_atfork() call adds prepare_func to a list of functions that will be automatically executed (in reverse order of registration) before the new child process is
+created when fork() is called. Similarly, parent_func and child_func are added to a list
+functions that will be called automatically (in order of registration), in, respectively,
+the parent and child process, just before fork() returns.
+Fork handlers are sometimes useful for library code that makes use of threads.
+In the absence of fork handlers, there would be no way for the library to deal with
+applications that naively make use of the library and call fork(), unaware that the
+library has created some threads.
+The child produced by fork() inherits fork handlers from the thread that called
+fork(). During an exec(), fork handlers are not preserved (they can’t be, since the
+code of the handlers is overwritten during the exec()).
+Further details on fork handlers, and examples of their use, can be found in
+[Butenhof, 1996].
+On Linux, fork handlers are not called if a program using the NPTL threading
+library calls vfork(). However, in a program using LinuxThreads, fork handlers
+are called in this case.
+Threads and exit()
+If any thread calls exit() or, equivalently, the main thread does a return, all threads
+immediately vanish; no thread-specific data destructors or cleanup handlers are
+executed.
+ -->
+
+<!-- 
+MISC
+
+29
+
+SUSv3 explicitly notes that the implementation need not initialize the buffer
+pointed to by thread before the new thread starts executing; that is, the new thread
+may start running before pthread_create() returns to its caller. If the new
+thread needs to obtain its own ID, then it must do so using pthread_self().
+
+---
+
+
+
+31
+
+A function is said to be thread-safe if it can safely be invoked by multiple threads at the same time.
+
+A reentrant function achieves thread safety without the use of mutexes. It does this by avoiding the use of global and static variables. Any information that must be returned to the caller,
+or maintained between calls to the function, is stored in buffers allocated by the caller.
+
+
+For several of the functions that have nonreentrant interfaces, SUSv3 specifies reentrant equivalents with names ending with the suffix _r. These functions require the caller to allocate a buffer whose address is then passed to the function and used
+to return the result. This allows the calling thread to use a local (stack) variable for
+the function result buffer.
+
+
+
+33
+
+Each thread has its own stack whose size is fixed when the thread is created.
+
+Occasionally, it is useful to change the size of a thread’s stack. The
+pthread_attr_setstacksize() function sets a thread attribute that determines the size of the stack in threads created using the thread attributes object. The
+related pthread_attr_setstack() function can be used to control both the size and the
+location of the stack, but setting the location of a stack can decrease application
+portability.
+
+The minimum stack that can be employed on a particular architecture can be
+determined by calling sysconf(_SC_THREAD_STACK_MIN).
+
+
+Under the NPTL threading implementation, if the stack size resource limit
+(RLIMIT_STACK) is set to anything other than unlimited, then it is used as the
+default stack size when creating new threads. This limit must be set before the
+program is executed, typically by using the ulimit –s shell built-in command
+(limit stacksize in the C shell) before executing the program. 
+
+It is not sufficient
+to use setrlimit() within the main program to set the limit, because NPTL makes
+its determination of the default stack size during the run-time initialization
+that occurs before main() is invoked.
+-->
+
+<!--
+30.2.4 Example Program: Joining Any Terminated Thread
+We noted earlier that pthread_join() can be used to join with only a specific thread.
+It provides no mechanism for joining with any terminated thread. We now show
+how a condition variable can be used to circumvent this restriction.
+The program in Listing 30-4 creates one thread for each of its command-line
+arguments. Each thread sleeps for the number of seconds specified in the corresponding command-line argument and then terminates. The sleep interval is our
+means of simulating the idea of a thread that does work for a period of time.
+The program maintains a set of global variables recording information about
+all of the threads that have been created. For each thread, an element in the global
+thread array records the ID of the thread (the tid field) and its current state (the state
+field). The state field has one of the following values: TS_ALIVE, meaning the thread is
+alive; TS_TERMINATED, meaning the thread has terminated but not yet been joined; or
+TS_JOINED, meaning the thread has terminated and been joined.
+As each thread terminates, it assigns the value TS_TERMINATED to the state field for
+its element in the thread array, increments a global counter of terminated but as yet
+unjoined threads (numUnjoined), and signals the condition variable threadDied.
+The main thread employs a loop that continuously waits on the condition variable
+threadDied. Whenever threadDied is signaled and there are terminated threads that
+have not been joined, the main thread scans the thread array, looking for elements
+with state set to TS_TERMINATED. For each thread in this state, pthread_join() is called
+using the corresponding tid field from the thread array, and then the state is set to
+TS_JOINED. The main loop terminates when all of the threads created by the main
+thread have died—that is, when the global variable numLive is 0.
+Threads: Thread Synchronization 649
+The following shell session log demonstrates the use of the program in
+Listing 30-4:
+$ ./thread_multijoin 1 1 2 3 3 Create 5 threads
+Thread 0 terminating
+Thread 1 terminating
+Reaped thread 0 (numLive=4)
+Reaped thread 1 (numLive=3)
+Thread 2 terminating
+Reaped thread 2 (numLive=2)
+Thread 3 terminating
+Thread 4 terminating
+Reaped thread 3 (numLive=1)
+Reaped thread 4 (numLive=0)
+Finally, note that although the threads in the example program are created as joinable and are immediately reaped on termination using pthread_join(), we don’t
+need to use this approach in order to find out about thread termination. We could
+have made the threads detached, removed the use of pthread_join(), and simply
+used the thread array (and associated global variables) as the means of recording
+the termination of each thread.
+
+
+Listing 30-4: A main thread that can join with any terminated thread
+#include <pthread.h>
+#include "tlpi_hdr.h"
+static pthread_cond_t threadDied = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
+ /* Protects all of the following global variables */
+static int totThreads = 0; /* Total number of threads created */
+static int numLive = 0; /* Total number of threads still alive or
+ terminated but not yet joined */
+static int numUnjoined = 0; /* Number of terminated threads that
+ have not yet been joined */
+enum tstate { /* Thread states */
+ TS_ALIVE, /* Thread is alive */
+ TS_TERMINATED, /* Thread terminated, not yet joined */
+ TS_JOINED /* Thread terminated, and joined */
+};
+static struct { /* Info about each thread */
+ pthread_t tid; /* ID of this thread */
+ enum tstate state; /* Thread state (TS_* constants above) */
+ int sleepTime; /* Number seconds to live before terminating */
+} *thread;
+static void * /* Start function for thread */
+threadFunc(void *arg)
+{
+ int idx = *((int *) arg);
+ int s;
+650 Chapter 30
+ sleep(thread[idx].sleepTime); /* Simulate doing some work */
+ printf("Thread %d terminating\n", idx);
+ s = pthread_mutex_lock(&threadMutex);
+ if (s != 0)
+ errExitEN(s, "pthread_mutex_lock");
+ numUnjoined++;
+ thread[idx].state = TS_TERMINATED;
+ s = pthread_mutex_unlock(&threadMutex);
+ if (s != 0)
+ errExitEN(s, "pthread_mutex_unlock");
+ s = pthread_cond_signal(&threadDied);
+ if (s != 0)
+ errExitEN(s, "pthread_cond_signal");
+ return NULL;
+}
+int
+main(int argc, char *argv[])
+{
+ int s, idx;
+ if (argc < 2 || strcmp(argv[1], "--help") == 0)
+ usageErr("%s nsecs...\n", argv[0]);
+ thread = calloc(argc - 1, sizeof(*thread));
+ if (thread == NULL)
+ errExit("calloc");
+ /* Create all threads */
+ for (idx = 0; idx < argc - 1; idx++) {
+ thread[idx].sleepTime = getInt(argv[idx + 1], GN_NONNEG, NULL);
+ thread[idx].state = TS_ALIVE;
+ s = pthread_create(&thread[idx].tid, NULL, threadFunc, &idx);
+ if (s != 0)
+ errExitEN(s, "pthread_create");
+ }
+ totThreads = argc - 1;
+ numLive = totThreads;
+ /* Join with terminated threads */
+ while (numLive > 0) {
+ s = pthread_mutex_lock(&threadMutex);
+ if (s != 0)
+ errExitEN(s, "pthread_mutex_lock");
+Threads: Thread Synchronization 651
+ while (numUnjoined == 0) {
+ s = pthread_cond_wait(&threadDied, &threadMutex);
+ if (s != 0)
+ errExitEN(s, "pthread_cond_wait");
+ }
+ for (idx = 0; idx < totThreads; idx++) {
+ if (thread[idx].state == TS_TERMINATED){
+ s = pthread_join(thread[idx].tid, NULL);
+ if (s != 0)
+ errExitEN(s, "pthread_join");
+ thread[idx].state = TS_JOINED;
+ numLive--;
+ numUnjoined--;
+ printf("Reaped thread %d (numLive=%d)\n", idx, numLive);
+ }
+ }
+ s = pthread_mutex_unlock(&threadMutex);
+ if (s != 0)
+ errExitEN(s, "pthread_mutex_unlock");
+ }
+ exit(EXIT_SUCCESS);
+}
+-->

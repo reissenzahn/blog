@@ -1,0 +1,1043 @@
+---
+title: "BitTorrent"
+date: 2021-12-29
+draft: false
+---
+
+<p>
+  <i>"The cat is out of the bag. The content people have no clue. I mean, no clue."</i>
+  <br>
+  — Bram Cohen
+</p>
+
+<!-- #region introduction -->
+<ul>
+  <li>
+    BitTorrent is a peer-to-peer file sharing protocol that redistributes upload costs among downloaders by having them upload pieces of the file to each other.
+  </li>
+  <li>
+    This offers scalability and affordability advantages over a traditional client-server architecture which places all the upload cost on the file host.
+  </li>
+  <li>
+    BitTorrent consists of two logically distinct protocols:
+    <ul>
+      <li>
+        The <i>tracker HTTP protocol</i> defines a method for contacting a tracker for purposes such as joining a swarm and reporting progress.
+      </li>
+      <li>
+        The <i>peer wire protocol</i> defines a mechanism for communication between peers in order to share a file content.
+      </li>
+    </ul>
+  </li>
+  <li>
+    A torrent is published by establishing a tracker, creating a metainfo file from the torrent pointing to the tracker, publishing that metainfo file and setting up a seeder.
+  </li>
+  <li>
+    A client downloads a torrent by retrieving the metainfo file, periodically requesting swarm information from the tracker and connecting to peers in the swarm to share pieces.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region terminology -->
+<h3>Terminology</h3>
+
+<p>
+  <i>Peer</i>: A node in a network participating in file sharing. Can simultaneously act as both a client and a server.
+</p>
+
+<p>
+  <i>Neighboring peers</i>: Peers with which a client has an active TCP connection. 
+</p>
+
+<p>
+  <i>Client</i>: A user agent that acts as a peer on behalf of a user.
+</p>
+
+<p>
+  <i>Seeder</i>: A peer that has a complete copy of a torrent.
+</p>
+
+<p>
+  <i>Leecher</i>: A peer that does not have a complete copy of the torrent.
+</p>
+
+<p>
+  <i>Swarm</i>: The network of peers sharing a given torrent.
+</p>
+
+<p>
+  <i>Torrent</i>: The file or group of files (multi-file torrent) that is being shared.
+</p>
+
+<p>
+  <i>Tracker</i>: A centralized server that keeps track of torrents and the participating peers in their associated swarms.
+</p>
+
+<p>
+  <i>Scraping</i>: When a client sends a request to a tracker for information about a torrent.
+</p>
+
+<p>
+  <i>Snubbing</i>: A client considers itself as snubbed by a peer if it has not received any data from that peer in over 60 seconds.
+</p>
+
+<p>
+  <i>Metainfo file</i>: A text file that holds information about the torrent and the URL of the suitable tracker. Usually has the <code>.torrent</code> extension.
+</p>
+
+<p>
+  <i>Peer Identifier</i>: A unique 20-byte string that identifiers a peer.
+</p>
+
+<p>
+  <i>Info Hash</i>: A SHA-1 hash calculated from data in a metainfo file that uniquely identifies the torrent described by that metainfo file.
+</p>
+<!-- #endregion -->
+
+<!-- #region concepts -->
+<h3>Concepts</h3>
+
+<h4>Pieces and Hashes</h4>
+
+<ul>
+  <li>
+    A torrent is treated as a contiguous stream of bytes which is divided into a number of fixed-size pieces.
+  </li>
+  <li>
+    Torrents consisting of multi-files are considered as the concatenation of these files in the order of their appearance in the metainfo file.
+  </li>
+  <li>
+    Each piece is assigned a sequential index starting from zero. The last piece may be smaller than the rest.
+  </li>
+  <li>
+    The number of pieces and the SHA-1 hashes of each piece are included in the metainfo file to verify the integrity of each downloaded piece.
+  </li>
+  <li>
+    Too large piece sizes result in less efficient transfers while too small piece sizes cause large metainfo files. Typical sizes include 256KB, 512Kb and 1MB.
+  </li>
+  <li>
+    A peer can only share the complete pieces it has obtained. The complete torrent is obtained by combining all the pieces into a single string of bytes.
+  </li>
+</ul>
+
+
+<h4>Pipelining</h4>
+
+<ul>
+  <li>
+    When distributing pieces between peers, those pieces are further broken down into blocks so as to allow a peer to download a given piece from multiple peers. Typical client implementations use a block size of 16KB.
+  </li>
+  <li>
+    Once a peer has downloaded a complete piece, it can verify its integrity by computing its SHA-1 hash and then immediately start sharing it with other peers.
+  </li>
+  <li>
+    By breaking pieces into blocks, BitTorrent facilitates always keeping some number (typically five) of requests pipelined at once. Each time a block arrives, a new request is sent.
+  </li>
+  <li>
+    This is very important when transferring data over TCP as having several requests pending at once avoids a delay between blocks being sent.
+  </li>
+</ul>
+
+
+<h4>Trackers</h4>
+
+<ul>
+  <li>
+    A tracker is a centralized server that keeps track of torrents and the peers in their associated swarms.
+  </li>
+  <li>
+    The tracker is not directly involved in data transfer and does not hold copies of torrents.
+  </li>
+  <li>
+    A client contacts a tracker using the announce URL specified in the metainfo file in order to join the swarm.
+  </li>
+  <li>
+    Clients periodically report information to the tracker and in exchange receive information about other peers to which they can connect to download pieces.
+  </li>
+  <li>
+    A tracker relies on peers sending regular requests and may otherwise assume that a peer is dead.
+  </li>
+</ul>
+
+
+<h4>Metainfo Files</h4>
+
+<ul>
+  <li>
+    To publish a file using BitTorrent, a metainfo file containing information about the torrent must be created.
+  </li>
+  <li>
+    This includes tracker information, the piece length, hashes for each piece and metadata about the torrent.
+  </li>
+  <li>
+    These hashes will be used keep track of which pieces each peer has and to verify the integrity of each piece a peer obtains.
+  </li>
+  <li>
+    The metainfo file can then be distributed to peers interested in downloading the file.
+  </li>
+  <li>
+    At least one seeder with access to the complete torrent must be made available to allow for the file to start being distributed.
+  </li>
+</ul>
+
+
+<h4>Piece Selection</h4>
+
+<ul>
+  <li>
+    The method used to select which pieces to begin downloading is very important for ensuring high performance.
+  </li>
+  <li>
+    Three policies are used for piece selection:
+    <ul>
+      <li>
+        <i>Strict Priority</i>: Once a block for a particular piece has been requested, the remaining blocks for that piece are requested before blocks from any other piece to ensure that complete pieces are obtained as quickly as possible.
+      </li>
+      <li>
+        <i>Rarest First</i>: When selecting which piece to start downloading next, peers generally download pieces which the fewest of their own peers have first. This replicates the rarest pieces as quickly as possible.
+      </li>
+      <li>
+        <i>Random First Piece</i>: When downloading starts, pieces to download are selected at random until a complete piece is obtained. This looks to ensure that peers get a piece to upload as quickly as possible rather than attempting to obtain rare pieces which will generally download slower.
+      </li>
+    </ul>
+  </li>
+  <li>
+    To find the rarest piece a client must calculate for each piece index the number of times this index is true in the bitfield vectors of all the neighboring peers. The piece with the lowest sum is then selected for requesting.
+  </li>
+</ul>
+
+
+<h4>Endgame Mode</h4>
+
+<ul>
+  <li>
+    Sometimes a piece will be requested from a peer with very slow transfer rates.
+  </li>
+  <li>
+    This is not a problem in the middle of a download but could delay a download that is just about to finish.
+  </li>
+  <li>
+    To prevent this, once all blocks which a peer does not have are actively being requested, it enters <i>endgame mode</i> and sends requests for all of the missing blocks to all peers.
+  </li>
+  <li>
+    Cancels are sent for blocks which arrive to prevent redundant sends.
+  </li>
+</ul>
+
+
+<h4>Choking</h4>
+
+<ul>
+  <li>
+    Each peer is responsible for attempting to maximize its own download rate. Peers achieve this by downloading from whichever peers they can and deciding which peers to upload to using a variant of tit-for-tat.
+  </li>
+  <li>
+    A peer either uploads to cooperate or <i>chokes</i> to not cooperate. Choking consists of a temporary refusal to upload though downloading can still happen and the connection does not need to be renegotiated when choking stops.
+  </li>
+  <li>
+    A peer always unchokes a fixed number of other peers (default is four) and the decision as to which peers to unchoke is strictly based on current download rates as measured by, say, a 20-second rolling average.
+  </li>
+  <li>
+    Peers calculate who they want to choke only once every rechoke period (10 seconds) to avoid wasting resources by rapidly choking and unchoking peers.
+  </li>
+  <li>
+    In order to discover if currently unused connections might provide better download rates than the ones currently being used, a peer also has a single <i>optimistic unchoke</i> which is unchoked regardless of the current download rate. The peer that is the optimistic unchoke is rotated every third rechoke period (30 seconds).
+  </li>
+  <li>
+    If a peer is choked by all peers which it was formerly downloading from it will usually get poor download rates until the optimistic unchoke finds better peers.
+  </li>
+  <li>
+    To mitigate this, if a minute passes without a peer receiving a piece from a particular peer then it will assume it has been <i>snubbed</i> and stops uploading to that peer (except if it becomes optimistic unchoke). The peer will then increase the number of optimistic unchokes in order to find better peers faster.
+  </li>
+  <li>
+    Once a peer is done downloading, it no longer has useful download rates to decide which peers to upload to and so might decide to prefer peers which which it has better upload rates or those peers which no-one else happens to be uploading to at the moment.
+  </li>
+</ul>
+
+<!-- 
+  Occasionally a BitTorrent peer will be choked by all peers which it was formerly downloading from. In such cases it will usually continue to get poor download rates until the optimistic unchoke finds better peers. To mitigate this problem, when over a minute goes by without getting any piece data while downloading from a peer, BitTorrent assumes it is "snubbed" by that peer and doesn't upload to it except as an optimistic unchoke. This frequently results in more than one concurrent optimistic unchoke, (an exception to the exactly one optimistic unchoke rule mentioned above), which causes download rates to recover much more quickly when they falter.
+
+  To mitigate this problem, when over a minute goes by without getting a single piece from a particular peer, BitTorrent assumes it is ’snubbed’ by that peer and doesn’t upload to it except as an optimistic unchoke. This frequently results in more than one concurrent optimistic unchoke, (an exception to the exactly one optimistic unchoke rule mentioned above), which causes download rates to recover much more quickly when they falter.
+
+   If a client hasn’t got anything from a particular peer for 60 seconds, it
+presumes that is has been “snubbed”. Following the mentality of “tit-for-tat” it retaliates and
+refuses to upload to that peer (except if it becomes an optimistic unchoke). It will then
+increase the number of optimistic unchokes in order to try to find new connections quicker. 
+ -->
+
+
+<h4>Peer State</h4>
+
+<ul>
+  <li>
+    A client must maintain the following state information for each connection with a remote peer:
+    <ul>
+      <li>
+        am_choking: Is the client choking the peer? (default=1)
+      </li>
+      <li>
+        am_interested: Is the client interested in requesting data from the peer? (default=0)
+      </li>
+      <li>
+        peer_choking: Is the peer choking the client? (default=1)
+      </li>
+      <li>
+        peer_interested: Is the peer interested in requesting data from the client? (default=0)
+      </li>
+    </ul>
+  </li>
+  <li>
+    When a peer is choked, it is a notification that no requests will be answered until the peer is unchoked. The peer should not attempt to send any data-oriented messaged. If a peer chokes a remote peer, it must discard any unanswered requests for blocks previously received from the remote peer.
+  </li>
+  <li>
+    When a peer indicates its interest in another peer, it is a notification that the remote peer will begin requesting blocks when the client unchokes them. It is important for a peer to keep its peers informed as to whether or not it is interested in them even when the client is choked.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region metainfo-file-structure -->
+<h3 id="metainfo-file-structure">Metainfo File Structure</h3>
+
+<p>
+  The metainfo file contains a bencoded dictionary with the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>announce</code>: A string containing the URL of the tracker.
+  </li>
+  <li>
+    <code>info</code>: A dictionary containing information about the files in the torrent.
+  </li>
+  <li>
+    <code>comment</code>: A string containing comments from the torrent author (optional).
+  </li>
+  <li>
+    <code>created by</code>: A string containing the name and version of the program used to create the metainfo file (optional).
+  </li>
+  <li>
+    <code>creation date</code>: A string containing the creation time of the torrent in UNIX epoch format (optional).
+  </li>
+</ul>
+
+<p>
+  If the torrent contains a single file then the <code>info</code> dictionary must have the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>name</code>: A string containing the name of the file.
+  </li>
+  <li>
+    <code>length</code>: An integer indicating the length of the file in bytes.
+  </li>
+  <li>
+    <code>piece length</code>: An integer indicating the number of bytes in each piece.
+  </li>
+  <li>
+    <code>pieces</code>: A string containing the concatenation of the SHA-1 hash for each piece in the torrent.
+  </li>
+</ul>
+
+<p>
+  If the torrent contains multiple files then the <code>info</code> dictionary must have the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>name</code>: A string containing the name of the topmost directory in the file structure.
+  </li>
+  <li>
+    <code>files</code>: A list containing a dictionary for each file in the torrent. Each dictionary has the following keys:
+    <ul>
+      <li>
+        <code>length</code>: An integer indicating the total length of the file in bytes.
+      </li>
+      <li>
+        <code>path</code>: A list of strings that specifies the path to the file relative to the topmost directory. The last element in the list is the name of the file.
+      </li>
+    </ul>
+  </li>
+  <li>
+    <code>piece length</code>: An integer indicating the number of bytes in each piece.
+  </li>
+  <li>
+    <code>pieces</code>: A string containing the concatenation of the SHA-1 hash for each piece in the torrent.
+  </li>
+</ul>
+
+<p>
+  A metainfo has a <code>.torrent</code> extension and the associated media type <code>application/x-bittorrent</code>.
+</p>
+<!-- #endregion -->
+
+<!-- #region tracker-http-protocol -->
+<h3 id="tracker-http-protocol">Tracker HTTP Protocol</h3>
+
+<ul>
+  <li>
+    A tracker is an HTTP service which receives GET requests that include metrics from clients and responds with a peer list that allows a peer to participate in the torrent.
+  </li>
+  <li>
+    Client requests are sent to the announce URL specified in the metainfo file and various parameters are specified in the query string.
+  </li>
+  <li>
+    The tracker responds with a <code>text/plain</code> document consisting of a bencoded dictionary.
+  </li>
+</ul>
+
+
+<h4>Requests</h4>
+
+<p>
+  The query parameters for GET requests are as follows:
+</p>
+
+<ul>
+  <li>
+    <code>info_hash</code>: Url-encoded SHA-1 hash of the value of the <code>info</code> key from the metainfo file.
+  </li>
+  <li>
+    <code>peer_id</code>: Url-encoded unique identifier generated by the client at startup.
+  </li>
+  <li>
+    <code>port</code>: The port number the client is listening on (typically 6881-6889).
+  </li>
+  <li>
+    <code>uploaded</code>: Total number of bytes uploaded since the client sent the "started" event to the tracker (in base 10 ASCII).
+  </li>
+  <li>
+    <code>downloaded</code>: Total number of bytes downloaded since the client sent the "started" event to the tracker (in base 10 ASCII).
+  </li>
+  <li>
+    <code>left</code>: The number of bytes this client still has to download to have downloaded all the files in the torrent (in base ten ASCII).
+  </li>
+  <li>
+    <code>event</code>: Must be one of "started", "completed" or "stopped" if specified. The first request to the tracker must specify "started". A request specifying "completed" should be sent when the download completes. The "stopped" event should be specified if the client is shutting down gracefully (optional).
+  </li>
+  <li>
+    <code>ip</code>: The IP address of the client machine in dotted IPv4 format or hexed IPv6 format (optional).
+  </li>
+  <li>
+    <code>numwant</code>: Number of peers that the client would like to receive from the tracker (optional).
+  </li>
+</ul>
+
+
+<h4>Responses</h4>
+
+<p>
+  The bencoded dictionary contained in tracker responses has the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>interval</code>: Number of seconds that the client should wait between sending regular requests to the tracker.
+  </li>
+  <li>
+    <code>complete</code>: Integer indicating the number of seeders (optional).
+  </li>
+  <li>
+    <code>incomplete</code>: Integer indicating the number of leechers (optional).
+  </li>
+  <li>
+    <code>peers</code>: A list of dictionaries specifying peers.
+  </li>
+  <li>
+    <code>failure reason</code>: A human-readable error message as to why the request failed. If present then no other keys may be present (optional).
+  </li>
+</ul>
+
+<p>
+  By default, <code>peers</code> is a list of dictionaries with the following keys:
+</p>
+
+<ul>
+  <li>
+    <code>peer id</code>: The unique identifier of the peer.
+  </li>
+  <li>
+    <code>ip</code>: IP address (in dotted IPv4/hexed IPv6 format) or a DNS name of peer.
+  </li>
+  <li>
+    <code>port</code>: An integer indicating the port number of peer.
+  </li>
+</ul>
+
+<!-- 
+TODO:
+
+Some more request parameters:
+
+<li>
+  <code>compact</code>: Setting this to 1 indicates that the client accepts a compact response (optional).
+</li>
+<li>
+  <code>no_peer_id</code>: Indicates that the tracker can omit peer id field in peers dictionary. Ignored if compact is enabled.
+</li>
+<li>
+  key (optional): Additional identification that is not shared with any other peers. Allows a client to prove its identity should its IP address change.
+</li>
+  <li>
+  <code>trackerid</code>: If a previous announce contained a tracker id then it should be specified here (optional).
+</li>
+
+
+More response keys:
+
+<li>
+  {{% inline-code %}}tracker id{{% /inline-code %}}: A string that the client should send back on its next announcements.
+</li>
+<li>
+  {{% inline-code %}}min interval{{% /inline-code %}} (optional): Minimum number of seconds the client should wait before reannouncing.
+</li>
+
+
+If compact response is enabled then {{% inline-code %}}peers{{% /inline-code %}} is a byte string consisting of 6 bytes per peer. The first four bytes are the host (in network byte order), the last two bytes are the port (in network byte order).
+-->
+<!-- #endregion -->
+
+<!-- #region peer-wire-protocol -->
+<h3 id="peer-wire-protocol">Peer Wire Protocol</h3>
+
+<ul>
+  <li>
+    The peer wire protocol consists of the asynchronous exchange of length-prefixed messages over TCP.
+  </li>
+  <li>
+    Peer connections are symmetrical. Messages sent in both directions look the same and data can flow in either direction.
+  </li>
+  <li>
+    State-oriented messages inform peers of state changes and must be sent whenever a change occurs in the state of a peer. These messages are Interested, Uninterested, Choked, Unchoked, Have and Bitfield.
+  </li>
+  <li>
+    Data-oriented messages handle transferring blocks between peers. This includes Request, Cancel and Piece.
+  </li>
+  <li>
+    All messages other than the handshake message are prefixed with a four byte big-endian value indicating the message length and a message ID consisting of a single decimal byte. All integers are encoded as four byte big-endian values.
+  </li>
+</ul>
+
+
+<h4>Handshake</h4>
+
+<ul>
+  <li>
+    Should a given peer want to communicate with another peer, it must start by opening a TCP connection and perform a handshake consisting of an exchange of handshake messages.
+  </li>
+  <li>
+    The handshake message specifies the 20 byte SHA-1 hash of the <code>info</code> key in the metainfo file in the <code>info_hash</code> field. 
+  </li>
+  <li>
+    The <code>pstrlen</code> field is a byte indicating the length of the protocol name in the <code>pstr</code> field. The <code>peer_id</code> specifies a 20 byte self-designated unique identifier for the peer. The <code>reserved</code> field contains eight bytes typically set to zero.
+  </li>
+  <li>
+    If a peer receives a handshake with an <code>info_hash</code> that it is not current serving then it must drop the connection. Also, if the initiating peer receives a handshake in which the <code>peer_id</code> does not match the expected <code>peer_id</code> (as received from the tracker) then it is expected to drop the connection.
+  </li>
+</ul>
+
+{{% code text %}}handshake: <pstrlen=19><pstr="BitTorrent protocol"><reserved><info_hash><peer_id>{{% /code %}}
+
+
+<h4>Choke/Unchoke</h4>
+
+<ul>
+  <li>
+    A peer sends a choke message to a peer to inform it that it is being choked.
+  </li>
+  <li>
+    A peer sends an unchoke message to a peer to inform it that it is no longer being choked.
+  </li>
+</ul>
+
+{{% code text %}}choke: <len=0001><id=0>
+unchoke: <len=0001><id=1>{{% /code %}}
+
+
+<h4>Interested/Uninterested</h4>
+
+<ul>
+  <li>
+    A peer sends an interested message to a peer to inform it of its desire to request blocks.
+  </li>
+  <li>
+    A peer sends an uninterested message to inform it that it is not interested in any of its pieces.
+  </li>
+</ul>
+
+{{% code text %}}interested: <len=0001><id=2>
+uninterested: <len=0001><id=3>{{% /code %}}
+
+
+<h4>Have</h4>
+
+<ul>
+  <li>
+    Once a peer has downloaded and validated a given piece it sends <code>have</code> messages to its peers with the index of the piece.
+  </li>
+  <li>
+    A peer receiving this message must validate the index and drop the connection if this index is not within the expected bounds.
+  </li>
+  <li>
+    Otherwise, it must send an <code>interested</code> message to the sender if it lacks the specified piece and may also send a request for that piece.
+  </li>
+</ul>
+
+{{% code text %}}have: <len=0005><id=4><piece_index>{{% /code %}}
+
+
+<h4>Bitfield</h4>
+
+<ul>
+  <li>
+    The bitfield message may only be sent immediately after the handshake is performed and before any other messages are sent.
+  </li>
+  <li>
+    It is optional and need not be sent if a client has no pieces.
+  </li>
+  <li>
+    The payload is a bitfield representing the pieces that have been successfully downloaded.
+  </li>
+  <li>
+    The payload is a bitfield representing the pieces that the sender has successfully downloaded with the high bit in the first byte corresponding to piece index 0. If a bit is cleared it is to be interpreted as a missing piece. Spare bits at the end are cleared.
+  </li>
+  <li>
+    Peers should drop the connection if they receive bitfields that are not of the correct size or if the bitfield has any of the spare bits set.
+  </li>
+</ul>
+
+{{% code text %}}bitfield: <len=0001+X><id=5><bitfield>{{% /code %}}
+
+
+<h4>Request</h4>
+
+<ul>
+  <li>
+    A request message is used to request a block. The piece index, block offset and block length indicate the block the sender is interested in downloading.
+  </li>
+  <li>
+    The recipient must only send piece messages to a sender that has already requested it.
+  </li>
+</ul>
+
+{{% code text %}}request: <len=0013><id=6><piece_index><block_offset><block_length>{{% /code %}}
+
+
+<h4>Piece</h4>
+
+<ul>
+  <li>
+    The piece message is used to send a block of length X between peers.
+  </li>
+  <li>
+    The payload specifies the piece index, the block offset and the block data itself.
+  </li>
+  <li>
+    The length is implicit and can be calculated by subtracting 9 from the total message length.  
+  </li>
+</ul>
+
+{{% code text %}}piece: <len=0009+X><id=7><piece_index><block_offset><block_data>{{% /code %}}
+
+
+<h4>Cancel</h4>
+
+<ul>
+  <li>
+    During the end game, a peer may need to cancel block requests.
+  </li>
+  <li>
+    The payload is the same as the request message and indicates the block within a piece that the peer has requested but is no longer interested in.
+  </li>
+</ul>
+
+{{% code text %}}cancel: <len=0013><id=8><piece index><block offset><block length>{{% /code %}}
+
+
+<h4>Keep Alive</h4>
+
+<ul>
+  <li>
+    Peers may close a connection if they receive no messages for a certain period of time.
+  </li>
+  <li>
+    A keep-alive message is then used to maintain a connection if no other messages have recently been sent.
+  </li>
+</ul>
+
+{{% code text %}}keep-alive: <len=0000>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region bencoding -->
+<h3 id="bencoding">Bencoding</h3>
+
+<ul>
+  <li>
+    Bencoding is used to encode data in a platform independent way.
+  </li>
+  <li>
+    The metainfo file and all responses from the tracker are encoded using bencoding.
+  </li>
+  <li>
+    The format specifies two scalar types (integers and strings) and two compound types (lists and dictionaries).
+  </li>
+</ul>
+
+{{% code text %}}// strings are prefixed with their length followed by a colon
+5:hello
+
+// integers are represented as strings in base 10 prefixed with "i" and postfixed with "e"
+i10e
+
+
+// lists consist of an arbitrary number of bencoded elements prefixed with "l" and postfixed with "e"
+l
+  i10e
+  5:hello
+e
+
+// dictionaries consist of an arbitrary number of key/value pairs prefixed with "d" and postfixed with "e" where all keys are bencoded strings and must be sorted
+d
+  5:helloi10e
+  3:byei20e
+e{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region resources -->
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.bittorrent.org/bittorrentecon.pdf">Incentives Build Robustness in BitTorrent</a>
+  </li>
+  <li>
+    <a href="https://www.bittorrent.org/beps/bep_0003.html">Official BitTorrent Specification</a>
+  </li>
+  <li>
+    <a href="https://wiki.theory.org/BitTorrentSpecification">Unofficial BitTorrent Specification</a>
+  </li>
+  <li>
+    <a href="https://web.archive.org/web/20070222025501/jonas.nitro.dk/bittorrent/bittorrent-rfc.txt">BitTorrent Protocol Revision 1.33</a>
+  </li>
+  <li>
+    <a href="http://web.cs.ucla.edu/classes/cs217/05BitTorrent.pdf">Peer-to-Peer Networking with BitTorrent</a>
+  </li>
+  <li>
+    <a href="https://mandreyel.github.io/posts/rust-bittorrent-engine/">Writing a BitTorrent engine in Rust</a>
+  </li>
+  <li>
+    <a href="https://github.com/eduard-permyakov/BitFiend">BitFiend BitTorrent Client</a>
+  </li>
+  <li>
+    <a href="https://www.wired.com/2005/01/bittorrent-2/">The BitTorrent Effect</a>
+  </li>
+  <li>
+    <a href="BitTorrent v2">https://blog.libtorrent.org/2020/09/bittorrent-v2/</a>
+  </li>
+</ul>
+<!-- #endregion -->
+
+
+<!-- 
+TESTING
+
+I used Docker to create a virtual LAN on my localhost in which I could spawn containers that acted as disparate hosts.
+
+I took a well known torrent client (Transmission), spawned some instances of it to act as seeds, and connected them with my cratetorrent client.
+-->
+
+<!-- 
+PIECES AND BLOCKS
+
+Once a fixed size is defined, the number of blocks per piece can be calculated using the formula:
+
+number_of_blocks = (fixed_piece_size / fixed_block_size) + !!(fixed_piece_size % fixed_block_size)
+
+where "%" denotes the modulus operator, and "!" the negation
+operator.  The negation operator is used to ensure that the last
+   factor only adds a value of 0 or 1 to the sum.  Given the start
+offset of the block its index within a piece can be calculated using
+  the formula:
+
+block_index = block_offset % fixed_block_size
+
+
+PEER WIRE PROTOCOL
+
+6.2  Handshaking
+
+The local peer opens a port on which to listen for incoming
+connections from remote peers.  This port is then reported to the
+tracker.  As BTP/1.0 does not specify any standard port for listening
+it is the sole responsibility of the implementation to select a port.
+
+Any remote peer wishing to communicate with the local peer must open
+a TCP connection to this port and perform a handshake operation.  The
+handshake operation MUST be carried out before any other data is sent
+from the remote peer.  The local peer MUST NOT send any data back to
+
+the remote peer before a well constructed handshake has been
+recognized according to the rules below.  If the handshake in any way
+violates these rules the local peer MUST close the connection with
+the remote peer.
+
+
+6.3.2  Peer Wire Messages
+
+If an incoming message in any way violates this structure then the
+connection SHOULD be dropped.  In particular the receiver SHOULD make
+sure the message ID constitutes a valid message, and the payload
+matches the the expected payload, as given below.
+For the purpose of compatibility with future protocol extensions the
+client SHOULD ignore unknown messages.
+
+---
+
+All connections are periodically rated in terms of their ability to
+provide the client with a better download rate.  The rating may take
+into account factors such as the remote peers willingness to maintain
+an unchoked connection with the client over a certain period of time,
+the remote peers upload rate to the client and other implementation
+defined criteria.
+
+The peers are sorted according to their rating with regard to the
+above mentioned scheme.  Assume only 5 peers are allowed to download
+at the same time.  The peer selection algorithm will now unchoke as
+many of the best rated peers as necessary so that exactly 5 of these
+are interested.  If one of the top rated peers at a later stage
+becomes interested, then the peer selection algorithm will choke the
+the worst unchoked peer.  Notice that the worst unchoked peer is
+always interested.
+-->
+
+<!-- 
+The peer protocol refers to pieces of the file by index as described in the metainfo file, starting at zero. When a peer finishes downloading a piece and checks that the hash matches, it announces that it has that piece to all of its peers.
+
+Connections contain two bits of state on either end: choked or not, and interested or not. Choking is a notification that no data will be sent until unchoking happens. The reasoning and common techniques behind choking are explained later in this document.
+
+Data transfer takes place whenever one side is interested and the other side is not choking. Interest state must be kept up to date at all times - whenever a downloader doesn't have something they currently would ask a peer for in unchoked, they must express lack of interest, despite being choked. Implementing this properly is tricky, but makes it possible for downloaders to know which peers will start downloading immediately if unchoked.
+
+Connections start out choked and not interested.
+
+When data is being transferred, downloaders should keep several piece requests queued up at once in order to get good TCP performance (this is called 'pipelining'.) On the other side, requests which can't be written out to the TCP buffer immediately should be queued up in memory rather than kept in an application-level network buffer, so they can all be thrown out when a choke happens.
+
+The peer wire protocol consists of a handshake followed by a never-ending stream of length-prefixed messages. The handshake starts with character ninteen (decimal) followed by the string 'BitTorrent protocol'. The leading character is a length prefix, put there in the hope that other new protocols may do the same and thus be trivially distinguishable from each other.
+
+All later integers sent in the protocol are encoded as four bytes big-endian.
+
+After the fixed headers come eight reserved bytes, which are all zero in all current implementations. If you wish to extend the protocol using these bytes, please coordinate with Bram Cohen to make sure all extensions are done compatibly.
+
+Next comes the 20 byte sha1 hash of the bencoded form of the info value from the metainfo file. (This is the same value which is announced as info_hash to the tracker, only here it's raw instead of quoted here). If both sides don't send the same value, they sever the connection. The one possible exception is if a downloader wants to do multiple downloads over a single port, they may wait for incoming connections to give a download hash first, and respond with the same one if it's in their list.
+
+After the download hash comes the 20-byte peer id which is reported in tracker requests and contained in peer lists in tracker responses. If the receiving side's peer id doesn't match the one the initiating side expects, it severs the connection.
+
+That's it for handshaking, next comes an alternating stream of length prefixes and messages. Messages of length zero are keepalives, and ignored. Keepalives are generally sent once every two minutes, but note that timeouts can be done much more quickly when data is expected.
+
+peer messages
+
+'bitfield' is only ever sent as the first message. Its payload is a bitfield with each index that downloader has sent set to one and the rest set to zero. Downloaders which don't have anything yet may skip the 'bitfield' message. The first byte of the bitfield corresponds to indices 0 - 7 from high bit to low bit, respectively. The next one 8-15, etc. Spare bits at the end are set to zero.
+
+The 'have' message's payload is a single number, the index which that downloader just completed and checked the hash of.
+
+'request' messages contain an index, begin, and length. The last two are byte offsets. Length is generally a power of two unless it gets truncated by the end of the file. All current implementations use 2^14 (16 kiB), and close connections which request an amount greater than that.
+
+'cancel' messages have the same payload as request messages. They are generally only sent towards the end of a download, during what's called 'endgame mode'. When a download is almost complete, there's a tendency for the last few pieces to all be downloaded off a single hosed modem line, taking a very long time. To make sure the last few pieces come in quickly, once requests for all pieces a given downloader doesn't have yet are currently pending, it sends requests for everything to everyone it's downloading from. To keep this from becoming horribly inefficient, it sends cancels to everyone else every time a piece arrives.
+
+'piece' messages contain an index, begin, and piece. Note that they are correlated with request messages implicitly. It's possible for an unexpected piece to arrive if choke and unchoke messages are sent in quick succession and/or transfer is going very slowly.
+
+Downloaders generally download pieces in random order, which does a reasonably good job of keeping them from having a strict subset or superset of the pieces of any of their peers.
+
+Choking is done for several reasons. TCP congestion control behaves very poorly when sending over many connections at once. Also, choking lets each peer use a tit-for-tat-ish algorithm to ensure that they get a consistent download rate.
+
+The choking algorithm described below is the currently deployed one. It is very important that all new algorithms work well both in a network consisting entirely of themselves and in a network consisting mostly of this one.
+
+There are several criteria a good choking algorithm should meet. It should cap the number of simultaneous uploads for good TCP performance. It should avoid choking and unchoking quickly, known as 'fibrillation'. It should reciprocate to peers who let it download. Finally, it should try out unused connections once in a while to find out if they might be better than the currently used ones, known as optimistic unchoking.
+
+The currently deployed choking algorithm avoids fibrillation by only changing who's choked once every ten seconds. It does reciprocation and number of uploads capping by unchoking the four peers which it has the best download rates from and are interested. Peers which have a better upload rate but aren't interested get unchoked and if they become interested the worst uploader gets choked. If a downloader has a complete file, it uses its upload rate rather than its download rate to decide who to unchoke.
+
+For optimistic unchoking, at any one time there is a single peer which is unchoked regardless of its upload rate (if interested, it counts as one of the four allowed downloaders.) Which peer is optimistically unchoked rotates every 30 seconds. To give them a decent chance of getting a complete piece to upload, new connections are three times as likely to start as the current optimistic unchoke as anywhere else in the rotation.
+ -->
+
+<!--
+INCENTIVES BUILD ROBUSTNESS
+
+Trackers are responsible for help-ing downloaders find each other. A downloader sends information about what file it’s downloading and the tracker responds with a list of contact information for peers which are downloading the same file. Downloaders then use this information to connect to each other.
+
+Some information about upload and download rates is sent to the tracker, but that’s just for statistics gathering.
+
+All connections between peers can transfer in both directions.
+
+
+When transferring data over TCP, like BitTorrent does, it is very important to always have several re-quests pending at once, to avoid a delay between pieces being sent, which is disastrous for transfer rates. BitTorrent facilitates this by breaking pieces further into sub-pieces over the wire, typically sixteen kilobytes in size, and always keeping some number, typically five, requests pipelined at once. Every time a sub-piece arrives a new request is sent. The amount of data to pipeline has been selected as a value which 
+can reliably saturate most connections.
+
+
+MISC
+
+----------------------------------------
+| Piece #0 | Piece #1 | ... | Piece #N |
+----------------------------------------
+        _-'            `-_
+     _-'                  `-_
+   -----------------------------
+   | Block #0 | ... | Block #M |
+   -----------------------------
+-->
+
+<!-- 
+Peer-to-peer networking with BitTorrent
+
+4.1 Algorithms
+In many other peer-to-peer file sharing protocols the swapping of files happens one-to-one,
+meaning that the user himself chooses another peer to download from. As explained earlier,
+the concept of BitTorrent is to be able to download from many other peers simultaneously.
+This requires a way of knowing which peers to download what pieces of the file from, with
+the goal of receiving the complete file as quickly as possible. This needs to happen without
+the involvement of the end user, and thus needs to be self-configuring.
+Choosing peers to connect to is a two-sided problem. First, we need a way of finding the best
+sequence of downloading the pieces. This is determined by the piece selection algorithm. But
+this is not enough. A peer, who has the piece you want, might not let you download it.
+Strategies for peers not allowing other peers to download from them is known as choking, and
+concerns resource allocation. These two concepts are examined in the following pages.
+4.1.1 The Piece Selection Algorithm
+How BitTorrent selects what pieces of the file to download have great impacts on the
+performance of the protocol. It is important to be smart when selecting pieces, in order to not
+end up a situation where every peer has all the pieces that are currently available and none of
+the missing ones.
+The goal is to replicate different pieces on different peers as soon as possible. This will
+increase the download speed, and also make sure that all pieces of a file is somewhere in the
+network if the seeder leaves. We will go through several policies which combined make up
+the piece selection algorithm.
+4.1.1.1 Sub-pieces
+BitTorrent uses TCP and it is thus crucial to always transfer data or else the transfer rate will
+drop because of the slow start mechanism. The pieces are further broken into sub-pieces,
+often about 16kb in size. The protocol makes sure to always have some number of requests
+(typically five) for a sub-piece pipelined at any time. When a new sub-piece is downloaded, a
+new request is sent. Sub-pieces can be downloaded from different peers. [4]
+8 
+4.1.1.2 Policy #1: Strict Policy
+Once a sub-piece has been requested, the remaining sub-pieces for that particular piece are
+requested before sub-pieces from any other piece. This helps us getting a complete piece as
+quickly as possible. [4]
+4.1.1.3 Policy #2: Rarest First
+The main policy in BitTorrent is that of “rarest first”. This means that when a peer selects the
+next piece to download, it selects the piece which the fewest of their peers have. There are
+several reasons for this being a good policy [4][12]:
+• Spreading the seed: Rarest first makes sure that only “new” pieces are downloaded
+from the seed. In the beginning, the seed will be a bottleneck since it is the only one
+with any piece of the file. A downloader can see what pieces their peers have, and the
+“rarest first”-policy will result in that the pieces fetched from the seed are pieces
+which have not already been uploaded by others.
+• Increased download speed: The more peers that have the piece, the faster the
+download can happen, as it is possible to download sub-pieces from different places.
+We want to replicate rare pieces so they can be downloaded faster.
+• Enabling uploading: A rare piece is most wanted by other peers, and by getting a rare
+piece others will be interested in uploading from you.
+• Most common last: It is sensible to leave the most common pieces to the end of the
+download. Since many peers have it, the probability of being able to download them
+later is much larger than that of the rare pieces.
+• Prevent rarest piece missing: When the seed is taken down, it is important that all
+the different pieces of the file are distributed somewhere among the remaining peers.
+By replicating the rarest pieces first, we reduce the risk of missing one or more pieces
+of a file when the seeder leaves.
+4.1.1.4 Policy #3: Random First Piece
+Once you start downloading, you don’t have anything to upload. It is important to get the first
+piece as fast as possible, and this means that the “rarest first”-policy is not the most efficient.
+Rare pieces tend to be downloaded slower, because you can download it’s sub-pieces from
+only one (or maybe a few) other peers. As mentioned earlier, multiple peers with the same
+piece increase the download speed. The policy is then to select the first piece randomly. When
+the first piece is complete, we change to “rarest first”. [4]
+4.1.1.5 Policy #4: Endgame mode
+Sometimes a piece might be downloaded from a peer with a slow transfer rate. This can
+potentially delay the finishing of a download. To prevent this we have the “endgame mode”.
+Remember the pipelining principle, which ensures that we always have a number of requests
+(for sub-pieces) pending, the number often being set to five. When all the sub-pieces a peer
+lacks are requested, this request is broadcasted to all peers. This helps us to get the last chunk
+of the file as quickly as possible. Once a sub-piece arrives, we send a cancel-message
+indicating that we have obtained it and the peers can disregard the request. Some bandwidth is
+of course wasted by this broadcasting, but in practice this is not very much because of the
+short periode of the endgame mode. [4]
+9 
+4.1.2 Resource Allocation
+No centralized resource allocation exists in BitTorrent. Every peer is responsible for
+maximizing its download rate. A peer will, naturally, try to download from whoever they can.
+To decide which peers to upload to, a peer uses a variant of the “tit-for-tat” algorithm. The
+“tit-for-tat”-strategy comes from repeated game theory, and is a strategy of cooperation based
+on reciprocity. The essence is to do onto others as they do onto you [11]:
+1. On the first move cooperate.
+2. On each succeeding move do what your opponent did the previous move.
+3. Be prepared to forgive after carrying out just one act of retaliation (i.e. have a
+recovery mechanism to ensure eventual cooperation).
+4.1.2.1 The Choking Algorithm
+Choking is a temporary refusal to upload to another peer, but you can still download from
+him/her. To cooperate peers allow uploading, and to not cooperate they “choke” the
+connection to their peers. The principle is to upload to peers who have uploaded to you
+recently; i.e. “if you scratch my back, I’ll scratch yours”. The goal is to have several
+bidirectional connections at any time, and achieve “Pareto efficiency”4
+ [4].
+So, the big question is how to determine which peers to choke and which to unchoke. A peer
+always unchokes a fixed number of its peers (the default is four). Deciding which peers to unchoke is determined only by the current download rates. It has been chosen to use a 20-second
+average to decide this. Due to the usage of TCP it’s not desirable to choke and un-choke too
+rapidly. Thus, this is calculated every ten seconds. [4]
+The result is that any peer will upload to peers which provide the best download rate. The
+other way around; if your upload rate is high more peers will allow you to download from
+them. This means that you can get a higher download rate if you have many uploads. This is
+the most important feature the BitTorrent protocol. It prohibits a large number of “free riders”
+which are peers who only download and don’t allow uploading. In order for a peer-to-peernetwork to be efficient all peers have to contribute to the network. This restriction is not
+present in most other peer-to-peer protocols and applications, and is one of the reasons why
+BitTorrent has become so popular.
+4.1.2.2 Optimistic unchoking
+BitTorrent also allows an additional unchoked peer, where the download rate criterion isn’t
+used. This is called optimistic unchoking. The reason for this is to see if there are any
+currently unused connections which might be better than the ones in use. Which peer is the
+optimistic unchoke is shifted every 30 seconds. This is considered to be enough time for the
+upload to boost up to full speed and for the download to start and obtain full speed. If this new
+connection turns out to be better than one of the existing unchoked connections, it will replace
+it [4]. This is quite similar to stage one of “tit-for-tat”.
+4.1.2.3 Anti-snubbing
+What happens if a peer suddenly is choked by all peers it was downloading from? We then
+have to find new peers, but the optimistic unchoking mechanism only checks one unused
+connection every 30 seconds. To help the download rate recover more rapid, BitTorrent
+
+4
+ An allocation is “Pareto efficient” if there is no other allocation in which some other individual is better off and
+no individual is worse off [12] .
+10 
+introduces “snubbing”5
+. If a client hasn’t got anything from a particular peer for 60 seconds, it
+presumes that is has been “snubbed”. Following the mentality of “tit-for-tat” it retaliates and
+refuses to upload to that peer (except if it becomes an optimistic unchoke). It will then
+increase the number of optimistic unchokes in order to try to find new connections quicker.
+[4] [12]
+4.1.2.4 Upload only
+We see that using the choking algorithm implemented in BitTorrent we favor peers which are
+kind to us. If I can download fast from them, they are allowed to upload from me. But what if
+I don’t have any downloads? Then it’s impossible to know which peers to unchoke using the
+presented choking algorithm. Thus, when a download is completed we use a new choking
+algorithm which unchokes the peers with the highest upload rate [4]. This ensures that pieces
+get uploaded faster and that they get replicated faster. Peers with good upload rates are also
+probably not being served by others. [12]
+4.1.3 Concluding remarks
+The BitTorrent protocol selects pieces by using the following four simple policies:
+• Policy #1: Strict Policy: Until a piece is assembled, only download sub-pieces for
+that piece.
+• Policy #2: Rarest First: Determine the pieces that are most rare among your peers
+and download those first.
+• Policy #3: Random First Piece: Select a random piece of the file and download it.
+• Policy #4: Endgame mode: When all the sub-pieces that a peer doesn’t have are
+actively being requested, these are requested from every peer.
+These policies ensure that the pieces are replicated, and that every peer has the largest
+probability of retrieving the complete file, as quickly as possible.
+Inspired by “tit-for-tat”, the choking algorithm tries to prohibit “free riders” from destroying
+the dynamics of the peer-to-peer network. If a peer blocks other peers from uploading, he will
+soon be choked by them and thus affecting his download rate. The choking algorithm
+correlates the download rate to the upload rate. Uploading is encouraged and the price in
+return is a better chance for faster download.
+All this functionality is implemented inside the protocol. BitTorrent configures the
+connections to the peers without the involvement of the user, and is thus self-configuring.
+Decisions are made inside the client of every peer, based on the list of possible peers and the
+algorithms presented. The way the protocol configures these connections makes it very
+dynamic and it “achieves a higher level of robustness and resource utilization than any
+currently known cooperative technique.” [4]. 
+
+ -->

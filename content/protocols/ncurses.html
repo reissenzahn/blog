@@ -1,0 +1,1002 @@
+---
+title: "Ncurses"
+date: 2020-09-29
+draft: false
+---
+
+
+
+
+
+
+
+
+
+
+
+
+- The coordinates of the upper left-hand corner of the window which is (0, 0).
+- The current attributes apply to all characters that are written into the window. Attributes are a property of the character and move with the  character through any  scrolling and insert/delete line/character operations.
+- Colors are always used in pairs (referred to as color-pairs). A color-pair consists of a foreground color (for characters) and a background color (for the blank field on which the characters are  displayed).
+- To use ncurses functions you have to include ncurses.h and use -lncurses flag to link with ncurses.
+
+
+<h3>Initialization</h3>
+
+// initialize ncurses (including creating stdscr)
+WINDOW *initscr(void);
+
+// cleanup and shutdown ncurses
+int endwin(void);
+
+// enable cbreak mode which disables line buffering
+int cbreak(void);
+
+// enable raw mode which disables line buffering and causes the interrupt, quit, suspend and flow control characters to be passed through uninterpreted instead of generating a signal 
+int raw(void);
+
+// disable echoing of typed characters
+int noecho(void);
+
+// toggles keypad option where bf=TRUE causes a typed function key (F1, arrow keys, etc.) to return a single  value representing the function key
+int keypad(WINDOW *win, bool bf);
+
+// causes getch() to be a non-blocking call which returns ERR if no input is ready
+int nodelay(WINDOW *win, bool bf);
+
+
+<h3>Windows</h3>
+
+// create a new window with the given size and its upper left-hand corner specified by begin_y and begin_x (if either nlines or ncols is zero then they default to LINES - begin_y and COLS - begin_x)
+WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x);
+
+// draw a box around the edges of a window
+int border(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
+int wborder(WINDOW *win, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
+
+// shorthand for wborder(win, verch, verch, horch, horch, 0, 0, 0, 0)
+int box(WINDOW *win, chtype verch, chtype horch);
+
+
+<h3>Cursors</h3>
+
+// move the cursor to position relative to (0, 0)
+int move(int y, int x);
+int wmove(WINDOW *win, int y, int x);
+
+// copy blanks to every position in the window such as to clear the screen
+int erase(void);
+int werase(WINDOW *win);
+
+// 
+int clear(void);
+int wclear(WINDOW *win);
+
+// set the visibility of the cursor: invisible (0), normal (1) or very visible (2)
+int curs_set(int visibility);
+
+- The move() function moves the cursor to line y and column x. The position is specified relative to the upper left-hand corner of the window which is (0, 0).
+- The erase() function copies blanks to every position in the window such as to clear the screen.
+- The clear() function is like erase() except that it allso calls clearok() so that the screen is cleared completely on the next call to refresh() for that window and repainted from scratch.
+
+
+<h3>Screens</h3>
+
+// get the current cursor position
+void getyx(WINDOW *win, int y, int x);
+
+// get the size of a window
+void getmaxyx(WINDOW *win, int y, int x);
+
+// get the current beginning coordinates of a window
+void getbegyx(WINDOW *win, int y, int x);
+
+// get the beginning coordinates of a sub-window relative to the parent window
+void getparyx(WINDOW *win, int y, int x);
+
+// flush output to the actual terminal screen
+int refresh(void);
+int wrefresh(WINDOW *win);
+
+
+<h3>Output</h3>
+
+// output a character and advance the position of the cursor
+int addch(const chtype ch);
+int waddch(WINDOW *win, const chtype ch);
+int mvaddch(int y, int x, const chtype ch);
+int mvwaddch(WINDOW *win, int y, int x, const chtype ch);
+
+// output a string similar to printf()
+int printw(const char *fmt, ...);
+int wprintw(WINDOW *win, const char *fmt, ...);
+int mvprintw(int y, int x, const char *fmt, ...);
+int mvwprintw(WINDOW *win, int y, int x, const char *fmt, ...);
+
+// output character string
+int addstr(const char *str);
+int waddstr(WINDOW *win, const char *str);
+int mvaddstr(int y, int x, const char *str);
+int mvwaddstr(WINDOW *win, int y, int x, const char *str);
+
+
+<h3>Input</h3>
+
+int getch(void);
+int wgetch(WINDOW *win);
+int mvgetch(int y, int x);
+int mvwgetch(WINDOW *win, int y, int x);
+
+int scanw(const char *fmt, ...);
+int wscanw(WINDOW *win, const char *fmt, ...);
+int mvscanw(int y, int x, const char *fmt, ...);
+int mvwscanw(WINDOW *win, int y, int x, const char *fmt, ...);
+
+int getstr(char *str);
+int getnstr(char *str, int n);
+int wgetstr(WINDOW *win, char *str);
+int mvgetstr(int y, int x, char *str);
+int mvwgetstr(WINDOW *win, int y, int x, char *str);;
+
+- The getch() function reads a character and returns an integer corresponding to the key pressed.
+- The scanw() function reads formatted input similar to scanf().
+- The getstr() function is equivalent to a series of calls to getch until a newline or carriage return is received (the terminating character is not included in the returned string).
+
+
+<h4>Predefined Key-Codes</h4>
+
+<pre>KEY_BREAK       Break key
+KEY_DOWN        The four arrow keys ...
+KEY_UP
+KEY_LEFT
+KEY_RIGHT
+KEY_HOME        Home key (upward+left arrow)
+KEY_BACKSPACE   Backspace
+KEY_F0          Function keys.
+KEY_F(n)        For 0 ≤ n ≤ 63
+KEY_DL          Delete line
+KEY_IL          Insert line
+KEY_DC          Delete character
+KEY_IC          Insert char or enter insert mode
+KEY_EIC         Exit insert char mode
+KEY_CLEAR       Clear screen
+KEY_EOS         Clear to end of screen
+KEY_EOL         Clear to end of line
+KEY_SF          Scroll 1 line forward
+KEY_SR          Scroll 1 line backward (reverse)
+KEY_NPAGE       Next page
+KEY_PPAGE       Previous page
+KEY_STAB        Set tab
+KEY_CTAB        Clear tab
+KEY_CATAB       Clear all tabs
+KEY_ENTER       Enter or send
+KEY_SRESET      Soft (partial) reset
+KEY_RESET       Reset or hard reset
+KEY_PRINT       Print or copy
+KEY_LL          Home down or bottom (lower left)
+KEY_A1          Upper left of keypad
+KEY_A3          Upper right of keypad
+KEY_B2          Center of keypad
+KEY_C1          Lower left of keypad
+KEY_C3          Lower right of keypad
+KEY_BTAB        Back tab key
+KEY_BEG         Beg(inning) key
+KEY_CANCEL      Cancel key
+KEY_CLOSE       Close key
+KEY_COMMAND     Cmd (command) key
+KEY_COPY        Copy key
+KEY_CREATE      Create key
+KEY_END         End key
+KEY_EXIT        Exit key
+KEY_FIND        Find key
+KEY_HELP        Help key
+KEY_MARK        Mark key
+KEY_MESSAGE     Message key
+KEY_MOUSE       Mouse event read
+KEY_MOVE        Move key
+KEY_NEXT        Next object key
+KEY_OPEN        Open key
+KEY_OPTIONS     Options key
+KEY_PREVIOUS    Previous object key
+KEY_REDO        Redo key
+KEY_REFERENCE   Ref(erence) key
+KEY_REFRESH     Refresh key
+KEY_REPLACE     Replace key
+KEY_RESIZE      Screen resized
+KEY_RESTART     Restart key
+KEY_RESUME      Resume key
+KEY_SAVE        Save key
+KEY_SBEG        Shifted beginning key
+KEY_SCANCEL     Shifted cancel key
+KEY_SCOMMAND    Shifted command key
+KEY_SCOPY       Shifted copy key
+KEY_SCREATE     Shifted create key
+KEY_SDC         Shifted delete char key
+KEY_SDL         Shifted delete line key
+KEY_SELECT      Select key
+KEY_SEND        Shifted end key
+KEY_SEOL        Shifted clear line key
+KEY_SEXIT       Shifted exit key
+KEY_SFIND       Shifted find key
+KEY_SHELP       Shifted help key
+KEY_SHOME       Shifted home key
+KEY_SIC         Shifted input key
+KEY_SLEFT       Shifted left arrow key
+KEY_SMESSAGE    Shifted message key
+KEY_SMOVE       Shifted move key
+KEY_SNEXT       Shifted next key
+KEY_SOPTIONS    Shifted options key
+KEY_SPREVIOUS   Shifted prev key
+KEY_SPRINT      Shifted print key
+KEY_SREDO       Shifted redo key
+KEY_SREPLACE    Shifted replace key
+KEY_SRIGHT      Shifted right arrow
+KEY_SRSUME      Shifted resume key
+KEY_SSAVE       Shifted save key
+KEY_SSUSPEND    Shifted suspend key
+KEY_SUNDO       Shifted undo key
+KEY_SUSPEND     Suspend key
+KEY_UNDO        Undo key</pre>
+
+
+
+<h3>Attributes</h3>
+
+// switch attribute on
+int attron(int attrs);
+int wattron(WINDOW *win, int attrs);
+
+// switch attribute off
+int attroff(int attrs);
+int wattroff(WINDOW *win, int attrs);
+
+
+<h4>Video Attributes</h4>
+
+<pre>A_NORMAL        Normal display (no highlight)
+A_STANDOUT      Highlighting
+A_UNDERLINE     Underlining
+A_REVERSE       Reverse video
+A_BLINK         Blinking
+A_DIM           Half bright
+A_BOLD          Extra bright or bold
+A_PROTECT       Protected mode
+A_INVIS         Invisible or blank mode
+A_ALTCHARSET    Alternate character set
+A_CHARTEXT      Bit-mask to extract a character
+COLOR_PAIR(n)   Color-pair number n</pre>
+
+
+
+<h3>Colors</h3>
+
+// check whether the terminal has color capabilities
+bool has_colors(void);
+
+// check whether the colors can be changed
+bool can_change_color(void);
+
+// initialize color support
+int start_color(void);
+
+// define the foreground and background colors for a color pair
+int init_pair(short pair, short f, short b);
+
+// change the definition of a color using rgb values scaled from 0 to 1000
+int init_color(short color, short r, short g, short b);
+
+
+<h4>Color Constants</h4>
+
+<pre>COLOR_BLACK    0
+COLOR_RED      1
+COLOR_GREEN    2
+COLOR_YELLOW   3
+COLOR_BLUE     4
+COLOR_MAGENTA  5
+COLOR_CYAN     6
+COLOR_WHITE    7</pre>
+
+
+<h3>Miscellaneous</h3>
+
+// sleep for specified milliseconds
+int napms(int ms);
+
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html_single/NCURSES-Programming-HOWTO.html">NCURSES Programming HOWTO</a>
+  </li>
+  <li>
+    <a href="https://invisible-island.net/ncurses/man/ncurses.3x.html">Ncurses Man Page</a>
+  </li>
+</ul>
+
+
+<!-- 
+---
+
+The next line printw prints the string "Hello World !!!" on to the screen. This function is analogous to normal printf in all respects except that it prints the data on a window called stdscr at the current (y,x) co-ordinates. Since our present co-ordinates are at 0,0 the string is printed at the left hand corner of the window.
+
+This brings us to that mysterious refresh(). Well, when we called printw the data is actually written to an imaginary window, which is not updated on the screen yet. The job of printw is to update a few flags and data structures and write the data to a buffer corresponding to stdscr. In order to show it on the screen, we need to call refresh() and tell the curses system to dump the contents on the screen.
+
+The philosophy behind all this is to allow the programmer to do multiple updates on the imaginary screen or windows and do a refresh once all his screen update is done. refresh() checks the window and updates only the portion which has been changed. This improves performance and offers greater flexibility too.
+
+And finally don't forget to end the curses mode. Otherwise your terminal might behave strangely after the program quits. endwin() frees the memory taken by curses sub-system and its data structures and puts the terminal in normal mode. This function must be called after you are done with the curses mode.
+
+---
+
+WINDOWS
+
+- A window is an imaginary screen defined by curses system. A window does not mean a bordered window.
+- When curses is initialized, it creates a default window named stdscr which represents your 80x25 (or the size of window in which you are running) screen.
+
+
+You have seen the standard window stdscr above where all the functions implicitly operated on this window. Now to make design even a simplest GUI, you need to resort to windows. The main reason you may want to use windows is to manipulate parts of the screen separately, for better efficiency, by updating only the windows that need to be changed and for a better design. I would say the last reason is the most important in going for windows. You should always strive for a better and easy-to-manage design in your programs. If you are writing big, complex GUIs this is of pivotal importance before you start doing anything.
+
+
+
+A Window can be created by calling the function newwin(). It doesn't create any thing on the screen actually. It allocates memory for a structure to manipulate the window and updates the structure with data regarding the window like it's size, beginy, beginx etc.. Hence in curses, a window is just an abstraction of an imaginary window, which can be manipulated independent of other parts of screen. The function newwin() returns a pointer to structure WINDOW, which can be passed to window related functions like wprintw() etc.. Finally the window can be destroyed with delwin(). It will deallocate the memory associated with the window structure.
+
+The function box() can be used to draw a border around the window. Let's explore these functions in more detail in this example.
+
+Example 7. Window Border example
+
+#include <ncurses.h>
+
+
+WINDOW *create_newwin(int height, int width, int starty, int startx);
+void destroy_win(WINDOW *local_win);
+
+int main(int argc, char *argv[])
+{	WINDOW *my_win;
+	int startx, starty, width, height;
+	int ch;
+
+	initscr();			/* Start curses mode 		*/
+	cbreak();			/* Line buffering disabled, Pass on
+					 * everty thing to me 		*/
+	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
+
+	height = 3;
+	width = 10;
+	starty = (LINES - height) / 2;	/* Calculating for a center placement */
+	startx = (COLS - width) / 2;	/* of the window		*/
+	printw("Press F1 to exit");
+	refresh();
+	my_win = create_newwin(height, width, starty, startx);
+
+	while((ch = getch()) != KEY_F(1))
+	{	switch(ch)
+		{	case KEY_LEFT:
+				destroy_win(my_win);
+				my_win = create_newwin(height, width, starty,--startx);
+				break;
+			case KEY_RIGHT:
+				destroy_win(my_win);
+				my_win = create_newwin(height, width, starty,++startx);
+				break;
+			case KEY_UP:
+				destroy_win(my_win);
+				my_win = create_newwin(height, width, --starty,startx);
+				break;
+			case KEY_DOWN:
+				destroy_win(my_win);
+				my_win = create_newwin(height, width, ++starty,startx);
+				break;	
+		}
+	}
+		
+	endwin();			/* End curses mode		  */
+	return 0;
+}
+
+WINDOW *create_newwin(int height, int width, int starty, int startx)
+{	WINDOW *local_win;
+
+	local_win = newwin(height, width, starty, startx);
+	box(local_win, 0 , 0);		/* 0, 0 gives default characters 
+					 * for the vertical and horizontal
+					 * lines			*/
+	wrefresh(local_win);		/* Show that box 		*/
+
+	return local_win;
+}
+
+void destroy_win(WINDOW *local_win)
+{	
+	/* box(local_win, ' ', ' '); : This won't produce the desired
+	 * result of erasing the window. It will leave it's four corners 
+	 * and so an ugly remnant of window. 
+	 */
+	wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+	/* The parameters taken are 
+	 * 1. win: the window on which to operate
+	 * 2. ls: character to be used for the left side of the window 
+	 * 3. rs: character to be used for the right side of the window 
+	 * 4. ts: character to be used for the top side of the window 
+	 * 5. bs: character to be used for the bottom side of the window 
+	 * 6. tl: character to be used for the top left corner of the window 
+	 * 7. tr: character to be used for the top right corner of the window 
+	 * 8. bl: character to be used for the bottom left corner of the window 
+	 * 9. br: character to be used for the bottom right corner of the window
+	 */
+	wrefresh(local_win);
+	delwin(local_win);
+}
+
+This program creates a rectangular window that can be moved with left, right, up, down arrow keys. It repeatedly creates and destroys windows as user press a key.
+
+The create_newwin() function creates a window with newwin() and displays a border around it with box. The function destroy_win() first erases the window from screen by painting a border with ' ' character and then calling delwin() to deallocate memory related to it. Depending on the key the user presses, starty or startx is changed and a new window is created.
+
+In the destroy_win, as you can see, I used wborder instead of box. The reason is written in the comments (You missed it. I know. Read the code :-)). wborder draws a border around the window with the characters given to it as the 4 corner points and the 4 lines. To put it clearly, if you have called wborder as below:
+    wborder(win, '|', '|', '-', '-', '+', '+', '+', '+');
+
+it produces some thing like
+
+    +------------+
+    |            |
+    |            |
+    |            |
+    |            |
+    |            |
+    |            |
+    +------------+
+
+
+9.4. The other stuff in the example
+
+You can also see in the above examples, that I have used the variables COLS, LINES which are initialized to the screen sizes after initscr().
+
+They can be useful in finding screen dimensions and finding the center co-ordinate of the screen as above. The function getch() as usual gets the key from keyboard and according to the key it does the corresponding work. This type of switch- case is very common in any GUI based programs.
+
+9.5. Other Border functions
+Above program is grossly inefficient in that with each press of a key, a window is destroyed and another is created. So let's write a more efficient program which uses other border related functions.
+
+The following program uses mvhline() and mvvline() to achieve similar effect. These two functions are simple. They create a horizontal or vertical line of the specified length at the specified position.
+
+Example 8. More border functions
+
+#include <ncurses.h>
+
+typedef struct _win_border_struct {
+	chtype 	ls, rs, ts, bs, 
+	 	tl, tr, bl, br;
+}WIN_BORDER;
+
+typedef struct _WIN_struct {
+
+	int startx, starty;
+	int height, width;
+	WIN_BORDER border;
+}WIN;
+
+void init_win_params(WIN *p_win);
+void print_win_params(WIN *p_win);
+void create_box(WIN *win, bool flag);
+
+int main(int argc, char *argv[])
+{	WIN win;
+	int ch;
+
+	initscr();			/* Start curses mode 		*/
+	start_color();			/* Start the color functionality */
+	cbreak();			/* Line buffering disabled, Pass on
+					 * everty thing to me 		*/
+	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
+	noecho();
+	init_pair(1, COLOR_CYAN, COLOR_BLACK);
+
+	/* Initialize the window parameters */
+	init_win_params(&win);
+	print_win_params(&win);
+
+	attron(COLOR_PAIR(1));
+	printw("Press F1 to exit");
+	refresh();
+	attroff(COLOR_PAIR(1));
+	
+	create_box(&win, TRUE);
+	while((ch = getch()) != KEY_F(1))
+	{	switch(ch)
+		{	case KEY_LEFT:
+				create_box(&win, FALSE);
+				--win.startx;
+				create_box(&win, TRUE);
+				break;
+			case KEY_RIGHT:
+				create_box(&win, FALSE);
+				++win.startx;
+				create_box(&win, TRUE);
+				break;
+			case KEY_UP:
+				create_box(&win, FALSE);
+				--win.starty;
+				create_box(&win, TRUE);
+				break;
+			case KEY_DOWN:
+				create_box(&win, FALSE);
+				++win.starty;
+				create_box(&win, TRUE);
+				break;	
+		}
+	}
+	endwin();			/* End curses mode		  */
+	return 0;
+}
+void init_win_params(WIN *p_win)
+{
+	p_win->height = 3;
+	p_win->width = 10;
+	p_win->starty = (LINES - p_win->height)/2;	
+	p_win->startx = (COLS - p_win->width)/2;
+
+	p_win->border.ls = '|';
+	p_win->border.rs = '|';
+	p_win->border.ts = '-';
+	p_win->border.bs = '-';
+	p_win->border.tl = '+';
+	p_win->border.tr = '+';
+	p_win->border.bl = '+';
+	p_win->border.br = '+';
+
+}
+void print_win_params(WIN *p_win)
+{
+#ifdef _DEBUG
+	mvprintw(25, 0, "%d %d %d %d", p_win->startx, p_win->starty, 
+				p_win->width, p_win->height);
+	refresh();
+#endif
+}
+void create_box(WIN *p_win, bool flag)
+{	int i, j;
+	int x, y, w, h;
+
+	x = p_win->startx;
+	y = p_win->starty;
+	w = p_win->width;
+	h = p_win->height;
+
+	if(flag == TRUE)
+	{	mvaddch(y, x, p_win->border.tl);
+		mvaddch(y, x + w, p_win->border.tr);
+		mvaddch(y + h, x, p_win->border.bl);
+		mvaddch(y + h, x + w, p_win->border.br);
+		mvhline(y, x + 1, p_win->border.ts, w - 1);
+		mvhline(y + h, x + 1, p_win->border.bs, w - 1);
+		mvvline(y + 1, x, p_win->border.ls, h - 1);
+		mvvline(y + 1, x + w, p_win->border.rs, h - 1);
+
+	}
+	else
+		for(j = y; j <= y + h; ++j)
+			for(i = x; i <= x + w; ++i)
+				mvaddch(j, i, ' ');
+				
+	refresh();
+
+}
+
+
+
+OUTPUT
+
+- addstr(), mvaddstr(), waddstr(), mvwaddstr(), addnstr(): Put a character string.
+
+
+
+
+INPUT
+
+If ch is a tab, newline, carriage return or backspace, the cursor is moved appropriately within the window:
+
+•   Backspace  moves  the cursor one character left; at the left edge of a window it does nothing.
+
+•   Carriage return moves the cursor to the window left margin on the cur‐
+rent line.
+
+•   Newline does a clrtoeol, then moves the cursor to the window left mar‐
+gin on the next line, scrolling the window if on the last line.
+
+•   Tabs are considered to be at every eighth column.   The  tab  interval may be altered by setting the TABSIZE variable.
+
+If  ch is any other nonprintable character, it is drawn in printable form (i.e. ^X notation).
+
+
+---
+
+ATTRIBUTES
+
+In order to combine a character with some attributes, you have two options:
+
+By OR'ing a single character with the desired attribute macros.
+
+addch(ch | A_BOLD | A_UNDERLINE);  // print ch bold and underlined
+
+By using functions like attrset(),attron(),attroff() which manipulate the current attributes of the given window. Once set, the character printed in the window are associated with the attributes until it is turned off.
+
+
+
+
+The above program also introduces us to two useful functions getyx() and move(). The first function gets the co-ordinates of the present cursor into the variables y, x. The function move() moves the cursor to the co-ordinates given to it.
+    
+
+    
+attron(A_REVERSE | A_BLINK);
+
+
+attron() vs attrset()
+
+- attrset() sets the attributes of window. attrset() fully overrides whatever attributes the window previously had and sets it to the new attribute(s).
+- Similarly attroff() just switches off the attribute(s) given to it as an argument. attron() just switches on the attribute given to it
+- You can always use standend() which is equivalent to attrset(A_NORMAL) which turns off all attributes and brings you to normal mode.
+
+- attr_get() gets the current attributes and color pair of the window.
+
+There are series of functions like attr_set(), attr_on etc.. These are similar to above functions except that they take parameters of type attr_t.
+
+
+8.5. wattr functions
+For each of the above functions we have a corresponding function with 'w' which operates on a particular window. The above functions operate on stdscr.
+
+chgat() can be used to set attributes for a group of characters without moving. It changes the attributes of a given number of characters starting at the current cursor location. We can give -1 as the character count to update till end of line.
+
+
+If you want to change attributes of characters from current position to end of line, just use this.
+
+chgat(-1, A_REVERSE, 0, NULL);
+
+
+Other functions wchgat(), mvchgat(), wchgat() behave similarly except that the w functions operate on the particular window. The mv functions first move the cursor then perform the work given to them. Actually chgat is a macro which is replaced by a wchgat() with stdscr as the window. Most of the "w-less" functions are macros.
+
+---
+
+COLORS
+
+The functions color_content() and pair_content() can be used to find the color content and foreground, background combination for the pair.
+
+---
+
+
+
+
+
+13. Screen Manipulation
+
+13.3. Window Dumping
+To store and restore windows, the functions putwin() and getwin() can be used. putwin() puts the present window state into a file, which can be later restored by getwin().
+
+The function copywin() can be used to copy a window completely onto another window. It takes the source and destination windows as parameters and according to the rectangle specified, it copies the rectangular region from source to destination window. It's last parameter specifies whether to overwrite or just overlay the contents on to the destination window. If this argument is true, then the copying is non-destructive.
+
+
+
+
+
+14.3. ACS_ variables
+
+If you have ever programmed in DOS, you know about those nifty characters in extended character set. They are printable only on some terminals. NCURSES functions like box() use these characters. All these variables start with ACS meaning alternative character set. You might have noticed me using these characters in some of the programs above. Here's an example showing all the characters.
+
+Example 13. ACS Variables Example
+
+#include <ncurses.h>
+
+int main()
+{
+        initscr();
+
+printw("Upper left corner           "); addch(ACS_ULCORNER); printw("\n"); 
+printw("Lower left corner           "); addch(ACS_LLCORNER); printw("\n");
+printw("Lower right corner          "); addch(ACS_LRCORNER); printw("\n");
+printw("Tee pointing right          "); addch(ACS_LTEE); printw("\n");
+printw("Tee pointing left           "); addch(ACS_RTEE); printw("\n");
+printw("Tee pointing up             "); addch(ACS_BTEE); printw("\n");
+printw("Tee pointing down           "); addch(ACS_TTEE); printw("\n");
+printw("Horizontal line             "); addch(ACS_HLINE); printw("\n");
+printw("Vertical line               "); addch(ACS_VLINE); printw("\n");
+printw("Large Plus or cross over    "); addch(ACS_PLUS); printw("\n");
+printw("Scan Line 1                 "); addch(ACS_S1); printw("\n");
+printw("Scan Line 3                 "); addch(ACS_S3); printw("\n");
+printw("Scan Line 7                 "); addch(ACS_S7); printw("\n");
+printw("Scan Line 9                 "); addch(ACS_S9); printw("\n");
+printw("Diamond                     "); addch(ACS_DIAMOND); printw("\n");
+printw("Checker board (stipple)     "); addch(ACS_CKBOARD); printw("\n");
+printw("Degree Symbol               "); addch(ACS_DEGREE); printw("\n");
+printw("Plus/Minus Symbol           "); addch(ACS_PLMINUS); printw("\n");
+printw("Bullet                      "); addch(ACS_BULLET); printw("\n");
+printw("Arrow Pointing Left         "); addch(ACS_LARROW); printw("\n");
+printw("Arrow Pointing Right        "); addch(ACS_RARROW); printw("\n");
+printw("Arrow Pointing Down         "); addch(ACS_DARROW); printw("\n");
+printw("Arrow Pointing Up           "); addch(ACS_UARROW); printw("\n");
+printw("Board of squares            "); addch(ACS_BOARD); printw("\n");
+printw("Lantern Symbol              "); addch(ACS_LANTERN); printw("\n");
+printw("Solid Square Block          "); addch(ACS_BLOCK); printw("\n");
+printw("Less/Equal sign             "); addch(ACS_LEQUAL); printw("\n");
+printw("Greater/Equal sign          "); addch(ACS_GEQUAL); printw("\n");
+printw("Pi                          "); addch(ACS_PI); printw("\n");
+printw("Not equal                   "); addch(ACS_NEQUAL); printw("\n");
+printw("UK pound sign               "); addch(ACS_STERLING); printw("\n");
+
+refresh();
+getch();
+endwin();
+
+	return 0;
+}
+
+
+----
+
+14. Miscellaneous features
+
+14.1. curs_set()
+This function can be used to make the cursor invisible. The parameter to this function should be
+
+    0 : invisible      or
+    1 : normal    or
+    2 : very visible.
+14.2. Temporarily Leaving Curses mode
+Some times you may want to get back to cooked mode (normal line buffering mode) temporarily. In such a case you will first need to save the tty modes with a call to def_prog_mode() and then call endwin() to end the curses mode. This will leave you in the original tty mode. To get back to curses once you are done, call reset_prog_mode() . This function returns the tty to the state stored by def_prog_mode(). Then do refresh(), and you are back to the curses mode. Here is an example showing the sequence of things to be done.
+
+Example 12. Temporarily Leaving Curses Mode
+
+#include <ncurses.h>
+
+int main()
+{	
+	initscr();			/* Start curses mode 		  */
+	printw("Hello World !!!\n");	/* Print Hello World		  */
+	refresh();			/* Print it on to the real screen */
+	def_prog_mode();		/* Save the tty modes		  */
+	endwin();			/* End curses mode temporarily	  */
+	system("/bin/sh");		/* Do whatever you like in cooked mode */
+	reset_prog_mode();		/* Return to the previous tty mode*/
+					/* stored by def_prog_mode() 	  */
+	refresh();			/* Do refresh() to restore the	  */
+					/* Screen contents		  */
+	printw("Another String\n");	/* Back to curses use the full    */
+	refresh();			/* capabilities of curses	  */
+	endwin();			/* End curses mode		  */
+
+	return 0;
+}
+14.3. ACS_ variables
+If you have ever programmed in DOS, you know about those nifty characters in extended character set. They are printable only on some terminals. NCURSES functions like box() use these characters. All these variables start with ACS meaning alternative character set. You might have noticed me using these characters in some of the programs above. Here's an example showing all the characters.
+
+Example 13. ACS Variables Example
+
+#include <ncurses.h>
+
+int main()
+{
+        initscr();
+
+        printw("Upper left corner           "); addch(ACS_ULCORNER); printw("\n"); 
+        printw("Lower left corner           "); addch(ACS_LLCORNER); printw("\n");
+        printw("Lower right corner          "); addch(ACS_LRCORNER); printw("\n");
+        printw("Tee pointing right          "); addch(ACS_LTEE); printw("\n");
+        printw("Tee pointing left           "); addch(ACS_RTEE); printw("\n");
+        printw("Tee pointing up             "); addch(ACS_BTEE); printw("\n");
+        printw("Tee pointing down           "); addch(ACS_TTEE); printw("\n");
+        printw("Horizontal line             "); addch(ACS_HLINE); printw("\n");
+        printw("Vertical line               "); addch(ACS_VLINE); printw("\n");
+        printw("Large Plus or cross over    "); addch(ACS_PLUS); printw("\n");
+        printw("Scan Line 1                 "); addch(ACS_S1); printw("\n");
+        printw("Scan Line 3                 "); addch(ACS_S3); printw("\n");
+        printw("Scan Line 7                 "); addch(ACS_S7); printw("\n");
+        printw("Scan Line 9                 "); addch(ACS_S9); printw("\n");
+        printw("Diamond                     "); addch(ACS_DIAMOND); printw("\n");
+        printw("Checker board (stipple)     "); addch(ACS_CKBOARD); printw("\n");
+        printw("Degree Symbol               "); addch(ACS_DEGREE); printw("\n");
+        printw("Plus/Minus Symbol           "); addch(ACS_PLMINUS); printw("\n");
+        printw("Bullet                      "); addch(ACS_BULLET); printw("\n");
+        printw("Arrow Pointing Left         "); addch(ACS_LARROW); printw("\n");
+        printw("Arrow Pointing Right        "); addch(ACS_RARROW); printw("\n");
+        printw("Arrow Pointing Down         "); addch(ACS_DARROW); printw("\n");
+        printw("Arrow Pointing Up           "); addch(ACS_UARROW); printw("\n");
+        printw("Board of squares            "); addch(ACS_BOARD); printw("\n");
+        printw("Lantern Symbol              "); addch(ACS_LANTERN); printw("\n");
+        printw("Solid Square Block          "); addch(ACS_BLOCK); printw("\n");
+        printw("Less/Equal sign             "); addch(ACS_LEQUAL); printw("\n");
+        printw("Greater/Equal sign          "); addch(ACS_GEQUAL); printw("\n");
+        printw("Pi                          "); addch(ACS_PI); printw("\n");
+        printw("Not equal                   "); addch(ACS_NEQUAL); printw("\n");
+        printw("UK pound sign               "); addch(ACS_STERLING); printw("\n");
+
+        refresh();
+        getch();
+        endwin();
+
+	return 0;
+}
+
+
+
+---
+
+All these functions take y co-ordinate first and then x in their arguments.
+
+The function getch() is used to get a character from user. It is equivalent to normal getchar() except that we can disable the line buffering to avoid <enter> after input. The functions attron and attroff are used to switch some attributes on and off respectively. In the example I used them to print the character in bold. These functions are explained in detail later.
+-->
+
+<!-- 
+MOUSE
+
+Before you do any thing else, the events you want to receive have to be enabled with mousemask().
+
+mousemask(mmask_t newmask, mmask_t *oldmask)
+
+The bit mask ALL_MOUSE_EVENTS can be used to get all the events.
+
+BUTTON1_PRESSED          mouse button 1 down
+BUTTON1_RELEASED         mouse button 1 up
+BUTTON1_CLICKED          mouse button 1 clicked
+BUTTON1_DOUBLE_CLICKED   mouse button 1 double clicked
+BUTTON1_TRIPLE_CLICKED   mouse button 1 triple clicked
+BUTTON2_PRESSED          mouse button 2 down
+BUTTON2_RELEASED         mouse button 2 up
+BUTTON2_CLICKED          mouse button 2 clicked
+BUTTON2_DOUBLE_CLICKED   mouse button 2 double clicked
+BUTTON2_TRIPLE_CLICKED   mouse button 2 triple clicked
+BUTTON3_PRESSED          mouse button 3 down
+BUTTON3_RELEASED         mouse button 3 up
+BUTTON3_CLICKED          mouse button 3 clicked
+BUTTON3_DOUBLE_CLICKED   mouse button 3 double clicked
+BUTTON3_TRIPLE_CLICKED   mouse button 3 triple clicked
+BUTTON4_PRESSED          mouse button 4 down
+BUTTON4_RELEASED         mouse button 4 up
+BUTTON4_CLICKED          mouse button 4 clicked
+BUTTON4_DOUBLE_CLICKED   mouse button 4 double clicked
+BUTTON4_TRIPLE_CLICKED   mouse button 4 triple clicked
+BUTTON_SHIFT             shift was down during button state change
+BUTTON_CTRL              control was down during button state change
+BUTTON_ALT               alt was down during button state change
+ALL_MOUSE_EVENTS         report all button state changes
+REPORT_MOUSE_POSITION    report mouse movement
+
+12.2. Getting the events
+Once a class of mouse events have been enabled, getch() class of functions return KEY_MOUSE every time some mouse event happens. Then the mouse event can be retrieved with getmouse().
+
+The code approximately looks like this:
+
+    MEVENT event;
+
+    ch = getch();
+    if(ch == KEY_MOUSE)
+        if(getmouse(&event) == OK)
+            .    /* Do some thing with the event */
+            .
+            .
+getmouse() returns the event into the pointer given to it. It's a structure which contains
+
+    typedef struct
+    {
+        short id;         /* ID to distinguish multiple devices */
+        int x, y, z;      /* event coordinates */
+        mmask_t bstate;   /* button state bits */
+    }    
+The bstate is the main variable we are interested in. It tells the button state of the mouse.
+
+Then with a code snippet like the following, we can find out what happened.
+
+    if(event.bstate & BUTTON1_PRESSED)
+        printw("Left Button Pressed");
+
+
+#include <ncurses.h>
+
+#define WIDTH 30
+#define HEIGHT 10 
+
+int startx = 0;
+int starty = 0;
+
+char *choices[] = { 	"Choice 1",
+			"Choice 2",
+			"Choice 3",
+			"Choice 4",
+			"Exit",
+		  };
+
+int n_choices = sizeof(choices) / sizeof(char *);
+
+void print_menu(WINDOW *menu_win, int highlight);
+void report_choice(int mouse_x, int mouse_y, int *p_choice);
+
+int main()
+{	int c, choice = 0;
+	WINDOW *menu_win;
+	MEVENT event;
+
+	/* Initialize curses */
+	initscr();
+	clear();
+	noecho();
+	cbreak();	//Line buffering disabled. pass on everything
+
+	/* Try to put the window in the middle of screen */
+	startx = (80 - WIDTH) / 2;
+	starty = (24 - HEIGHT) / 2;
+	
+	attron(A_REVERSE);
+	mvprintw(23, 1, "Click on Exit to quit (Works best in a virtual console)");
+	refresh();
+	attroff(A_REVERSE);
+
+	/* Print the menu for the first time */
+	menu_win = newwin(HEIGHT, WIDTH, starty, startx);
+	print_menu(menu_win, 1);
+	/* Get all the mouse events */
+	mousemask(ALL_MOUSE_EVENTS, NULL);
+	
+	while(1)
+	{	c = wgetch(menu_win);
+		switch(c)
+		{	case KEY_MOUSE:
+			if(getmouse(&event) == OK)
+			{	/* When the user clicks left mouse button */
+				if(event.bstate & BUTTON1_PRESSED)
+				{	report_choice(event.x + 1, event.y + 1, &choice);
+					if(choice == -1) //Exit chosen
+						goto end;
+					mvprintw(22, 1, "Choice made is : %d String Chosen is \"%10s\"", choice, choices[choice - 1]);
+					refresh(); 
+				}
+			}
+			print_menu(menu_win, choice);
+			break;
+		}
+	}		
+end:
+	endwin();
+	return 0;
+}
+
+
+void print_menu(WINDOW *menu_win, int highlight)
+{
+	int x, y, i;	
+
+	x = 2;
+	y = 2;
+	box(menu_win, 0, 0);
+	for(i = 0; i < n_choices; ++i)
+	{	if(highlight == i + 1)
+		{	wattron(menu_win, A_REVERSE); 
+			mvwprintw(menu_win, y, x, "%s", choices[i]);
+			wattroff(menu_win, A_REVERSE);
+		}
+		else
+			mvwprintw(menu_win, y, x, "%s", choices[i]);
+		++y;
+	}
+	wrefresh(menu_win);
+}
+
+/* Report the choice according to mouse position */
+void report_choice(int mouse_x, int mouse_y, int *p_choice)
+{	int i,j, choice;
+
+	i = startx + 2;
+	j = starty + 3;
+	
+	for(choice = 0; choice < n_choices; ++choice)
+		if(mouse_y == j + choice && mouse_x >= i && mouse_x <= i + strlen(choices[choice]))
+		{	if(choice == n_choices - 1)
+				*p_choice = -1;		
+			else
+				*p_choice = choice + 1;	
+			break;
+		}
+}
+
+12.4. Miscellaneous Functions
+The functions mouse_trafo() and wmouse_trafo() can be used to convert to mouse co-ordinates to screen relative co-ordinates. See curs_mouse(3X) man page for details.
+
+The mouseinterval function sets the maximum time (in thousands of a second) that can elapse between press and release events in order for them to be recognized as a click. This function returns the previous interval value. The default is one fifth of a second.
+-->

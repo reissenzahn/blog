@@ -23,12 +23,17 @@ int main() {
       printf("yes\n");  // yes
       break;
     case 'n':
-      printf("no\n");
+      {
+        // we need to create a code block in order to declare variables
+        char *msg = "no\n";
+        printf(msg);
+      }
       break;
     default:
       printf("huh?\n");
       break;
   }
+
 
 
   // looping

@@ -1,42 +1,53 @@
+#include <stdio.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "tlpi_hdr.h"
-#ifndef BUF_SIZE /* Allow "cc -D" to override definition */
-#define BUF_SIZE 1024
-#endif
-int
-main(int argc, char *argv[])
-{
- int inputFd, outputFd, openFlags;
- mode_t filePerms;
- ssize_t numRead;
- char buf[BUF_SIZE];
- if (argc != 3 || strcmp(argv[1], "--help") == 0)
- usageErr("%s old-file new-file\n", argv[0]);
- /* Open input and output files */
- inputFd = open(argv[1], O_RDONLY);
- if (inputFd == -1)
- errExit("opening file %s", argv[1]);
- openFlags = O_CREAT | O_WRONLY | O_TRUNC;
- filePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |
- S_IROTH | S_IWOTH; /* rw-rw-rw- */
- outputFd = open(argv[2], openFlags, filePerms);
- if (outputFd == -1)
- errExit("opening file %s", argv[2]);
- /* Transfer data until we encounter end of input or an error */
- while ((numRead = read(inputFd, buf, BUF_SIZE)) > 0)
- if (write(outputFd, buf, numRead) != numRead)
- fatal("couldn't write whole buffer");
- if (numRead == -1)
- errExit("read");
- if (close(inputFd) == -1)
- errExit("close input");
- if (close(outputFd) == -1)
- errExit("close output");
- exit(EXIT_SUCCESS);
-}
 
-// $ ./copy test test.old Copy a regular file
-// $ ./copy a.txt /dev/tty Copy a regular file to this terminal
-// $ ./copy /dev/tty b.txt Copy input from this terminal to a regular file
-// $ ./copy /dev/pts/16 /dev/tty Copy input from another terminal
+#define BUFSIZE 1024
+
+int main(int argc, char *argv[]) {
+  
+  if (argc != 3) {
+    fprintf(stderr, "usage: %s src dest\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
+  int input_fd = open(argv[1], O_RDONLY);
+  if (input_fd == -1) {
+    fprintf(stderr, "open: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  // rw-rw-rw-
+  int output_fd = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  if (output_fd == -1) {
+    fprintf(stderr, "open: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  char buf[BUFSIZE];
+  ssize_t num_read;
+  while ((num_read = read(input_fd, buf, BUFSIZE)) > 0) {
+    if (write(output_fd, buf, num_read) != num_read) {
+      fprintf(stderr, "write: failed to write whole buffer\n");
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  if (num_read == -1) {
+    fprintf(stderr, "read: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  if (close(input_fd) == -1) {
+    fprintf(stderr, "close: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  if (close(output_fd) == -1) {
+    fprintf(stderr, "close: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  exit(EXIT_SUCCESS);
+}

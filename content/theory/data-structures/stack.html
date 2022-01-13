@@ -4,20 +4,59 @@ date: 2021-11-24
 draft: false
 ---
 
-<p>
-  A stack is a collection of elements that are maintained in a sequence and can be modified by the insertion and removal of elements from one end. The end of the sequence at which elements are inserted and removed is called the top. A stack is a last in, first out (LIFO) data structure as the last element to be inserted will be the first one to be removed 
-</p>
+<ul>
+  <li>
+    A stack is a linear data structure which allows elements to be inserted or removed at one end.
+  </li>
+  <li>
+    The end at which elements are inserted and removed is called the top.
+  </li>
+  <li>
+    A stack is a last in, first out (LIFO) data structure as the last element to be inserted will be the first one to be removed.
+  </li>
+</ul>
 
 
-<h3>Push and Pop</h3>
+<h3>Structure</h3>
 
-<p>
-  The push operation inserts an element at the top of the stack. This can be implemented using a linked list by appending the element as the first element of the list.
-</p>
+<ul>
+  <li>
+    A stack can be represented using a singly-linked list with a pointer to the first element in the list being used to keep track of the top.
+  </li>
+  <li>
+    Alternatively, an array-based implementation can be used. The underlying array will need to be resized if the number of elements in the stack exceeds the size of the array.
+  </li>
+</ul>
 
-<p>
-  The pop operation removes the most recently added element that was not yet removed. This can be implemented using a linked list by removing the first element of the list. A non-essential peek operation may be included to return the most recently added element without removing it.
-</p>
+
+<h3>Operations</h3>
+
+<h4>push()</h4>
+
+<ul>
+  <li>
+    The push operation inserts an element at the top of the stack.
+  </li>
+</ul>
+
+
+<h4>pop()</h4>
+
+<ul>
+  <li>
+    The pop operation removes the most recently added element that was not yet removed.
+  </li>
+  <li>
+    A non-essential peek operation may be included to return the most recently added element without removing it.
+  </li>
+</ul>
+
+
+<!-- 
+This can be implemented using a linked list by appending the element as the first element of the list.
+
+This can be implemented using a linked list by removing the first element of the list. 
+-->
 
 
 <h3>Complexity</h3>
@@ -47,7 +86,43 @@ draft: false
 
 <h3>Implementation</h3>
 
+{{% code-file file="/static/code/theory/data-structures/Stack.java" lang="java" %}}
 
 
 <h3>Resources</h3>
 
+
+<h3>Problems</h3>
+
+{{% code java %}}import java.util.Deque;
+import java.util.LinkedList;
+
+Deque<String> stack = new LinkedList<>();
+
+stack.push("A");
+
+System.out.println(stack.peek());  // A
+
+System.out.println(stack.pop());  // A
+
+// System.out.println(stack.pop());  // error
+
+System.out.println(stack.poll());  // null{{% /code %}}
+
+<ul>
+  <li>
+    <a href="/interview/leetcode/71">71. Simplify Path</a>
+  </li>
+  <li>
+    <a href="/interview/leetcode/155">155. Min Stack</a>
+  </li>
+  <li>
+    <a href="/interview/leetcode/394">394. Decode String</a>
+  </li>
+  <li>
+    <a href="/interview/leetcode/234">234. Palindrome Linked List</a>
+  </li>
+  <li>
+    <a href="/interview/leetcode/735">735. Asteroid Collision</a>
+  </li>
+</ul>

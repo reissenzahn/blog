@@ -1,0 +1,1472 @@
+---
+title: "MQTT"
+date: 2020-09-29
+draft: false
+---
+
+INTRODUCTION
+
+MQTT is a client-server publish/subscribe messaging transport protocol.
+
+It is light weight, open, simple, and designed so as to be easy to implement.
+
+The protocol runs over TCP/IP, or over other network protocols that provide ordered, lossless, bi-directional connections.
+
+The MQTT protocol requires an underlying transport that provides an ordered, lossless, stream of bytes from the Client to Server and Server to Client. TCP ports 8883 and 1883 are registered with IANA for MQTT TLS and non TLS communication respectively.
+
+
+TERMINOLOGY
+
+Network Connection: A construct provided by the underlying transport protocol that is being used by MQTT. It connects the client to the server and provides the means to send an ordered, lossless, stream of bytes in both directions.
+
+Application Message: The data carried by the MQTT protocol across the network for the application. When Application Messages are transported by MQTT they have an associated Quality of Service and a Topic Name.
+
+Client: A program or device that uses MQTT. A Client always establishes the Network Connection to the Server. It can Publish Application Messages, Subscribe to request Application Messages, Unsubscribe to remove a request for Application Messages or Disconnect from the Server.
+
+Server: A program or device that acts as an intermediary between Clients which publish Application Messages and Clients which have made Subscriptions. A Server Accepts Network Connections from Clients, Accepts Application Messages published by Clients, Processes Subscribe and Unsubscribe requests from Clients and Forwards Application Messages that match Client Subscriptions.
+
+Subscription: A Subscription comprises a Topic Filter and a maximum QoS. A Subscription is associated with a single Session. A Session can contain more than one Subscription. Each Subscription within a session has a different Topic Filter.
+
+Topic Name: The label attached to an Application Message which is matched against the Subscriptions known to the Server. The Server sends a copy of the Application Message to each Client that has a matching Subscription.
+
+Topic Filter: An expression contained in a Subscription, to indicate an interest in one or more topics. A Topic Filter can include wildcard characters.
+
+Session: A stateful interaction between a Client and a Server. Some Sessions last only as long as the Network Connection, others can span multiple consecutive Network Connections between a Client and a Server.
+
+Control Packet: A packet of information that is sent across the Network Connection. The MQTT specification defines fourteen different types of Control Packet, one of which (the PUBLISH packet) is used to convey Application Messages.
+
+
+DATA REPRESENTATIONS
+
+- Bits in a byte are labeled 7 through 0. Bit number 7 is the most significant bit, the least significant bit is assigned bit number 0.
+- Integer data values are 16 bits in big-endian order. This means that a 16-bit word is presented on the network as Most Significant Byte (MSB), followed by Least Significant Byte (LSB).
+- Text fields in the Control Packets described later are encoded as UTF-8 strings. Each of these strings is prefixed with a two byte length field that gives the number of bytes in a UTF-8 encoded string itself. Unless stated otherwise all UTF-8 encoded strings can have any length in the range 0 to 65535 bytes.
+
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">String length MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">String length LSB</td>
+  </tr>
+  <tr>
+    <td>byte 3 ...</td>
+    <td colspan="8">UTF-8 Encoded Character Data</td>
+  </tr>
+</table>
+
+<!-- Structure of UTF-8 encoded strings -->
+
+<!--
+DETAILS
+
+The character data in a UTF-8 encoded string MUST be well-formed UTF-8 as defined by the Unicode specification [Unicode] and restated in RFC 3629 [RFC3629]. In particular this data MUST NOT include encodings of code points between U+D800 and U+DFFF. If a Server or Client receives a Control Packet containing ill-formed UTF-8 it MUST close the Network Connection [MQTT-1.5.3-1].
+
+A UTF-8 encoded string MUST NOT include an encoding of the null character U+0000. If a receiver (Server or Client) receives a Control Packet containing U+0000 it MUST close the Network Connection [MQTT-1.5.3-2].
+
+The data SHOULD NOT include encodings of the Unicode [Unicode] code points listed below. If a receiver (Server or Client) receives a Control Packet containing any of them it MAY close the Network Connection:
+
+U+0001..U+001F control characters 
+U+007F..U+009F control characters 
+Code points defined in the Unicode specification [Unicode] to be non-characters (for example U+0FFFF) 
+
+A UTF-8 encoded sequence 0xEF 0xBB 0xBF is always to be interpreted to mean U+FEFF ("ZERO WIDTH NO-BREAK SPACE") wherever it appears in a string and MUST NOT be skipped over or stripped off by a packet receiver [MQTT-1.5.3-3].
+-->
+
+
+
+
+<h3>Control Packet Format</h3>
+
+<!-- 
+- The MQTT protocol proceeds through the exchange of a series of control packets.
+- A control packet consists of up to three parts: a fixed header (mandatory), a variable header and a payload.
+-->
+
+
+<h4>Fixed Header</h4>
+
+<!-- 
+- The control packet type is represented as a 4-bit unsigned value. The remaining bits of byte 1 contain flags specific to each control packet type.
+- The remaining length is the number of bytes remaining within the current packet including data in the variable header and the payload. It does not include the bytes used to encode the Remaining Length.
+- The remaining length is encoded using a variable length encoding scheme which uses a single byte for values up to 127. For larger values, the least significant seven bits of each byte encode the data, and the most significant bit is used to indicate that there are following bytes in the representation. Thus each byte encodes 128 values and a <i>continuation bit</i>. The maximum number of bytes in the remaining length field is four.
+-->
+
+<!-- 
+The algorithm for encoding a non negative integer (X) into the variable length encoding scheme is as follows:
+
+do
+
+  encodedByte = X MOD 128
+
+  X = X DIV 128
+
+  // if there are more data to encode, set the top bit of this byte
+
+  if ( X > 0 )
+
+      encodedByte = encodedByte OR 128
+
+  endif
+
+      'output' encodedByte
+
+while ( X > 0 )
+
+ 
+
+Where MOD is the modulo operator (% in C), DIV is integer division (/ in C), and OR is bit-wise or (| in C).
+
+ 
+
+Non normative comment
+
+The algorithm for decoding the Remaining Length field is as follows:
+
+ 
+
+multiplier = 1
+
+value = 0
+
+do
+
+    encodedByte = 'next byte from stream'
+
+    value += (encodedByte AND 127) * multiplier
+
+    multiplier *= 128
+
+    if (multiplier > 128*128*128)
+
+        throw Error(Malformed Remaining Length)
+
+while ((encodedByte AND 128) != 0)
+
+ 
+
+where AND is the bit-wise and operator (& in C).
+
+
+When this algorithm terminates, value contains the Remaining Length value.
+ -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">Packet Type</td>
+    <td colspan="4">Flags</td>
+  </tr>
+  <tr>
+    <td>byte 2 ...</td>
+    <td colspan="8">Remaining Length</td>
+  </tr>
+</table>
+<!-- Fixed header format -->
+
+
+
+<h4>Variable Header</h4>
+
+- The content of the variable header varies depending on the control packet type.
+- The packet identifier field of variable header is common in several packet types.
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- Packet Identifier bytes -->
+
+The variable header component of many of the Control Packet types includes a 2 byte Packet Identifier field. These Control Packets are PUBLISH (where QoS > 0), PUBACK, PUBREC, PUBREL, PUBCOMP, SUBSCRIBE, SUBACK, UNSUBSCRIBE, UNSUBACK.
+
+ 
+
+SUBSCRIBE, UNSUBSCRIBE, and PUBLISH (in cases where QoS > 0) Control Packets MUST contain a non-zero 16-bit Packet Identifier [MQTT-2.3.1-1]. Each time a Client sends a new packet of one of these types it MUST assign it a currently unused Packet Identifier [MQTT-2.3.1-2]. If a Client re-sends a particular Control Packet, then it MUST use the same Packet Identifier in subsequent re-sends of that packet. The Packet Identifier becomes available for reuse after the Client has processed the corresponding acknowledgement packet. In the case of a QoS 1 PUBLISH this is the corresponding PUBACK; in the case of QoS 2 it is PUBCOMP. For SUBSCRIBE or UNSUBSCRIBE it is the corresponding SUBACK or UNSUBACK [MQTT-2.3.1-3]. The same conditions apply to a Server when it sends a PUBLISH with QoS > 0 [MQTT-2.3.1-4].
+
+ 
+
+A PUBLISH Packet MUST NOT contain a Packet Identifier if its QoS value is set to 0 [MQTT-2.3.1-5].
+
+ 
+
+A PUBACK, PUBREC or PUBREL Packet MUST contain the same Packet Identifier as the PUBLISH Packet that was originally sent [MQTT-2.3.1-6]. Similarly SUBACK and UNSUBACK MUST contain the Packet Identifier that was used in the corresponding SUBSCRIBE and UNSUBSCRIBE Packet respectively [MQTT-2.3.1-7].
+
+The Client and Server assign Packet Identifiers independently of each other. As a result, Client Server pairs can participate in concurrent message exchanges using the same Packet Identifiers.
+
+
+<h4>Payload</h4>
+
+- Some MQTT Control Packets contain a payload as the final part of the packet.
+
+
+
+
+<h3>Control Packets</h3>
+
+<h4>CONNECT</h4>
+
+- After a Network Connection is established by a Client to a Server, the first Packet sent from the Client to the Server MUST be a CONNECT Packet.
+- A Client can only send the CONNECT Packet once over a Network Connection. The Server MUST process a second CONNECT Packet sent from a Client as a protocol violation and disconnect the Client,
+- The payload contains one or more encoded fields. They specify a unique Client identifier for the Client, a Will topic, Will Message, User Name and Password. All but the Client identifier are optional and their presence is determined based on flags in the variable header.
+- The variable header for the CONNECT Packet consists of four fields in the following order:  Protocol Name, Protocol Level, Connect Flags, and Keep Alive. The Protocol Name is a UTF-8 encoded string that represents the protocol name “MQTT”, capitalized as shown.
+- The 8 bit unsigned value that represents the revision level of the protocol used by the Client. The value of the Protocol Level field for the version 3.1.1 of the protocol is 4 (0x04). The Server MUST respond to the CONNECT Packet with a CONNACK return code 0x01 (unacceptable protocol level) and then disconnect the Client if the Protocol Level is not supported by the Serve.
+- The Connect Flags byte contains a number of parameters specifying the behavior of the MQTT connection. It also indicates the presence or absence of fields in the payload.
+
+
+
+Will Flag:: If the Will Flag is set to 1 this indicates that, if the Connect request is accepted, a Will Message MUST be stored on the Server and associated with the Network Connection. The Will Message MUST be published when the Network Connection is subsequently closed unless the Will Message has been deleted by the Server on receipt of a DISCONNECT Packet [MQTT-3.1.2-8]. If the Will Flag is set to 1, the Will QoS and Will Retain fields in the Connect Flags will be used by the Server, and the Will Topic and Will Message fields MUST be present in the payload [MQTT-3.1.2-9]. The Will Message MUST be removed from the stored Session state in the Server once it has been published or the Server has received a DISCONNECT packet from the Client [MQTT-3.1.2-10]. If the Will Flag is set to 0 the Will QoS and Will Retain fields in the Connect Flags MUST be set to zero and the Will Topic and Will Message fields MUST NOT be present in the payload [MQTT-3.1.2-11]. If the Will Flag is set to 0, a Will Message MUST NOT be published when this Network Connection ends [MQTT-3.1.2-12].
+
+ 
+
+Will QoS: These two bits specify the QoS level to be used when publishing the Will Message. If the Will Flag is set to 0, then the Will QoS MUST be set to 0 (0x00) [MQTT-3.1.2-13]. If the Will Flag is set to 1, the value of Will QoS can be 0 (0x00), 1 (0x01), or 2 (0x02). It MUST NOT be 3 (0x03) [MQTT-3.1.2-14].
+
+
+Will Retain
+Position: bit 5 of the Connect Flags.
+
+
+This bit specifies if the Will Message is to be Retained when it is published.
+
+ 
+
+If the Will Flag is set to 0, then the Will Retain Flag MUST be set to 0 [MQTT-3.1.2-15].
+
+If the Will Flag is set to 1:
+
+If Will Retain is set to 0, the Server MUST publish the Will Message as a non-retained message [MQTT-3.1.2-16].
+If Will Retain is set to 1, the Server MUST publish the Will Message as a retained message [MQTT-3.1.2-17].
+3.1.2.8 User Name Flag
+Position: bit 7 of the Connect Flags.
+
+
+If the User Name Flag is set to 0, a user name MUST NOT be present in the payload [MQTT-3.1.2-18].
+
+If the User Name Flag is set to 1, a user name MUST be present in the payload [MQTT-3.1.2-19].
+
+3.1.2.9 Password Flag
+Position: bit 6 of the Connect Flags byte.
+
+
+If the Password Flag is set to 0, a password MUST NOT be present in the payload [MQTT-3.1.2-20].
+
+If the Password Flag is set to 1, a password MUST be present in the payload [MQTT-3.1.2-21].
+
+If the User Name Flag is set to 0, the Password Flag MUST be set to 0 [MQTT-3.1.2-22].
+
+
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (1)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2...</td>
+    <td>Remaining Length (10 + payload length)</td>
+  </tr>
+</table>
+<!-- CONNECT Packet fixed header -->
+
+
+<h4>CONNACK</h4>
+
+The CONNACK Packet is the packet sent by the Server in response to a CONNECT Packet received from a Client. The first packet sent from the Server to the Client MUST be a CONNACK Packet [MQTT-3.2.0-1].
+
+ 
+
+If the Client does not receive a CONNACK Packet from the Server within a reasonable amount of time, the Client SHOULD close the Network Connection. A "reasonable" amount of time depends on the type of application and the communications infrastructure.
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (2)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- CONNACK Packet fixed header -->
+
+
+Byte 1 is the "Connect Acknowledge Flags". Bits 7-1 are reserved and MUST be set to 0. Bit 0 (SP1) is the Session Present Flag. 
+
+If the Server accepts a connection with CleanSession set to 1, the Server MUST set Session Present to 0 in the CONNACK packet in addition to setting a zero return code in the CONNACK packet [MQTT-3.2.2-1].
+
+If the Server accepts a connection with CleanSession set to 0, the value set in Session Present depends on whether the Server already has stored Session state for the supplied client ID. If the Server has stored Session state, it MUST set Session Present to 1 in the CONNACK packet [MQTT-3.2.2-2]. If the Server does not have stored Session state, it MUST set Session Present to 0 in the CONNACK packet. This is in addition to setting a zero return code in the CONNACK packet [MQTT-3.2.2-3].
+
+The Session Present flag enables a Client to establish whether the Client and Server have a consistent view about whether there is already stored Session state. 
+
+Once the initial setup of a Session is complete, a Client with stored Session state will expect the Server to maintain its stored Session state. In the event that the value of Session Present received by the Client from the Server is not as expected, the Client can choose whether to proceed with the Session or to disconnect. The Client can discard the Session state on both Client and Server by disconnecting, connecting with Clean Session set to 1 and then disconnecting again. 
+
+If a server sends a CONNACK packet containing a non-zero return code it MUST set Session Present to 0 [MQTT-3.2.2-4].
+
+The values for the one byte unsigned Connect Return code field are listed in Table 3.1 – Connect Return code values. If a well formed CONNECT Packet is received by the Server, but the Server is unable to process it for some reason, then the Server SHOULD attempt to send a CONNACK packet containing the appropriate non-zero Connect return code from this table. If a server sends a CONNACK packet containing a non-zero return code it MUST then close the Network Connection [MQTT-3.2.2-5].
+
+
+0x00 Connection Accepted
+0x01 Connection Refused, unacceptable protocol version
+0x02 Connection Refused, identifier rejected
+0x03 Connection Refused, Server unavailable
+0x04 Connection Refused, bad user name or password
+0x05 Connection Refused, not authorized
+
+If none of the return codes listed in Table 3.1 – Connect Return code values are deemed applicable, then the Server MUST close the Network Connection without sending a CONNACK [MQTT-3.2.2-6].
+
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="7">Reserved</td>
+    <td colspan="1">SP</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>X</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Connect Return Code</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>X</td>
+    <td>X</td>
+    <td>X</td>
+    <td>X</td>
+    <td>X</td>
+    <td>X</td>
+    <td>X</td>
+    <td>X</td>
+  </tr>
+</table>
+<!-- CONNACK Packet variable header -->
+
+
+<h4>PUBLISH</h4>
+
+- A PUBLISH Control Packet is sent from a Client to a Server or from Server to a Client to transport an Application Message.
+
+
+
+DUP: If the DUP flag is set to 0, it indicates that this is the first occasion that the Client or Server has attempted to send this MQTT PUBLISH Packet. If the DUP flag is set to 1, it indicates that this might be re-delivery of an earlier attempt to send the Packet. The DUP flag MUST be set to 1 by the Client or Server when it attempts to re-deliver a PUBLISH Packet. The DUP flag MUST be set to 0 for all QoS 0 messages. The value of the DUP flag from an incoming PUBLISH packet is not propagated when the PUBLISH Packet is sent to subscribers by the Server. The DUP flag in the outgoing PUBLISH packet is set independently to the incoming PUBLISH packet, its value MUST be determined solely by whether the outgoing PUBLISH packet is a retransmission.
+
+ 
+QoS: This field indicates the level of assurance for delivery of an Application Message (0, 1 or 2).
+
+
+
+
+
+<h4>PUBACK</h4>
+
+- A PUBACK Packet is the response to a PUBLISH Packet with QoS level 1.
+- This contains the Packet Identifier from the PUBLISH Packet that is being acknowledged.
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (4)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- PUBACK Packet fixed header -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- PUBACK Packet variable header -->
+
+
+
+<h4>PUBREC</h4>
+
+- A PUBREC Packet is the response to a PUBLISH Packet with QoS 2. It is the second packet of the QoS 2 protocol exchange.
+- The variable header contains the Packet Identifier from the PUBLISH Packet that is being acknowledged.
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (5)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- PUBREC Packet fixed header -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- PUBREC Packet variable header -->
+
+
+
+
+<h4>PUBREL</h4>
+
+- A PUBREL Packet is the response to a PUBREC Packet. It is the third packet of the QoS 2 protocol exchange.
+- The variable header contains the same Packet Identifier as the PUBREC Packet that is being acknowledged.
+
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (6)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- PUBREL Packet fixed header -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- PUBREL Packet variable header -->
+
+
+
+<h4>PUBCOMP</h4>
+
+- The PUBCOMP Packet is the response to a PUBREL Packet. It is the fourth and final packet of the QoS 2 protocol exchange.
+- The variable header contains the same Packet Identifier as the PUBREL Packet that is being acknowledged.
+
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (7)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>1</td>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- PUBCOMP Packet fixed header -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- PUBCOMP Packet variable header -->
+
+
+<h4>SUBSCRIBE</h4>
+
+- The SUBSCRIBE Packet is sent from the Client to the Server to create one or more Subscriptions. Each Subscription registers a Client’s interest in one or more Topics. The Server sends PUBLISH Packets to the Client in order to forward Application Messages that were published to Topics that match these Subscriptions. The SUBSCRIBE Packet also specifies (for each Subscription) the maximum QoS with which the Server can send Application Messages to the Client.
+- The variable header contains a Packet Identifier.
+
+- The payload of a SUBSCRIBE Packet contains a list of Topic Filters indicating the Topics to which the Client wants to subscribe. The Topic Filters in a SUBSCRIBE packet payload MUST be UTF-8 encoded strings. Each filter is followed by a byte called the Requested QoS. This gives the maximum QoS level at which the Server can send Application Messages to the Client.
+- The payload of a SUBSCRIBE packet MUST contain at least one Topic Filter / QoS pair. A SUBSCRIBE packet with no payload is a protocol violation [MQTT-3.8.3-3]. See section 4.8 for information about handling errors.
+- The requested maximum QoS field is encoded in the byte following each UTF-8 encoded topic name, and these Topic Filter / QoS pairs are packed contiguously.
+
+- 
+
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (8)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2 + payload length)</td>
+  </tr>
+</table>
+<!-- SUBSCRIBE Packet fixed header -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- SUBSCRIBE Packet variable header -->
+
+
+
+
+<h4>SUBACK</h4>
+
+<!-- 
+- A SUBACK Packet is sent by the Server to the Client to confirm receipt and processing of a SUBSCRIBE Packet.
+- A SUBACK Packet contains a list of return codes, that specify the maximum QoS level that was granted in each Subscription that was requested by the SUBSCRIBE.
+- The variable header contains the Packet Identifier from the SUBSCRIBE Packet that is being acknowledged.
+- The payload contains a list of return codes. Each return code corresponds to a Topic Filter in the SUBSCRIBE Packet being acknowledged. The order of return codes in the SUBACK Packet MUST match the order of Topic Filters in the SUBSCRIBE Packet.
+- Each return code is one byte. Allowed return codes:
+
+0x00 - Success - Maximum QoS 0 
+0x01 - Success - Maximum QoS 1 
+0x02 - Success - Maximum QoS 2 
+0x80 - Failure
+ -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (9)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2 + payload length)</td>
+  </tr>
+</table>
+<!-- SUBACK Packet fixed header -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- SUBACK Packet variable header -->
+
+
+<h4>UNSUBSCRIBE</h4>
+
+<!-- 
+- An UNSUBSCRIBE Packet is sent by the Client to the Server, to unsubscribe from topics.
+- Bits 3,2,1 and 0 of the fixed header of the UNSUBSCRIBE Control Packet are reserved and MUST be set to 0,0,1 and 0 respectively. The Server MUST treat any other value as malformed and close the Network Connection.
+- The variable header contains a Packet Identifier.
+- The payload for the UNSUBSCRIBE Packet contains the list of Topic Filters that the Client wishes to unsubscribe from. The Topic Filters in an UNSUBSCRIBE packet MUST be UTF-8 encoded string, packed contiguously
+- The Payload of an UNSUBSCRIBE packet MUST contain at least one Topic Filter. An UNSUBSCRIBE packet with no payload is a protocol violation.
+
+- The Topic Filters (whether they contain wildcards or not) supplied in an UNSUBSCRIBE packet MUST be compared character-by-character with the current set of Topic Filters held by the Server for the Client. If any filter matches exactly then its owning Subscription is deleted, otherwise no additional processing occurs. 
+- If a Server deletes a Subscription then it MUST stop adding any new messages for delivery to the Client [MQTT-3.10.4-2]. It MUST complete the delivery of any QoS 1 or QoS 2 messages which it has started to send to the Client [MQTT-3.10.4-3]. It MAY continue to deliver any existing messages buffered for delivery to the Client.
+- The Server MUST respond to an UNSUBSUBCRIBE request by sending an UNSUBACK packet. The UNSUBACK Packet MUST have the same Packet Identifier as the UNSUBSCRIBE Packet [MQTT-3.10.4-4]. Even where no Topic Subscriptions are deleted, the Server MUST respond with an UNSUBACK [MQTT-3.10.4-5].
+- If a Server receives an UNSUBSCRIBE packet that contains multiple Topic Filters it MUST handle that packet as if it had received a sequence of multiple UNSUBSCRIBE packets, except that it sends just one UNSUBACK response [MQTT-3.10.4-6]. 
+ -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (10)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>1</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2 + payload length)</td>
+  </tr>
+</table>
+<!-- UNSUBSCRIBE Packet Fixed header -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- UNSUBSCRIBE Packet variable header -->
+
+
+<h4>UNSUBACK</h4>
+
+<!-- 
+- The UNSUBACK Packet is sent by the Server to the Client to confirm receipt of an UNSUBSCRIBE Packet.
+- The variable header contains the Packet Identifier of the UNSUBSCRIBE Packet that is being acknowledged.
+ -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (11)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>1</td>
+    <td>0</td>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (2)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- UNSUBACK Packet fixed header -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="8">Packet Identifier MSB</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Packet Identifier LSB</td>
+  </tr>
+</table>
+<!-- UNSUBACK Packet variable header -->
+
+
+<h4>PINGREQ</h4>
+
+<!-- 
+- The PINGREQ Packet is sent from a Client to the Server. It can be used to Indicate to the Server that the Client is alive, Request that the Server responds to confirm that it is alive or Exercise the network to indicate that the Network Connection is active.
+- This Packet is used in Keep Alive processing.
+- The Server MUST send a PINGRESP Packet in response to a PINGREQ Packet.
+ -->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (12)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (0)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- PINGREQ Packet fixed header -->
+
+
+<h4>PINGRESP</h4>
+
+<!-- 
+- A PINGRESP Packet is sent by the Server to the Client in response to a PINGREQ Packet. It indicates that the Server is alive.
+- This Packet is used in Keep Alive processing.
+-->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (13)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (0)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- PINGRESP Packet fixed header -->
+
+
+<h4>DISCONNECT</h4>
+
+<!-- 
+- The DISCONNECT Packet is the final Control Packet sent from the Client to the Server. It indicates that the Client is disconnecting cleanly.
+- The Server MUST validate that reserved bits are set to zero and disconnect the Client if they are not zero.
+- After sending a DISCONNECT Packet the Client MUST close the Network Connection and MUST NOT send any more Control Packets on that Network Connection.
+- On receipt of DISCONNECT the Server MUST discard any Will Message associated with the current connection without publishing it and SHOULD close the Network Connection if the Client has not already done so.
+-->
+
+<table class="mqtt-table">
+  <tr>
+    <td width="20%">Bit</td>
+    <td width="10%">7</td>
+    <td width="10%">6</td>
+    <td width="10%">5</td>
+    <td width="10%">4</td>
+    <td width="10%">3</td>
+    <td width="10%">2</td>
+    <td width="10%">1</td>
+    <td width="10%">0</td>
+  </tr>
+  <tr>
+    <td>byte 1</td>
+    <td colspan="4">MQTT Control Packet type (14)</td>
+    <td colspan="4">Reserved</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>1</td>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>byte 2</td>
+    <td colspan="8">Remaining Length (0)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+</table>
+<!-- DISCONNECT Packet fixed header -->
+
+
+
+
+
+<h3>Protocol Flows</h3>
+
+- Application messages are delivered according to the specified quality of service level.
+- The delivery protocol is symmetric and so the client and server can each take the role of either sender or receiver.
+- The delivery protocol is concerned solely with the delivery of an application message from a single sender to a single receiver.
+- When the server is delivering an application message to more than one Client, each Client is treated independently.
+
+
+<h4>QoS 0 (At Most Once)</h4>
+
+- The message is delivered according to the capabilities of the underlying network.
+- No response is sent by the receiver and no retry is performed by the sender.
+- The message arrives at the receiver either once or not at all.
+- The sender must send a PUBLISH packet with QoS=0, DUP=0. The receiver accepts ownership of the message when it receives the PUBLISH packet.
+
+<table class="mqtt-table">
+  <tr>
+    <td width="33%">Sender Action</td>
+    <td width="33%">Control Packet</td>
+    <td width="33%">Receiver Action</td>
+  </tr>
+  <tr>
+    <td>PUBLISH QoS 0, DUP=0</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>----------></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td>Deliver Application Message to appropriate onward recipient(s)</td>
+  </tr>
+</table>
+
+
+<h4>QoS 1 (At Least Once)</h4>
+
+- This quality of service ensures that the message arrives at the receiver at least once.
+- A QoS 1 PUBLISH Packet has a Packet Identifier in its variable header and is acknowledged by a PUBACK Packet.
+- The Sender must assign an unused Packet Identifier each time it has a new Application Message to publish. The Packet Identifier becomes available for reuse once the Sender has received the PUBACK Packet.
+- The sender must send a PUBLISH Packet containing this Packet Identifier with QoS=1, DUP=0. The sender must treat the PUBLISH Packet as unacknowledged until it has received the corresponding PUBACK packet from the receiver.
+- Note that a Sender is permitted to send further PUBLISH Packets with different Packet Identifiers while it is waiting to receive acknowledgements.
+- In the QoS 1 delivery protocol, the Receiver MUST respond with a PUBACK Packet containing the Packet Identifier from the incoming PUBLISH Packet, having accepted ownership of the Application Message. After it has sent a PUBACK Packet the Receiver MUST treat any incoming PUBLISH packet that contains the same Packet Identifier as being a new publication, irrespective of the setting of its DUP flag.
+- The receiver is not required to complete delivery of the Application Message before sending the PUBACK. When its original sender receives the PUBACK packet, ownership of the Application Message is transferred to the receiver.
+
+
+<table class="mqtt-table">
+  <tr>
+    <td width="33%">Sender Action</td>
+    <td width="33%">Control Packet</td>
+    <td width="33%">Receiver Action</td>
+  </tr>
+  <tr>
+    <td>Store message</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Send PUBLISH QoS 1, DUP 0, &lt;Packet Identifier&gt;</td>
+    <td>----------></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td>Initiate onward delivery of the Application Message</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>&lt;----------</td>
+    <td>Send PUBACK &lt;Packet Identifier&gt;</td>
+  </tr>
+  <tr>
+    <td>Discard message</td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+
+
+
+<h4>QoS 2 (Exactly Once)</h4>
+
+- This is the highest quality of service, for use when neither loss nor duplication of messages are acceptable. There is an increased overhead associated with this quality of service.
+- A QoS 2 message has a Packet Identifier in its variable header. The receiver of a QoS 2 PUBLISH Packet acknowledges receipt with a two-step acknowledgement process.
+
+- The sender MUST assign an unused Packet Identifier when it has a new Application Message to publish and MUST send a PUBLISH packet containing this Packet Identifier with QoS=2, DUP=0. The sender MUST treat the PUBLISH packet as “unacknowledged” until it has received the corresponding PUBREC packet from the receiver.
+- The sender MUST send a PUBREL packet when it receives a PUBREC packet from the receiver. This PUBREL packet MUST contain the same Packet Identifier as the original PUBLISH packet. The sender must treat the PUBREL packet as “unacknowledged” until it has received the corresponding PUBCOMP packet from the receiver. The sender MUST NOT re-send the PUBLISH once it has sent the corresponding PUBREL packet.
+- The Packet Identifier becomes available for reuse once the Sender has received the PUBCOMP Packet.
+- Note that a Sender is permitted to send further PUBLISH Packets with different Packet Identifiers while it is waiting to receive acknowledgements.
+
+ 
+
+In the QoS 2 delivery protocol, the Receiver
+
+MUST respond with a PUBREC containing the Packet Identifier from the incoming PUBLISH Packet, having accepted ownership of the Application Message.
+Until it has received the corresponding PUBREL packet, the Receiver MUST acknowledge any subsequent PUBLISH packet with the same Packet Identifier by sending a PUBREC. It MUST NOT cause duplicate messages to be delivered to any onward recipients in this case.
+MUST respond to a PUBREL packet by sending a PUBCOMP packet containing the same Packet Identifier as the PUBREL.
+After it has sent a PUBCOMP, the receiver MUST treat any subsequent PUBLISH packet that contains that Packet Identifier as being a new publication.
+
+The receiver is not required to complete delivery of the Application Message before sending the PUBREC or PUBCOMP. When its original sender receives the PUBREC packet, ownership of the Application Message is transferred to the receiver.
+
+<table class="mqtt-table">
+  <tr>
+    <td width="33%">Sender Action</td>
+    <td width="33%">Control Packet</td>
+    <td width="33%">Receiver Action</td>
+  </tr>
+  <tr>
+    <td>Store message</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>PUBLISH QoS 2, DUP 0 &lt;Packet Identifier></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>----------></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td>Method A, Store message
+                        or
+      Method B, Store &lt;Packet Identifier> then Initiate onward delivery of the Application Message1</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td>PUBREC &lt;Packet Identifier></td>
+  </tr>
+</table>
+
+
+
+
+Three qualities of service for message delivery:
+
+·         "At most once", where messages are delivered according to the best efforts of the operating environment. Message loss can occur. This level could be used, for example, with ambient sensor data where it does not matter if an individual reading is lost as the next one will be published soon after.
+
+·         "At least once", where messages are assured to arrive but duplicates can occur.
+
+·         "Exactly once", where message are assured to arrive exactly once. This level could be used, for example, with billing systems where duplicate or lost messages could lead to incorrect charges being applied.
+
+
+<h3>Topic Names and Filters</h3>
+
+- The topic level separator is used to introduce structure into the Topic Name. If present, it divides the Topic Name into multiple topic levels.
+- A subscription’s Topic Filter can contain special wildcard characters, which allow you to subscribe to multiple topics at once.
+- The wildcard characters can be used in Topic Filters, but MUST NOT be used within a Topic Name [MQTT-4.7.1-1].
+- The forward slash (‘/’ U+002F) is used to separate each level within a topic tree and provide a hierarchical structure to the Topic Names. The use of the topic level separator is significant when either of the two wildcard characters is encountered in Topic Filters specified by subscribing Clients. Topic level separators can appear anywhere in a Topic Filter or Topic Name. Adjacent Topic level separators indicate a zero length topic level.
+- The number sign (‘#’ U+0023) is a wildcard character that matches any number of levels within a topic. The multi-level wildcard represents the parent and any number of child levels. The multi-level wildcard character MUST be specified either on its own or following a topic level separator. In either case it MUST be the last character specified in the Topic Filter [MQTT-4.7.1-2].
+- The plus sign (‘+’ U+002B) is a wildcard character that matches only one topic level.
+- The single-level wildcard can be used at any level in the Topic Filter, including first and last levels. Where it is used it MUST occupy an entire level of the filter [MQTT-4.7.1-3]. It can be used at more than one level in the Topic Filter and can be used in conjunction with the multilevel wildcard.
+- The Server MUST NOT match Topic Filters starting with a wildcard character (# or +) with Topic Names beginning with a $ character [MQTT-4.7.2-1]. The Server SHOULD prevent Clients from using such Topic Names to exchange messages with other Clients. Server implementations MAY use Topic Names that start with a leading $ character for other purposes. 
+
+Non normative comment
+
+·         A subscription to “#” will not receive any messages published to a topic beginning with a $
+
+·         A subscription to “+/monitor/Clients” will not receive any messages published to “$SYS/monitor/Clients”
+
+·         A subscription to “$SYS/#” will receive messages published to topics beginning with “$SYS/”
+
+·         A subscription to “$SYS/monitor/+” will receive messages published to “$SYS/monitor/Clients”
+
+·         For a Client to receive messages from topics that begin with $SYS/ and from topics that don’t begin with a $, it has to subscribe to both “#” and “$SYS/#”
+
+4.7.3 Topic semantic and usage
+The following rules apply to Topic Names and Topic Filters:
+
+All Topic Names and Topic Filters MUST be at least one character long [MQTT-4.7.3-1]
+Topic Names and Topic Filters are case sensitive
+Topic Names and Topic Filters can include the space character
+A leading or trailing ‘/’ creates a distinct Topic Name or Topic Filter
+A Topic Name or Topic Filter consisting only of the ‘/’ character is valid 
+Topic Names and Topic Filters MUST NOT include the null character (Unicode U+0000) [Unicode] [MQTT-4.7.3-2]
+Topic Names and Topic Filters are UTF-8 encoded strings, they MUST NOT encode to more than 65535 bytes [MQTT-4.7.3-3]. See Section 1.5.3
+There is no limit to the number of levels in a Topic Name or Topic Filter, other than that imposed by the overall length of a UTF-8 encoded string.
+
+When it performs subscription matching the Server MUST NOT perform any normalization of Topic Names or Topic Filters, or any modification or substitution of unrecognized characters [MQTT-4.7.3-4]. Each non-wildcarded level in the Topic Filter has to match the corresponding level in the Topic Name character for character for the match to succeed.
+
+ 
+
+Non normative comment
+
+The UTF-8 encoding rules mean that the comparison of Topic Filter and Topic Name could be performed either by comparing the encoded UTF-8 bytes, or by comparing decoded Unicode characters 
+
+ 
+
+Non normative comment
+
+·         “ACCOUNTS” and “Accounts” are two different topic names
+
+·         “Accounts payable” is a valid topic name
+
+·         “/finance” is different from “finance”
+
+ 
+
+An Application Message is sent to each Client Subscription whose Topic Filter matches the Topic Name attached to an Application Message. The topic resource MAY be either predefined in the Server by an administrator or it MAY be dynamically created by the Server when it receives the first subscription or an Application Message with that Topic Name. The Server MAY also use a security component to selectively authorize actions on the topic resource for a given Client.
+
+
+<h3>Error Handling</h3>
+
+- Unless stated otherwise, if either the Server or Client encounters a protocol violation, it MUST close the Network Connection on which it received that Control Packet which caused the protocol violation.
+- A Client or Server implementation might encounter a Transient Error (for example an internal buffer full condition) that prevents successful processing of an MQTT packet.
+- If the Client or Server encounters a Transient Error while processing an inbound Control Packet it MUST close the Network Connection on which it received that Control Packet. If a Server detects a Transient Error it SHOULD NOT disconnect or have any other effect on its interactions with any other Client.
+
+
+
+
+<!-- 
+  A Server SHOULD support Topic filters that contain the wildcard characters. If it chooses not to support topic filters that contain wildcard characters it MUST reject any Subscription request whose filter contains them [MQTT-3.8.3-2]. 
+ -->

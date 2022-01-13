@@ -4,12 +4,15 @@ public class Stack<T> {
   private Node<T> top;
 
   public void push(T value) {
-    top = new Node<>(value, top);
+    Node<T> node = new Node<>(value);
+    node.next = top;
+    top = node;
   }
 
   public T pop() {
-    if (isEmpty())
-      throw new EmptyStackException();
+    if (isEmpty()) {
+      return null;
+    }
 
     T value = top.value;
     top = top.next;
@@ -18,8 +21,9 @@ public class Stack<T> {
   }
 
   public T peek() {
-    if (isEmpty())
-      throw new EmptyStackException();
+    if (isEmpty()) {
+      return null;
+    }
 
     return top.value;
   }
@@ -33,9 +37,24 @@ public class Stack<T> {
     private T value;
     private Node<T> next;
 
-    public Node(T value, Node<T> next) {
+    public Node(T value) {
       this.value = value;
-      this.next = next;
     }
+  }
+
+  // javac Stack.java && java Stack
+  public static void main(String[] args) {
+    Stack<String> stack = new Stack<>();
+
+    stack.push("C");
+    stack.push("B");
+    stack.push("A");
+
+    System.out.println(stack.peek());  // A
+    System.out.println(stack.peek());  // A
+
+    System.out.println(stack.pop());  // A
+    System.out.println(stack.pop());  // B
+    System.out.println(stack.pop());  // C
   }
 }

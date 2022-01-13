@@ -1,0 +1,75 @@
+---
+title: "735. Asteroid Collision"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  
+  public int[] asteroidCollision(int[] asteroids) {
+    Stack<Integer> stack = new Stack<>();
+    
+    for (int a : asteroids) {
+      
+      // stack is empty or a is positive
+      if (stack.isEmpty() || a > 0) {
+        stack.push(a);
+        continue;
+      }
+      
+      while (true) {
+        int b = stack.peek();
+        
+        // if b is negative
+        if (b < 0) {
+          stack.push(a);
+          break;
+        }
+        
+        // b is positive with same magnitude as a
+        if (b == -a) {
+          stack.pop();
+          break;
+        }
+        
+        // b is positive with greater magnitude than a
+        if (b > -a) {
+          break;
+        }
+        
+        // b is positive with smaller magnitude than a
+        stack.pop();
+        
+        if (stack.isEmpty()) {
+          stack.push(a);
+          break;
+        }
+      }
+    }
+            
+    int[] res = new int[stack.size()];
+    for (int i = stack.size() - 1; i >= 0; i--) {
+      res[i] = stack.pop();
+    }
+
+    return res;
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+<p>
+  Both time and space are O(n).
+</p>
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/asteroid-collision/">Original Problem</a>
+  </li>
+</ul>

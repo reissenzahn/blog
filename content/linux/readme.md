@@ -3,11 +3,9 @@ TODO
 12: System and Process Information
 13: File I/O Buffering
 
-24: Process Creation
 25: Process Termination
 26: Monitoring Child Processes
 27: Program Execution
-28: Process Creation and Program Execution in More Detail
 
 31: Threads: Thread Safety and Per-Thread Storage
 32: Threads: Thread Cancellation
@@ -25,21 +23,27 @@ NEXT
 30: Threads: Thread Synchronization
 
 
+
+COPIED
+20: Signals: Fundamental Concepts
+21: Signals: Signal Handlers
+22: Signals: Advanced Features
+
+
 DONE
 4: File I/O: The Universal I/O Model
 7: Memory Allocation
 19: Monitoring File Events
+24: Process Creation
 29: Threads: Introduction
 56: Sockets: Introduction
 59: Sockets: Internet Domains
 
 
 SKIP 1
+6: Processes
 10: Time
 18: Directories and Links
-20: Signals: Fundamental Concepts
-21: Signals: Signal Handlers
-22: Signals: Advanced Features
 23: Timers and Sleeping
 37: Daemons
 41: Fundamentals of Shared Libraries
@@ -54,13 +58,13 @@ SKIP 2
 1: History and Standards
 2: Fundamental Concepts
 3: System Programming Concepts
-6: Processes
 8: Users and Groups
 9: Process Credentials
 14: File Systems
 15: File Attributes
 16: Extended Attributes
 17: Access Control Lists
+28: Process Creation and Program Execution in More Detail
 34: Process Groups, Sessions, and Job Control
 35: Process Priorities and Scheduling
 38: Writing Secure Privileged Programs
@@ -80,6 +84,14 @@ SKIP 2
 64: Pseudoterminals
 
 
+
+
+
+MISC
+
+Atomicity is a concept that we’ll encounter repeatedly when discussing the operation of system calls. All system calls are executed atomically. By this, we mean that the kernel guarantees that all of the steps in a system call are completed as a single operation, without being interrupted by another process or thread.
+
+Atomicity is essential to the successful completion of some operations. In particular, it allows us to avoid race conditions (sometimes known as race hazards). A race condition is a situation where the result produced by two processes (or threads) operating on shared resources depends in an unexpected way on the relative order in which the processes gain access to the CPU(s).
 
 
 

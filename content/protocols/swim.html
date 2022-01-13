@@ -4,78 +4,170 @@ date: 2021-12-27
 draft: false
 ---
 
+<p>
+  <a href="https://www.cs.cornell.edu/projects/Quicksilver/public_pdfs/SWIM.pdf">Original Paper</a>
+</p>
+
+<ul>
+  <li>
+    SWIM is a <i>membership protocol</i> that provides each member of a group of processes with a locally-maintained list of other non-faulty members.
+  </li>
+  <li>
+    The membership list is updated to reflect members joining the group or dropping out (either voluntarily or through failure)
+  </li>
+  <li>
+    The protocol consists of a <i>failure detector component</i> that detects failures of members and a <i>dissemination component</i> that propagates information about members that have either joined or left the group or failed.
+  </li>
+  <li>
+    Processes are monitored for failure by means of a peer-to-peer periodic randomized probing protocol and information about membership changes is disseminated by piggybacking on the probing protocol messages.
+  </li>
+  <li>
+    The rate of false failure detections is reduced by allowing members to <i>suspect</i> a process before declaring it as failed.
+  </li>
+</ul>
 
 
+<h3>Failure Detection Component</h3>
 
-<!-- 
-- SWIM is a membership protocol that provides each member of a group of processes with a locally-maintained list of other non-faulty processes in the group.
-- The membership list is updated to reflect members joining the group or dropping out (either voluntarily or through a failure).
-- The SWIM approach has two components: 1) a failure detector component that detects failures of members and 2) a dissemination component that disseminates information about members that have recently either joined or left the group or failed.
-- Processes are monitored by means of an peer-to-peer periodic randomized probing protocol and information about membership changes is disseminated by piggybacking on ping and ack messages.
-- The rate of false failure detections is reduced by allowing members to suspect a process before declaring it as failed.
--->
+<ul>
+  <li>
+    The failure detection algorithm uses two parameters: the protocol period T' (in units of time) and the size of failure detection subgroups k.
+  </li>
+  <li>
+    The protocol does not require clocks to be synchronized across members and the properties of the protocol hold if T' is the average protocol period at the various group members.
+  </li>
+</ul>
 
+<ul>
+  <li>
+    We consider an arbitrary member M_i.
+  </li>
+  <li>
+    During each protocol period of length T' on its local clock, M_i chooses a random member M_j from its membership list and sends it a PING.
+  </li>
+  <li>
+    M_i then waits for a replying ACK from M_j.
+  </li>
+  <li>
+    If this reply is not received within a pre-specified timeout then M_i indirectly probes M_j.
+  </li>
+  <li>
+    M_i selects k members at random and sends them a PING-REQ(M_j) to try to avoid the effect of any congestion on the network path between M_i and M_j which might have led to the dropping of the original PING or its ACK.
+  </li>
+  <li>
+    On receiving this message, each of the k members sends a PING to M_j.
+  </li>
+  <li>
+    If any of the k members receive an ACK from M_j then they forward that ACK back to M_i.
+  </li>
+  <li>
+    At the end of this protocol period, M_i checks if it has (directly or indirectly) received any ACK from M_j.
+  </li>
+  <li>
+    If no ACK has been received then M_i declares M_j as failed in its membership list and hands this update to the dissemination component.
+  </li>
+  <li>
+    The data contained in each message of this protocol is tagged with the unique sequence number of the protocol period at the initiator M_i.
+  </li>
+</ul>
 
-<h3>Failure Detection</h3>
+<ul>
+  <li>
+    The pre-specified time-out used to initiate indirect probing is based on an estimate of the distribution of round-trip time (e.g. an average).
+  </li>
+  <li>
+    The protocol period T' has to be at least three times the round-trip estimate.
+  </li>
+  <li>
+    The original authors used the average measured round-trip time to set the timeout and used a protocol period significantly larger than this value.
+  </li>
+</ul>
 
-<!--
-- The failure detection algorithm uses two parameters: the protocol period T' in units of time and the size of failure detection subgroups k.
-- The protocol does not require clocks to be synchronized across members and the properties of the protocol hold if T' is the average protocol period at the various group members.
-
-- We consider an arbitrary member M_i.
-- During each protocol period of length T' on its local clock, M_i chooses a random member M_j from its membership list and sends it a PING.
-- M_i then waits for a replying ACK from M_j.
-- If this reply is not received within a pre-specified timeout then M_i indirectly probes M_j.
-- M_i selects k members at random and sends them a PING-REQ(M_j).
-- On receiving this message, each of the k members sends a PING to M_j and forwards the ACK from M_j back to M_i.
-- At the end of this protocol period, M_i checks if it has directly or indirectly received any ACK.
-- If no ACK has been received then M_i declares M_j as failed in its membership list and hands this update to the Dissemination Component.
-
-- This approach avoids the effect of any congestion on the network path between M_i and M_j which might have led to the dropping of the original PING or its ACK.
-- The data contained in each message of this protocol is tagged with the unique sequence number of the protocol period at the initiator M_i.
-- The pre-specified time-out used to initiate indirect probing is based on an estimate of the distribution of round-trip time (e.g. an average).
-- The protocol period T' has to be at least three times the round-trip estimate.
-- The original authors used the average measured round-trip time to se the timeout and used a protocol period significantly larger than this value.
--->
 
 
 <h3>Dissemination Component</h3>
 
-<!--
-- The basic SWIM protocol propagates membership updates using via network multicast.
-- Upon detecting the failure of a group member, the process multicasts this information to the rest of the group as FAILED(M_j).
-- A member receiving this message deletes M_j from its local membership list.
-- Information about newly joined members or voluntarily leaving members are multicast in a similar manner.
-- For a process to join the group, it would need to know at least one contact member in the group.
+<ul>
+  <li>
+    The basic SWIM protocol propagates membership updates using via network multicast.
+  </li>
+  <li>
+    Upon detecting the failure of a group member, the process multicasts this information to the rest of the group as FAILED(M_j).
+  </li>
+  <li>
+    A member receiving this message deletes M_j from its local membership list.
+  </li>
+  <li>
+    Information about newly joined members or voluntarily leaving members are multicast in a similar manner.
+  </li>
+  <li>
+    For a process to join the group, it would need to know at least one contact member in the group.
+  </li>
+</ul>
 
-- The use of an external multicast primitive can be eliminated altogether by instead piggybacking the information to be disseminated on the PING, PING-REQ and ACK messages generated by the failure detector protocol.
-- This results in an infection style of dissemination that is resilient to process failures and loss of messages within the network.
-- This completely eliminates the generation of extra packets by the dissemination component. The only packets generated by SWIM are then the PING, PING-REQ and ACK messages thus giving a constant expected message overhead per group member.
+<ul>
+  <li>
+    The use of a multicast primitive can be eliminated by instead piggybacking the information to be disseminated on the PING, PING-REQ and ACK messages generated by the failure detector component.
+  </li>
+  <li>
+    Each group member M_i maintains a buffer of recent membership updates along with a local count for each buffer element.
+  </li>
+  <li>
+    The local count specifies the number of times the element has been piggybacked so far by M_i and is used to choose which elements to piggyback next.
+  </li>
+  <li>
+    If the size of this buffer is larger than the maximum number of elements that can be piggybacked on a single message then elements that have been gossiped fewer times are preferred.
+  </li>
+  <li>
+    This is needed as the protocol period is fixed and the rate of membership changes might temporarily overwhelm the speed of dissemination.
+  </li>
+  <li>
+    Each element is piggybacked at most λlog(n) times where λ is a parameter.
+  </li>
+  <li>
+    The implementation used by the original authors maintains one list of members that are not yet declared as failed in the group and a second list of members that have failed recently.
+  </li>
+  <li>
+    An equal number of buffer elements was chosen from these two lists for piggybacking but the scheme could be generalized to adapt to relative variations in process join, leave and failure rates.
+  </li>
+</ul>
 
-- Each group member M_i maintains a buffer of recent membership updates along with a local count for each buffer element.
-- The local count specifies the number of times the element has been piggybacked so far by M_i and is used to choose which elements to piggyback next.
-- If the size of this buffer is larger than the maximum number of elements that can be piggybacked on a single PING or ACK then elements that have been gossiped fewer times are preferred.
-- This is needed as the protocol period is fixed and the rate of membership changes might temporarily overwhelm the speed of dissemination.
-- Preferring younger elements ensures that all membership changes infect at least a few members.
-- Each element is piggybacked at most λlog(n) times where λ is a parameter.
+<!-- 
+  This results in an infection-style of dissemination that is resilient to process failures and message loss.
 
-- The implementation used by the original authors maintains two separate lists of group members: one containing a list of members that are not yet declared as failed in the group and a second list of members that have failed recently.
-- Currently, an equal number of buffer elements is chosen from these two lists for piggybacking but the scheme could be generalized to adapt to relative variations in process join, leave and failure rates.
+  This completely eliminates the generation of extra packets by the dissemination component thus giving a constant expected message overhead per group member.
+
+  Preferring younger elements ensures that all membership changes infect at least a few members.
 -->
-
-
-
 
 
 
 <h3>Suspicion Mechanism</h3>
 
-<!--
-- If a non-faulty group member M_j is mistakenly detected as failed by another group member M_i (e.g. due to network packet losses or due to M_j being temporarily asleep) then M_j will be declared as failed in the group.
-- That is, a healthy process M_j will be forced to drop out of the group at the very first instance that it is mistakenly detected as failed.
-- This leads to a high rate of false positives in detecting failures.
-- We reduce this effect by introducing the suspicion sub-protocol which is run whenever a failure is detected by the failure detector protocol.
+<ul>
+  <li>
+    If a non-faulty group member M_j is mistakenly detected as failed by another group member M_i (e.g. due to network packet losses or due to M_j being temporarily asleep) then M_j will be declared as failed in the group.
+  </li>
+  <li>
+    That is, a healthy process M_j will be forced to drop out of the group at the very first instance that it is mistakenly detected as failed.
+  </li>
+  <li>
+    This leads to a high rate of false positives in detecting failures.
+  </li>
+  <li>
+    We reduce this effect by introducing the suspicion sub-protocol which is run whenever a failure is detected by the failure detector component.
+  </li>
+</ul>
 
+
+<ul>
+  <li>
+    
+  </li>
+</ul>
+
+
+<!--
 - Consider a member M_i that chooses a member M_j as a PING target in the current protocol periods and receives no ACK after running the failure detector protocol.
 - Instead of declaring M_j as failed, M_i marks M_j as a suspected member in its local membership list.
 - Further, a {Suspect M_j : M_i suspects M_j} message is disseminated by means of the dissemination component.
@@ -113,24 +205,34 @@ Notice also that the Strong Completeness property of the original protocol con-t
 -->
 
 
-
-
-
-
-
-
 <h3>Round-Robin Probe Target Selection</h3>
 
-<!-- 
-- The failure detector protocol detects failures in an average constant number of protocol periods.
-- Although each process failure is guaranteed to be detected eventually at every other non-faulty process (eventual strong completeness), a pathological selection of ping targets across the group might lead to a large delay in the first detection of the process failure anywhere in the group.
-- In the extreme case, this delay could be unbounded as the failed process might never be chosen as a ping target by any other non-faulty process.
-- This can be solved by the following modification to the protocol. The failure detection protocol at member M_i works by maintaining a list of the known elements of the current membership list and selecting PING targets in a round-robin fashion.
-- A newly joining member is inserted in the membership list at a position that is chosen uniformly at random.
-- On completing a traversal of the entire list, M_i rearranges the membership list to a random reordering.
-- This way, once another member M_j is include in M_i's membership list, it will be chosen as a PING target exactly once during each traversal of M_i's membership list.
--  This bounds the worst case detection time of a process failure of any member by M_i while preserving the average failure detection time of the original protocol since the randomization of the membership lists at different members across the group leads to a similar distribution of PING target choices by each member.
--->
+<ul>
+  <li>
+    The failure detector protocol detects failures in an average constant number of protocol periods.
+  </li>
+  <li>
+    Although each process failure is guaranteed to be detected eventually at every other non-faulty process (eventual strong completeness), a pathological selection of PING targets across the group might lead to a large delay in the first detection of the process failure anywhere in the group.
+  </li>
+  <li>
+    In the extreme case, this delay could be unbounded as the failed process might never be chosen as a PING target by any other non-faulty process.
+  </li>
+  <li>
+    This can be solved modifying the failure detection component at member M_i to select PING targets from the current membership list in a round-robin fashion.
+  </li>
+  <li>
+    A newly joining member is inserted in the membership list at a position that is chosen uniformly at random.
+  </li>
+  <li>
+    On completing a traversal of the entire list, M_i rearranges the membership list to a random reordering.
+  </li>
+  <li>
+    This way, once another member M_j is included in the local membership list at M_i, it will be chosen as a PING target exactly once during each traversal of the membership list.
+  </li>
+  <li>
+    This bounds the worst case detection time of a process failure of any member by M_i while preserving the average failure detection time of the original protocol since the randomization of the membership lists at different members across the group leads to a similar distribution of PING target choices by each member.
+  </li>
+</ul>
 
 
 
@@ -199,3 +301,17 @@ SWIM provides weakly-consistent. We focus on a weaker variant of group membershi
 
 
 Suspicion mechanism, where a pro-cess that is unresponsive to ping messages, as generated by the SWIM failure detector protocol described in Sec-tion 3, is not immediately declared as “faulty”. Instead, the process is declared as “suspected”, and this information spread through the group using the Dissemination Compo-nent. After a prespecified time-out (we discuss values for this parameter in Section 5), the suspected process is de-clared as “faulty” and this information disseminated to the group. However, if the suspected process responds to a ping request before this time-out expires, information about this is disseminated to the group as an “alive” message. The process is then rejuvenated in membership lists at different members without ever having to leave or rejoin the group. This prespecified time-out thus effectively trades off an in-crease in failure detection time for a reduction in frequency of false failure detections. The basic SWIM failure detection protocol guarantees eventual detection of the failure of an arbitrary process  , at each non-faulty group member  . However, it gives no deterministic guarantees on the time between failure of an arbitrary member  and its detection at another arbi-trary member  (in terms of the number of local proto-col rounds at  ). Section 4.3 describes a modification to the original SWIM failure detector protocol that guarantees such a Time Bounded Completeness property; the time in-terval between the occurrence of a failure and its detection at member  is no more than two times the group size (in number of protocol periods). 
+
+
+<!-- 
+
+  https://www.brianstorti.com/swim/
+
+  https://asafdav2.github.io/2017/swim-protocol/
+
+  https://www.youtube.com/watch?v=bkmbWsDz8LM
+
+  https://github.com/clockworksoul/smudge
+  
+ -->
+
