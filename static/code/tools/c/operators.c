@@ -1,9 +1,6 @@
 #include <stdio.h>
 
 int main() {
-
-  // if both operands of a binary operator are integers then an integer operation is performed regardless of the type of the rest of the expression
-  
   // the result of integer division is truncated towards zero
   printf("%d\n", 5 / 2);   // 2
   printf("%d\n", -5 / 2);  // -2
@@ -31,18 +28,14 @@ int main() {
   printf("%d\n", ~x);      // 11111010
   printf("%d\n", y << 2);  // 00100100
   printf("%d\n", y >> 2);  // 00000010
+
+
+  // be aware of overflows or underflows that can occur in arithmetic expresions
+  int a = 100000, b = 100000;
+  long c = a * b;
+  long long d = (long) a * b;
+  printf("%d\n", c);   // 1410065408
+  printf("%ld\n", d);  // 10000000000
+
+  return 0;
 }
-
-
-Q: Why doesn't the code
-
-int a = 1000, b = 1000;
-long int c = a * b;
-work?
-A: Under C's integral promotion rules, the multiplication is carried out using int arithmetic, and the result may overflow or be truncated before being promoted and assigned to the long int left-hand side. Use an explicit cast on at least one of the operands to force long arithmetic:
-
-	long int c = (long int)a * b;
-or perhaps
-	long int c = (long int)a * (long int)b;
-(both forms are equivalent).
-Notice that the expression (long int)(a * b) would not have the desired effect. An explicit cast of this form (i.e. applied to the result of the multiplication) is equivalent to the implicit conversion which would occur anyway when the value is assigned to the long int left-hand side, and like the implicit conversion, it happens too late, after the damage has been done.
