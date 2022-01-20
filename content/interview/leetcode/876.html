@@ -1,0 +1,39 @@
+---
+title: "876. Middle of the Linked List"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  
+  public ListNode middleNode(ListNode head) {    
+    ListNode fast = head;
+    ListNode slow = head;
+        
+    while (fast != null && fast.next != null) {
+      slow = slow.next;
+      fast = fast.next.next;
+    }
+    
+    return slow;
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+<p>
+  O(n) time and O(1) space.
+</p>
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="">Original Problem</a>
+  </li>
+</ul>

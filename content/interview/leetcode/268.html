@@ -1,0 +1,50 @@
+---
+title: "268. Missing Number"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  
+  // O(n) time; O(1) space
+//   public int missingNumber(int[] nums) {
+//     int sum = (nums.length * (nums.length + 1)) / 2;
+    
+//     for (int n : nums) {
+//       sum -= n;
+//     }
+    
+//     return sum;
+//   }
+  
+  // O(n) time; O(1) space
+  public int missingNumber(int[] nums) {
+    int res = 0;
+
+    // a ^ b ^ a = a ^ a ^ b = 0 ^ b = b
+    for (int i = 0; i < nums.length; i++) {
+      res ^= i;
+      res ^= nums[i];
+    }
+
+    res ^= nums.length;
+    
+    return res;
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/missing-number/">Original Problem</a>
+  </li>
+</ul>

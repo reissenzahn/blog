@@ -1,3 +1,6 @@
+
+// TODO: https://www.youtube.com/watch?v=FMNnusHqjpw
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>

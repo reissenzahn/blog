@@ -1,0 +1,41 @@
+---
+title: "136. Single Number"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  
+  public int singleNumber(int[] nums) {
+    
+    // a ^ a = 0
+    // ^ is commutative
+    // a ^ 0 = a
+    
+    int res = 0;
+    
+    for (int n : nums) {
+      res ^= n;
+    }
+    
+    return res;
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+<p>
+  O(n) time and O(1) space.
+</p>
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/single-number/">Original Problem</a>
+  </li>
+</ul>

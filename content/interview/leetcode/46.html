@@ -1,0 +1,52 @@
+---
+title: "46. Permutations"
+date: 2021-02-22
+draft: false
+---
+
+
+<h3>Solution</h3>
+
+{{% code java %}}class Solution {
+  public List<List<Integer>> permute(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    
+    backtrack(nums, result, new ArrayList<>(), new boolean[nums.length]);
+    
+    return result;
+  }
+  
+  private void backtrack(int[] nums, List<List<Integer>> result, List<Integer> perm, boolean[] used) {
+    if (perm.size() == nums.length) {
+      result.add(new ArrayList<>(perm));
+      return;
+    }
+    
+    for (int i = 0; i < nums.length; i++) {
+      if (used[i]) {
+        continue;
+      }
+      
+      perm.add(nums[i]);
+      used[i] = true;
+      
+      backtrack(nums, result, perm, used);
+      
+      perm.remove(perm.size() - 1);
+      used[i] = false;
+    }
+  }
+}{{% /code %}}
+
+
+<h3>Complexity</h3>
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://leetcode.com/problems/permutations/">Original Problem</a>
+  </li>
+</ul>

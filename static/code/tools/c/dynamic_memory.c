@@ -3,7 +3,19 @@
 
 // dynamic memory management involves manually allocating and deallocating memory on the heap
 
-int main() {
+// sometimes a custom xmalloc() function is defined to avoid having to check the return of malloc each time
+void *xmalloc(size_t size) {
+  void *ptr = malloc(size);
+  if (result == NULL) {
+    fprintf(stderr, "xmalloc(): out of memory!");
+    exit(1);
+  }
+
+  return ptr;
+}
+
+int main(int argc, char *argv[]) {
+
   // malloc() allocates a specified number of bytes and returns a void pointer to the allocated memory on the heap
   char *ptr1 = (char *) malloc(6 * sizeof(char));
 
@@ -101,14 +113,3 @@ int main() {
   // when a process terminates all allocated memory is returned to the operating system
   return 0;
 }
-
-
-// Every object has an effective type, which determines which lvalue accesses are valid and which violate the strict aliasing rules.
-
-// If the object was created by a declaration, the declared type of that object is the object's effective type.
-
-// If the object was created by an allocation function (including realloc), it has no declared type. Such object acquires an effective type as follows:
-
-// The first write to that object through an lvalue that has a type other than character type, at which time the type of that lvalue becomes this object's effective type for that write and all subsequent reads.
-// memcpy or memmove copy another object into that object, at which time the effective type of the source object (if it had one) becomes the effective type of this object for that write and all subsequent reads.
-// Any other access to the object with no declared type, the effective type is the type of the lvalue used for the access.

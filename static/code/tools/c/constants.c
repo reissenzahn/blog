@@ -8,7 +8,8 @@ int main() {
   // the order of the data type and the const keyword does not matter
   // int const i = 1;
 
-  // an object qualified with const is a run-time object which cannot be assigned to but not not a constant expression in the full sense of the term which means it cannot be used for array dimensions, case labels and the like
+
+  // an object qualified with const is a run-time object which cannot be assigned to but not a constant expression in the full sense of the term which means it cannot be used for array dimensions, case labels, etc.
   const int n = 5;
   int a[n];
 

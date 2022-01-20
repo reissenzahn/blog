@@ -5,44 +5,17 @@ draft: false
 ---
 
 <!-- 
-  NEXT UP
+NEXT UP
 
-  - Learning SQL
-  - https://github.com/jpwhite3/northwind-SQLite3
-  - https://dataedo.com/asset/img/blog/sakila_database_erd.png
-  - https://www.tutorials24x7.com/uploads/2019-11-29/files/tutorials24x7-blog-database.png
-  - https://stackoverflow.com/questions/13565089/sql-many-to-many-select-help-needed
+- Learning SQL
+- https://github.com/jpwhite3/northwind-SQLite3
+- https://dataedo.com/asset/img/blog/sakila_database_erd.png
+- https://www.tutorials24x7.com/uploads/2019-11-29/files/tutorials24x7-blog-database.png
+- https://stackoverflow.com/questions/13565089/sql-many-to-many-select-help-needed
+- https://github.com/jpwhite3/northwind-SQLite3
 -->
 
-<ul>
-  <li>
-    <a href="#terminology">Terminology</a>
-  </li>
-  <li>
-    <a href="#commands">Commands</a>
-  </li>
-  <li>
-    <a href="#data-types">Data Types</a>
-  </li>
-  <li>
-    <a href="#tables">Tables</a>
-  </li>
-  <li>
-    <a href="#contraints">Constraints</a>
-  </li>
-  <li>
-    <a href="insert-update-delete">Insert, Update and Delete</a>
-  </li>
-  <li>
-    <a href="queries">Queries</a>
-  </li>
-  <li>
-    <a href="operators">Operators</a>
-  </li>
-</ul>
 
-
-<!-- #region terminology -->
 <h3 id="terminology">Terminology</h3>
 
 <ul>
@@ -71,10 +44,8 @@ draft: false
     Null is used to indicate the absence of a value and is used when a value is not applicable, unknown or undefined. 
   </li>
 </ul>
-<!-- #endregion -->
 
 
-<!-- #region commands -->
 <h3 id="commands">Commands</h3>
 
 {{% code text %}}$ sqlite3
@@ -89,13 +60,9 @@ draft: false
 > .read commands.sql
 > VACUUM;
 > .quit{{% /code %}}
-<!-- #endregion -->
 
 
-<!-- #region data-types -->
 <h3 id="data-types">Data Types</h3>
-
-{{% code sql %}}SELECT typeof(1), typeof(1.0), typeof('abc'), typeof(x'1000'), typeof(NULL);{{% /code %}}
 
 <ul>
   <li>
@@ -114,49 +81,11 @@ draft: false
     {{% inline-code %}}NULL{{% /inline-code %}}: missing, unknown or undefined value. It is not equal to anything (including itself).
   </li>
 </ul>
-<!-- #endregion -->
 
 
-<!-- #region tables -->
 <h3 id="tables">Tables</h3>
 
-{{% code sql %}}-- create film table
-CREATE TABLE film (
-  film_id INTEGER PRIMARY KEY NOT NULL,
-  title TEXT NOT NULL,
-  release_year INTEGER,
-  language_id INTEGER,
-  rental_duration INTEGER DEFAULT 3 NOT NULL,
-  rental_rate REAL DEFAULT 4.99 NOT NULL,
-  length INTEGER,
-  rating TEXT CHECK (rating in ('G','PG','PG-13','R','NC-17')),
-  FOREIGN KEY (language_id) REFERENCES language (language_id)
-);
 
--- add description column
-ALTER TABLE film ADD COLUMN description TEXT;
-
--- rename column from title to name
-ALTER TABLE film RENAME COLUMN title TO name;
-
--- drop length column
-ALTER TABLE film DROP COLUMN length;
-
--- rename table from film to movie
-ALTER TABLE film RENAME TO movie;
-
--- drop film table
-DROP TABLE IF EXISTS film;
-
--- drop language table preventing constraint failed error being caused by foreign keys in film table
-PRAGMA foreign_keys = OFF;
-DROP TABLE language;
-UPDATE film SET language_id = NULL;
-PRAGMA foreign_keys = ON;{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region constraints -->
 <h3 id="contraints">Constraints</h3>
 
 <ul>
@@ -179,71 +108,14 @@ PRAGMA foreign_keys = ON;{{% /code %}}
     {{% inline-code %}}FOREIGN KEY{{% /inline-code %}}: Specify foreign key constraint.
   </li>
 </ul>
-<!-- #endregion -->
 
 
-<!-- #region insert-update-delete -->
 <h3 id="insert-update-delete">Insert, Update and Delete</h3>
 
-{{% code sql %}}-- insert row into actor table
-INSERT INTO actor (first_name, last_name)
-VALUES ('Christian', 'Bale');
 
--- update existing rows in actor table by actor_id
-UPDATE TABLE actor
-SET first_name = 'Nicolas', last_name = 'Cage'
-WHERE actor_id = 3;
-
--- if a unique or primary key constraint violation occurs then delete the existing row that caused the violation and insert the new row
-INSERT OR REPLACE INTO actor (actor_id, first_name, last_name)
-VALUES (3, 'Nicolas', 'Cage');
-
--- delete rows by actor_id
-DELETE FROM actor WHERE actor_id = 3;{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region queries-->
 <h3 id="queries">Queries</h3>
 
-{{% code sql %}}-- select all columns from film table
-SELECT * FROM film;
 
--- select list of columns from film table
-SELECT title, description, release_year FROM film;
-
--- select list of columns with column aliases
-SELECT title, description AS desc, release_year AS year FROM film;
-
--- select expressions from film table
-SELECT upper(title), rental_rate / 2 AS sale_rate FROM film;
-
--- select distinct rows from film table
-SELECT DISTINCT * FROM film;
-
--- select rows ordered by the title column in ascending order
-SELECT * FROM film
-ORDER BY title ASC;
-
--- rows with the same value for the first column can be further ordered by the additional columns
-SELECT * FROM film
-ORDER BY title ASC, length DESC;
-
--- constrain number of rows returned to 10
-SELECT * FROM film
-LIMIT 10;
-
--- constrain rows to 10 starting from offset 5
-SELECT * FROM film
-LIMIT 10 OFFSET 5;
-
--- filter results based on rating and rental_duration columns
-SELECT * FROM film
-WHERE rating = 'PG' AND rental_duration >= 7;{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region sub-queries -->
 <h3 id="sub-queries">Sub-queries</h3>
 
 {{% code sql %}}-- a subquery is a query contained within another query
@@ -256,44 +128,16 @@ SELECT c.last_name || ', ' || c.first_name AS full_name FROM
 SELECT * FROM film
 WHERE rating in (SELECT rating FROM film WHERE title LIKE '%PET%');
 {{% /code %}}
-<!-- #endregion -->
 
 
-<!-- #region operators -->
 <h3 id="operators">Operators</h3>
-
-{{% code sql %}}-- comparison operators (=, !=, <, >, <=, >=)
-SELECT * FROM customer
-WHERE active = 0;
-
--- logical operators (AND, OR, NOT)
-SELECT * FROM customer
-WHERE first_name = 'ANDY' OR last_name = 'MARTIN';
-
--- comparisons involving null (IS NULL, IS NOT NULL)
-SELECT * FROM customer
-WHERE email IS NULL;
-
--- set and range inclusion (IN, BETWEEN)
-SELECT * FROM customer
-WHERE first_name IN ('ANDY', 'SANDRA', 'ERICA');
-SELECT * FROM customer
-WHERE date(create_date) BETWEEN '2006-02-14' AND '2006-02-15';
-
--- match case-insensitive pattern (LIKE)
-SELECT * FROM customer
-WHERE last_name LIKE '_A_T%S';{{% /code %}}
 
 <p>
   In patterns, the % wildcard stands for zero or more characters and the _ wildcard stands for any single character.
 </p>
-<!-- #endregion -->
 
 
 <h3 id="set-operators">Set Operators</h3>
-
-{{% code sql %}}-- 
-{{% /code %}}
 
 <!-- 
   When performing set operations, the result sets must have the same number of columns and each of these columns must have the same data types.
@@ -323,104 +167,12 @@ SELECT AVG(column_name) FROM table_name;
 SELECT SUM(column_name) * 1.0 / COUNT(*) FROM table_name;
 
 -- uppercase
-SELECT upper(first_name || ' ' || last_name) AS full_name FROM actor;
-
-{{% /code %}}
+SELECT upper(first_name || ' ' || last_name) AS full_name FROM actor;{{% /code %}}
 
 
-
-
-
-
-
-
-
-
-
-
-<!-- #region joins -->
 <h3>Joins</h3>
 
-{{% code sql %}}-- inner join to match addresses to customers
-SELECT c.first_name, c.last_name, a.address and filter results by postal code
-FROM customer AS c
-  INNER JOIN address AS a
-  ON c.address_id = a.address_id;
-WHERE a.postal_code = 52137;
 
--- inner join to find all customers who rented a film on 2005-05-31
-SELECT c.first_name, c.last_name, time(r.rental_date) AS rental_time
-FROM customer AS c
-  INNER JOIN rental AS r
-  ON c.customer_id = r.customer_id
-WHERE date(r.rental_date) = '2005-05-31';
-
--- inner join to find all of the customers who have rented 40 or more films
-SELECT c.first_name, c.last_name, count(*)
-FROM customer AS c
-  INNER JOIN rental AS r
-  ON c.customer_id = r.customer_id
-GROUP BY c.first_name, c.last_name
-HAVING count(*) >= 40;
-
--- three table join to obtain city names for addresses of customers
-SELECT c.first_name, c.last_name, ct.city
-FROM customer AS c
-  INNER JOIN address AS a
-  ON c.address_id = a.address_id
-  INNER JOIN city AS ct
-  ON a.city_id = ct.city_id;
-
--- inner join using sub-query to find all addresses
-that are in California and then return information about the customers living there
-SELECT c.first_name, c.last_name, ad.address, ad.city
-FROM customer AS c
-  INNER JOIN (
-    SELECT a.address_id, a.address, ct.city
-    FROM address AS a
-      INNER JOIN city AS ct
-      ON a.city_id = ct.city_id
-    WHERE a.district = 'California'
-  ) AS ad
-  ON c.address_id = ad.address_id;
-
--- join same table multiple times to find all of the films in which either of two specific actors appear
-SELECT f.title
-FROM film as f
-  INNER JOIN film_actor AS fa
-  ON f.film_id = fa.film_id
-  INNER JOIN actor AS a
-  ON fa.actor_id = a.actor_id
-  WHERE ((a.first_name = 'CATE' AND a.last_name = 'MCQUEEN')
-    OR (a.first_name = 'CUBA' AND a.last_name = 'BIRCH'));
-
--- join same table multiple times to find all of the films in which two specific actors appear together
-SELECT f.title
-FROM film AS f
-  INNER JOIN film_actor AS fa1
-  ON f.film_id = fa1.film_id
-  INNER JOIN actor AS a1
-  ON fa1.actor_id = a1.actor_id
-  INNER JOIN film_actor AS fa2
-  ON f.film_id = fa2.film_id
-  INNER JOIN actor AS a2
-  ON fa2.actor_id = a2.actor_id
-  WHERE (a1.first_name = 'CATE' AND a1.last_name = 'MCQUEEN')
-    AND (a2.first_name = 'CUBA' AND a2.last_name = 'BIRCH');
-{{% /code %}}
-
-<!-- {{% code sql %}}- left join
-SELECT table_table.column_name, table_table.column_name, ...
-FROM table_name
-LEFT JOIN table_name
-  ON table_name.column_name = table_name.column_name;{{% /code %}} -->
-<!-- #endregion -->
-
-
-
-
-
-<!-- #region transactions -->
 <h3>Transactions</h3>
 
 <p>
@@ -441,24 +193,6 @@ LEFT JOIN table_name
     Durable: If a transaction is successfully committed then the changes must be permanent in the database regardless of scenarios like crashes or power failures.
   </li>
 </ul>
-
-{{% code sql %}}-- start transaction
-BEGIN TRANSACTION;
-
--- create savepoint
-SAVEPOINT save;
-
--- rollback to savepoint
-ROLLBACK TO save;
-
--- remove savepoint
-RELEASE save;
-
--- rollback transaction
-ROLLBACK;
-
--- commit transaction
-COMMIT;{{% /code %}}
 
 <p>
   Releasing a save-point will not commit any modifications to disk, nor will it make those changes available to other database connections accessing the same database. Changes bounded by a released save-point may still be lost if the transaction is rolled back to a prior save-point or if the whole transaction is rolled back.
@@ -485,28 +219,9 @@ sqlite> ROLLBACK;
 sqlite> SELECT * FROM SAVE_POINT;
 sqlite>
 -->
-<!-- #endregion -->
 
 
 <h3>Indexes</h3>
-
-{{% code sql %}}-- create index on column
-CREATE INDEX index_name ON table_name(column_name);
-
--- create index on multiple columns
-CREATE INDEX index_name ON table_name(column_name, column_name, ...);
-
--- create unique index (ensures values in one or more columns are unique)
-CREATE UNIQUE INDEX index_name ON table_name(column_name);
-
--- check if index is being used
-EXPLAIN QUERY PLAN
-SELECT * FROM table_name WHERE column_name = value;
-
--- drop index
-DROP INDEX IF EXISTS index_name;
-({{% /code %}}
-
 
 <!-- 
   In the same way that a person uses an index to find words within a publication, a

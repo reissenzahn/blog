@@ -1,0 +1,1 @@
+SELECT typeof(1), typeof(1.0), typeof('abc'), typeof(x'1000'), typeof(NULL);

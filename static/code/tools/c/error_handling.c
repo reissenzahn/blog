@@ -14,7 +14,8 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-
+  
+  // error handling is typically handled using return values where -1 is often used to indicate an error has occurred
   int fd = open(argv[1], O_RDONLY);
 
   if (fd == -1) {
@@ -36,6 +37,9 @@ int main(int argc, char *argv[]) {
   // there are macros for obtaining the filename and line number which can be useful for debugging
   fprintf(stderr, "something went wrong in %s on line %d!\n", __FILE__, __LINE__);
   
+
+  // using setjmp() and longjmp() 
+
 
   // a return value of zero implies normal termination
   return 0;

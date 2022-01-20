@@ -8,7 +8,7 @@ struct packed {
 };
 
 // a static assertion is a declaration so it can appear at file scope
-// static_assert(sizeof(struct packed) == sizeof(unsigned int) + sizeof(char *), "struct packed must not have any padding");
+static_assert(sizeof(struct packed) == sizeof(unsigned int) + sizeof(char *), "struct packed must not have any padding");
 
 int main() {
   assert(5.0 / 2 == 2.5);
