@@ -6,7 +6,7 @@ public class BreadthFirstSearch {
 
   public int[] bfs(List<List<Integer>> graph, int start) {
     boolean[] visited = new boolean[n];
-    int[] prev = new int[n];
+    // int[] prev = new int[n];
     Deque<Integer> queue = new ArrayDeque<>(n);
 
     queue.offer(start);
@@ -18,7 +18,7 @@ public class BreadthFirstSearch {
       for (Integer v : graph.get(u)) {
         if (!visited[v]) {
           visited[v] = true;
-          prev[v] = u;
+          // prev[v] = u;
           queue.offer(v);
         }
       }
