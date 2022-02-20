@@ -38,9 +38,7 @@ public class BreadthFirstSearch {
 
     Collections.reverse(path);
 
-    if (path.get(0) == start) {
-      return path;
-    }
+    if (path.get(0) == start) return path;
 
     return null;
   }

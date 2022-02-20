@@ -97,36 +97,32 @@ $ go mod init github.com/dreissenzahn/hello
 $ go get package_name
 $ go mod tidy
 
-
-package main
-import "fmt"
-func main() {
- fmt.Println("Hello, world!")
-}
-
+$ go get golang.org/x/tools/cmd/godoc
+$ godoc -http :8001
 
 # install tool (or update existing installation)
 $ go install github.com/rakyll/hey@latest
 $ hey https://www.golang.org
 
-
 # clean up import statements
 $ go install golang.org/x/ tools/cmd/goimports@latest. You run it across your project with the command:
 goimports -l -w .
-
-
-
-There are tools that help to enforce this style. The first is called golint.
 
 # run linter
 $ go install golang.org/x/lint/golint@latest
 $ golint ./...
 
-
 # report suspicious constructs
 $ go vet ./...
 
-
+# install and remove a secondary go environment
+$ go get golang.org/dl/go.1.15.6
+$ go1.15.6 download
+$ go1.15.6 build
+$ go1.15.6 env GOROOT
+/Users/gobook/sdk/go1.15.6
+$ rm -rf $(go1.15.6 env GOROOT)
+$ rm $(go env GOPATH)/bin/go1.15.6
 
 .DEFAULT_GOAL := build
 
@@ -145,20 +141,6 @@ vet: fmt
 build: vet
  go build hello.go
 .PHONY:build
-
-
-By entering a single command, we make sure the code was formatted correctly, vet
-the code for nonobvious errors, and compile. We can also run the linter with make
-lint, vet the code with make vet, or just run the formatter with make fmt.
-
-# install and remove a secondary go environment
-$ go get golang.org/dl/go.1.15.6
-$ go1.15.6 download
-$ go1.15.6 build
-$ go1.15.6 env GOROOT
-/Users/gobook/sdk/go1.15.6
-$ rm -rf $(go1.15.6 env GOROOT)
-$ rm $(go env GOPATH)/bin/go1.15.6
 -->
 
 
@@ -189,6 +171,7 @@ $ rm $(go env GOPATH)/bin/go1.15.6
 <!-- 
   Whenever a for-range loop encounters a multi-byte rune in a string, it converts the UTF-8 representation into a single 32-bit number and assigns it to the value. The offset is incremented by the number of bytes in the rune. If the for-range loop encounters a byte that doesn’t represent a valid UTF-8 value, the Unicode replacement character (hex value 0xfffd) is returned instead.
 -->
+
 
 <h3 id="switch">Switch</h3>
 

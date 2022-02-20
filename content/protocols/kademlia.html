@@ -1,0 +1,351 @@
+---
+title: "Kademlia (DRAFT)"
+date: 2020-09-29
+draft: false
+---
+
+<!-- #region introduction -->
+<h3>Introduction</h3>
+
+<ul>
+  <li>
+    Kademlia is a distributed hash table for decentralized peer-to-peer networks.
+  </li>
+  <li>
+    It provides an operation for storing a key-value pair as well as a lookup operation for obtaining the value associated with a given key.
+  </li>
+  <li>
+    Searching for values is very efficient: in a network of n nodes, only O(log(n)) nodes need to be contacted.
+  </li>
+  <li>
+    Nodes in the network communicate over UDP.
+  </li>
+</ul>
+<!-- #endregion -->
+
+
+<h3>Node Identifiers and Keys</h3>
+
+<ul>
+  <li>
+    Each Kademlia node has a 160-bit integer called its node ID which can either be randomly generated at startup or consist of the SHA-1 hash of the IP address of the node.
+  </li>
+  <li>
+    Every message a node transmits includes its node ID which allows the recipient node to record the existence of the sender if necessary.
+  </li>
+  <li>
+    Keys also consist of 160-bit integers and are typically the SHA-1 hash of some larger data while values are arbitrary byte arrays.
+  </li>
+  <li>
+    A given key-value pair is assigned to a node with an ID "close" to the key for some definition of distance.
+  </li>
+</ul>
+
+
+<h3>XOR Metric</h3>
+
+<ul>
+  <li>
+    Kademlia defines the distance between two 160-bit identifiers as their XOR interpreted as an integer.
+  </li>
+  <li>
+    This is a valid (albeit non-Euclidean) metric as: d(x,y) = 0 iff x = y, d(x,y) = d(y,x) and d(x,y) + d(y,z) >= d(x,z).
+  </li>
+  <li>
+    The fact that XOR is symmetric means nodes receive lookup queries from the same distribution of nodes contained in their routing tables which allows them to learn useful routing information from these queries.
+  </li>
+  <li>
+    Further, XOR is uni-directional: for any point x and distance d_1 > 0 there is exactly one point y such that d(x,y) = d_1. As such, we will not need to handle the case where a key is equidistant between two nodes.
+  </li>
+</ul>
+
+
+<h3>Binary Tree Representation</h3>
+
+<ul>
+  <li>
+    We can visualize nodes as leaves in a binary tree with the position of each node being determined by the shortest unique prefix of its ID.
+  </li>
+  <li>
+    For any given node, we divide the binary tree into a series of successively lower subtrees. The highest subtree consists of the half of the binary that not containing the node. The next subtree consists of the half of the remaining tree not containing the node, and so forth.
+  </li>
+</ul>
+
+<p>
+  The XOR metric captures the notion of distance implicit in this binary tree representation. In a fully populated binary tree of 160-bit IDs, the magnitude of the distance between two IDs is the height of the smallest subtree containing them both. The Kademlia protocol ensures that every node knows of at least one node in each of its subtrees, if that subtree contains a node. With this guarantee, any node can locate any other node by its ID.
+</p>
+
+
+<h3>k-Buckets</h3>
+
+<ul>
+  <li>
+    Every node keeps a list of ⟨IP address, UDP port, node ID⟩ triples for nodes of distance between 2^i and 2^(i+1) from itself where i ∈ [0, 160).
+  </li>
+  <li>
+    These lists of contact information are called k-buckets. Each k-bucket is kept sorted with the least-recently seen node at the head and the most-recently seen node at the tail.
+  </li>
+  <li>
+    For small values of i, the k-buckets will generally be empty as no appropriate nodes will exist. For large values of i, the k-buckets are able to grow up to size k.
+  </li>
+  <li>
+    The value k is a system-wide replication parameter that is chosen such that any given k nodes are very unlikely to fail within an hour of each other (e.g. k = 20).
+  </li>
+  <li>
+    This results in a node maintaining more information on the nodes that are "close" and less information on the nodes that are "far away".
+  </li>
+</ul>
+
+
+<!-- #region eviction policy -->
+<h3>Eviction Policy</h3>
+
+<ul>
+  <li>
+    When a node receives any message (request or reply), it updates the k-bucket corresponding to the node ID of the sender.
+  </li>
+  <li>
+    If the sending node already exists in the k-bucket, the recipient moves it to the tail of the list.
+  </li>
+  <li>
+    If the node is not already in the appropriate k-bucket and the bucket has fewer than k entries then the recipient inserts the new sender at the tail of the list.
+  </li>
+  <li>
+    If the appropriate k-bucket is instead full then the recipient pings the least-recently seen node in the k-bucket. If the least-recently seen node fails to respond, it is evicted from the k-bucket and the new sender inserted at the tail. Otherwise, if it responds, it is moved to the tail of the list and the new contact is discarded.
+  </li>
+  <li>
+    This approach implements a least-recently seen eviction policy, except that live nodes are never removed.
+  </li>
+</ul>
+
+<!-- 
+  This preference for old contacts was motivated by analysis of Gnutella trace data that showed the longer a node has been up, the more likely it was to remain up another hour. This approach also provides resistance to certain DoS attacks as an attacker cannot flush the routing state of nodes by flooding the system with new nodes.
+-->
+<!-- #endregion -->
+
+<!-- #region rpc api -->
+<h3>RPC API</h3>
+
+{{% code text %}}FIND_NODE(NodeID) -> {IP Address, UDP Port, NodeID}[k]
+
+FIND_VALUE(Key) -> {Key, Value} | {IP Address, UDP Port, NodeID}[k]
+
+STORE(Key, Value) -> ACK
+
+PING(NodeID) -> ACK{{% /code %}}
+
+<ul>
+  <li>
+    <code>FIND_NODE</code>: Instructs the recipient to return ⟨IP address, UDP port, node ID⟩ triples for the k nodes in the k-buckets of the node that are closest to a given target ID argument.
+  </li>
+  <li>
+    <code>FIND_VALUE(Key)</code>: Behaves like <code>FIND_NODE</code> with the exception that if the recipient has received a <code>STORE</code> RPC for the key then it just returns the stored value.
+  </li>
+  <li>
+    <code>STORE</code>: Instructs the recipient to store a key-value pair.
+  </li>
+  <li>
+    <code>PING</code>: Probes the recipient to see if its online.
+  </li>
+</ul>
+
+<p>
+  In all RPCs, the recipient must echo a random 160-bit integer called a nonce. This provides some resistance against address forgery.
+</p>
+
+<!-- 
+  Note that <code>PING</code> RPCs can also be piggy-backed on RPC replies for the RPC recipient to obtain additional assurance of the sender's network address.
+-->
+<!-- #endregion -->
+
+
+<h3>Operations</h3>
+
+<h4>Node Lookups</h4>
+
+<p>
+  A node lookup refers to the recursive procedure a node performs to locate the k closest nodes to some given node ID. Given a system-wide concurrency parameter α, a node lookup proceeds as follows:
+</p>
+
+<ul>
+  <li>
+    The lookup initiator picks α nodes from the closest non-empty k-bucket (or, if that bucket has fewer than α contacts, it just takes the closest α nodes it knows of).
+  </li>
+  <li>
+    The initiator then sends parallel asynchronous <code>FIND_NODE</code> RPCs to those α nodes.
+  </li>
+  <li>
+    In the recursive step, the initiator then resends the <code>FIND_NODE</code> RPCs to nodes it has learned about from previous RPCs. This recursion can begin before all α of the previous RPCs have returned.
+  </li>
+  <li>
+    Of the k nodes the initiator has heard of closest to the target, it picks α that it has not queried and resends the <code>FIND_NODE</code> RPC to them.
+  </li>
+  <li>
+    Nodes that fail to respond are quickly removed from consideration until and unless they do respond.
+  </li>
+  <li>
+    If a round of <code>FIND_NODE</code> RPCs fails to return a node any closer than the closest already seen, the initiator resends the <code>FIND_NODE</code> to all of the k closest nodes it has not already queried.
+  </li>
+  <li>
+    The lookup terminates when the initiator has queried and gotten responses from the k closest nodes it has seen.
+  </li>
+</ul>
+
+
+<h4>Refreshing k-Buckets</h4>
+
+<ul>
+  <li>
+    Buckets are generally kept fresh by the traffic of request traveling through nodes.
+  </li>
+  <li>
+    To handle pathological cases in which there are no lookups for a particular ID range, each node refreshes any bucket to which it has not performed a node lookup in the past hour.
+  </li>
+  <li>
+    Refreshing means picking a random ID in the bucket's range and performing a node lookup for that ID.
+  </li>
+</ul>
+
+
+<h4>Storing and Finding Values</h4>
+
+<ul>
+  <li>
+    To store a key-value pair, a node performs a lookup for the k closest nodes to the key and sends them <code>STORE</code> RPCs.
+  </li>
+  <li>
+    Additionally, each node re-publishes key-value pairs as necessary to keep them alive. This ensures persistence of the key-value pair with very high probability.
+  </li>
+  <li>
+    To find a key-value pair, a node starts by performing a lookup to find the k nodes with IDs closest to the key. However, value lookups use FIND_VALUE rather than FIND_NODE RPCs. The procedure halts immediately when any node returns the value.
+  </li>
+</ul>
+
+<!-- 
+  For Kademlia's current application (file sharing), we also require the original publisher of a key-value pair to republish it every 24 hours. Otherwise, key-value pairs expire 24 hours after publication, so as to limit stale index information in the system.
+-->
+
+
+<h4>Joining the Network</h4>
+
+<p>
+  To join the network, a node must have a contact to an already participating node. The node then performs the following procedure:
+</p>
+
+<ul>
+  <li>
+    If the node does not already have a node ID then it generates one.
+  </li>
+  <li>
+    The node inserts the value of some known node c into the appropriate k-bucket as its first contact.
+  </li>
+  <li>
+    The node then performs a node lookup for its own node ID.
+  </li>
+  <li>
+    Finally, the node refreshes all k-buckets further away than its closest neighbor. During these refreshes, the node both populates its own k-buckets and inserts itself into the k-buckets of other nodes as necessary.
+  </li>
+</ul>
+
+
+<!-- #region routing table -->
+<h3 id="routing-table">Routing Table</h3>
+
+<ul>
+  <li>
+    The routing table is a binary tree whose leaves are k-buckets. Each k-bucket contains nodes with some common prefix of their node IDs. The prefix is the position of the k-bucket in the binary tree.
+  </li>
+  <li>
+    Thus, each k-bucket covers some range of the ID space and together the k-buckets cover the entire 160-bit ID space with no overlap.
+  </li>
+  <li>
+    Nodes in the routing table are allocated dynamically as needed. Initially, the tree has a single node which corresponds to a single k-bucket covering the entire ID space.
+  </li>
+  <li>
+    When the node learns of a new contact, it attempts to insert the contact as follows:
+    <ul>
+      <li>
+        The node attempts to insert the appropriate k-bucket.
+      </li>
+      <li>
+        If that bucket is not full, the new contact is simply inserted.
+      </li>
+      <li>
+        Otherwise, if the range of k-bucket contains the node's own node ID, then the bucket is split into two new k-buckets, the old contents is divided between the new k-buckets and the insertion attempt is repeated.
+      </li>
+      <li>
+        If the k-bucket with a different range is full, the new contact is simply dropped.
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<!--
+  KBucket starts off as a single k-bucket with capacity of k. As contacts are added, once the k+1 contact is added, the k-bucket is split into two k-buckets. The split happens according to the first bit of the contact node id. The k-bucket that would contain the local node id is the "near" k-bucket, and the other one is the "far" k-bucket. The "far" k-bucket is marked as don't split in order to prevent further splitting. The contact nodes that existed are then redistributed along the two new k-buckets and the old k-bucket becomes an inner node within a tree data structure.
+  
+  As even more contacts are added to the "near" k-bucket, the "near" k-bucket will split again as it becomes full. However, this time it is split along the second bit of the contact node id. Again, the two newly created k-buckets are marked "near" and "far" and the "far" k-bucket is marked as don't split. Again, the contact nodes that existed in the old bucket are redistributed. This continues as long as nodes are being added to the "near" k-bucket, until the number of splits reaches the length of the local node id.
+-->
+<!-- #endregion -->
+
+
+
+<h3 id="introduction">Caching</h3>
+
+<p>
+  The unidirectionality of the XOR metric ensures that all lookups for the same key converge along the same path, regardless of originating node. As such, once a lookup succeeds, the requesting node stores the ⟨key, value⟩ pair at the closest node it observed to the key that did not return the value. Future searches for the same key are likely to hit this cached entry.
+</p>
+
+<p>
+  During times of high popularity for a certain key, the system might end up caching it at many nodes. To avoid "over-caching", we make the expiration time of a key-value pair in any node's database exponentially inversely proportional to the number of nodes between the current node and the node whose ID is closest to the key ID. This number can be inferred from the bucket structure of the current node.  
+</p>
+
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>
+    <a href="http://www.scs.stanford.edu/~dm/home/papers/kpos.pdf">Kademlia: A Peer-to-peer Information System Based on the XOR Metric</a>
+  </li>
+  <li>
+    <a href="https://moodlearchive.epfl.ch/2020-2021/pluginfile.php/2327928/mod_resource/content/2/Kademlia.pdf">Kademlia: A Peer-to-peer Information System Based on the XOR Metric (Version with Diagrams)</a>
+  </li>
+  <li>
+    <a href="https://developpaper.com/kademlia-protocol/">Kademlia Protocol Overview</a>
+  </li>
+  <li>
+    <a href="https://stackoverflow.com/questions/25751928/kademlia-xor-metric-properties-purposes">Purposes of XOR Metric Properties</a>
+  </li>
+  <li>
+    <a href="http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html">Kademlia: A Design Specification</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=w9UObz8o8lY">XOR Distance and Basic Routing (Video)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=A5Y4HcTp-Ks">Distributed Hash Tables, Video, and Fun! (Video)</a>
+  </li>
+  <li>
+    <a href="https://vimeo.com/56044595">BitTorrent Tech Talks: DHT (Video)</a>
+  </li>
+</ul>
+
+<!-- 
+  https://www.youtube.com/watch?v=w9UObz8o8lY
+
+  https://www.youtube.com/watch?v=mJgN3PzepqI
+
+  https://docs.google.com/presentation/d/11qGZlPWu6vEAhA7p3qsQaQtWH7KofEC9dMeBFZ1gYeA/edit#slide=id.g1718cc2bc_0661
+
+
+  ----
+
+  Aaron David Goldman on Kademlia: A Peer-to-Peer Information System Based on the XOR Metric (Video)
+  https://www.youtube.com/watch?v=NxhZ_c8YX8E
+-->
+
+
+<!-- 
+  <h3 id="introduction">Unbalanced Routing Tables</h3>
+  
+  One complication arises in highly unbalanced trees. Suppose node u joins the system and is the only node whose ID begins 000. Suppose further than the system already has more than k nodes with prefix 001. Every node with prefix 001 would have an empty k-bucket into which u should be inserted, yet u's bucket refresh would only notify k of the nodes. To avoid this problem, Kademlia nodes keep all valid contacts in a subtree of size at least k nodes, even if this requires splitting buckets in which the node's own ID does not reside. When u refreshes the split buckets, all nodes with prefix 001 will learn about it.
+-->

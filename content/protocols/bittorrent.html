@@ -4,13 +4,13 @@ date: 2021-12-29
 draft: false
 ---
 
+<!-- #region introduction -->
 <p>
   <i>"The cat is out of the bag. The content people have no clue. I mean, no clue."</i>
   <br>
   — Bram Cohen
 </p>
 
-<!-- #region introduction -->
 <ul>
   <li>
     BitTorrent is a peer-to-peer file sharing protocol that redistributes upload costs among downloaders by having them upload pieces of the file to each other.
@@ -421,6 +421,9 @@ increase the number of optimistic unchokes in order to try to find new connectio
   <li>
     <code>numwant</code>: Number of peers that the client would like to receive from the tracker (optional).
   </li>
+  <li>
+    <code>compact</code>: Setting this to 1 indicates that the client accepts a compact response.
+  </li>
 </ul>
 
 
@@ -441,28 +444,25 @@ increase the number of optimistic unchokes in order to try to find new connectio
     <code>incomplete</code>: Integer indicating the number of leechers (optional).
   </li>
   <li>
-    <code>peers</code>: A list of dictionaries specifying peers.
+    <code>peers</code>: A list of dictionaries specifying peers or, in the case of a compact response, a string with 6 bytes per peer where the first 4 bytes are the host and the last 2 bytes are the host (all in network byte order). The dictionary response has following keys:
+    <ul>
+      <li>
+        <code>peer id</code>: The unique identifier of the peer.
+      </li>
+      <li>
+        <code>ip</code>: IP address (in dotted IPv4/hexed IPv6 format) or a DNS name of peer.
+      </li>
+      <li>
+        <code>port</code>: An integer indicating the port number of peer.
+      </li>
+    </ul>
   </li>
   <li>
     <code>failure reason</code>: A human-readable error message as to why the request failed. If present then no other keys may be present (optional).
   </li>
 </ul>
 
-<p>
-  By default, <code>peers</code> is a list of dictionaries with the following keys:
-</p>
 
-<ul>
-  <li>
-    <code>peer id</code>: The unique identifier of the peer.
-  </li>
-  <li>
-    <code>ip</code>: IP address (in dotted IPv4/hexed IPv6 format) or a DNS name of peer.
-  </li>
-  <li>
-    <code>port</code>: An integer indicating the port number of peer.
-  </li>
-</ul>
 
 <!-- 
 TODO:

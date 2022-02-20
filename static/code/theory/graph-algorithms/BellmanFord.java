@@ -2,7 +2,7 @@ import java.util.*;
 
 public class BellmanFord {
 
-  public static void solve(List<List<Edge>> graph, int n, int start) {
+  public static double[] solve(List<List<Edge>> graph, int n, int start) {
     double[] dist = new double[n];
 
     for (int i = 0; i < n; i++) {
@@ -35,9 +35,7 @@ public class BellmanFord {
       }
     }
 
-    for (int i = 0; i < n; i++) {
-      System.out.println(i + ": " + dist[i]);
-    }
+    return dist;
   }
 
   private static class Edge {
@@ -74,7 +72,11 @@ public class BellmanFord {
     graph.get(4).add(new Edge(4, 5, 1));
 
 
-    BellmanFord.solve(graph, n, 0);
+    double[] dist = BellmanFord.solve(graph, n, 0);
+
+    for (int i = 0; i < n; i++) {
+      System.out.println(i + ": " + dist[i]);
+    }
   }
 }
 

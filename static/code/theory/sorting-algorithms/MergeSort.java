@@ -5,7 +5,7 @@ public class MergeSort {
   }
 
   private static void sort(int array[], int[] aux, int lo, int hi) {
-    if (hi &lt;= lo) {
+    if (hi <= lo) {
       return;
     }
 
@@ -18,21 +18,21 @@ public class MergeSort {
   }
 
   private static void merge(int[] array, int[] aux, int lo, int mid, int hi) {
-    for (int k = lo; k &lt;= hi; k++) {
+    for (int k = lo; k <= hi; k++) {
       aux[k] = array[k];
     }
 
     int i = lo;
     int j = mid + 1;
 
-    for (int k = lo; k &lt;= hi; k++) {
-      if (i &gt; mid) {
+    for (int k = lo; k <= hi; k++) {
+      if (i > mid) {
         array[k] = aux[j];
         j++;
-      } else if (j &gt; hi) {
+      } else if (j > hi) {
         array[k] = aux[i];
         i++;
-      } else if (aux[j] &lt; aux[i]) {
+      } else if (aux[j] < aux[i]) {
         array[k] = aux[j];
         j++;
       } else {

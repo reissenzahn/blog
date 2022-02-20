@@ -602,6 +602,7 @@ Memory Mappings 1029
  exit(EXIT_SUCCESS);
 }
 ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– mmap/t_mmap.c
+
 49.4.3 Boundary Cases
 In many cases, the size of a mapping is a multiple of the system page size, and the
 mapping falls entirely within the bounds of the mapped file. However, this is not
@@ -826,7 +827,7 @@ Memory Mappings 1037
 
 
 
-49.10 The MAP_FIXED Flag
+<!-- 49.10 The MAP_FIXED Flag
 Specifying MAP_FIXED in the mmap() flags argument forces the kernel to interpret the
 address in addr exactly, rather than take it as a hint. If we specify MAP_FIXED, addr
 must be page-aligned.
@@ -855,10 +856,10 @@ select a contiguous address range, and then create new mappings within that
 address range.
 From Linux 2.6 onward, the remap_file_pages() system call, which we describe
 in the next section, can also be used to achieve the same effect. However, the use of
-MAP_FIXED is more portable than remap_file_pages(), which is Linux-specific.
+MAP_FIXED is more portable than remap_file_pages(), which is Linux-specific. -->
 
 
-49.12 Summary
+<!-- 49.12 Summary
 
 Memory mappings serve a variety of uses, including:
 z allocating process-private memory (private anonymous mappings);
@@ -878,5 +879,4 @@ Swap space overcommitting allows the system to allocate more memory to
 processes than is actually available in RAM and swap space. Overcommitting is possible
 because, typically, each process does not make full use of its allocation. Overcommitting can be controlled on a per-mmap() basis using the MAP_NORESERVE flag, and on a
 system-wide basis using /proc files.
-
-The mremap() system call allows an existing mapping to be resized.
+-->

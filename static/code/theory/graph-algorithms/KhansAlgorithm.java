@@ -77,7 +77,7 @@ public class Khans {
   }
 
   private static void addDirectedEdge(List<List<Integer>> graph, int from, int to) {
-   graph.get(from).add(to);
+    graph.get(from).add(to);
   }
 }
 
