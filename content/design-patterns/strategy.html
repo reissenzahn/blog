@@ -13,26 +13,21 @@ draft: false
 
 <ul>
   <li>
-    With the Strategy Pattern, rather than implementing a single algorithm directly where it is used, we define a family of algorithms
+    With the Strategy Pattern, Rather than implementing an algorithm directly where it is used, we define a <code>Strategy</code> interface to represent our algorithm.
   </li>
   <li>
-    Particularly, we define a <code>Strategy</code> interface to represent our algorithm. This has various concrete implementations which define the algorithms.
+    The <code>Strategy</code> interface can have various concrete implementations which define a family of algorithms. 
   </li>
   <li>
-    At runtime, the <code>Context</code> object delegates to a particular <code>Strategy</code> object. Deferring the decision about which algorithm to use until runtime allows the calling code to be more flexible and reusable.
+    At runtime, the <code>Context</code> object delegates to a particular <code>Strategy</code> object.
   </li>
   <li>
-    Further, this decouples the algorithms from the clients that use them which allows the algorithms to vary independently. We can change algorithms and add new algorithms.
+    Deferring the decision about which algorithm to use until runtime allows the calling code to be more flexible and reusable.
+  </li>
+  <li>
+    Further, this decouples the algorithms from the clients that use them which allows the algorithms to vary independently. We can change the algorithms and add new algorithms.
   </li>
 </ul>
-
-<!-- 
-In general, think of the Strategy Pattern as a flexible alternative to
-subclassing; if you use inheritance to define the behavior of a class,
-then you’re stuck with that behavior even if you need to change it.
-With Strategy you can change the behavior by composing with a
-different object.
--->
 
 <figure>
   <img src="/img/design-patterns/strategy.svg" height="100%" width="100%" style="max-width: 700px;">
@@ -43,7 +38,7 @@ different object.
 
 <ul>
   <li>
-    We consider the case of a duck pond simulation that features a variety of duck species. There is one abstract <code>Duck</code> superclass from which all other duck types inherit.
+    We consider the case of a duck pond simulation that features a variety of duck species. There is one abstract <code>Duck</code> class from which all other duck types inherit.
   </li>
   <li>
     The <code>Duck</code> class provides implementations for <code>quack()</code> and <code>swim()</code> though it makes the subclasses responsible for implementing their own <code>display()</code> method.
@@ -61,12 +56,11 @@ different object.
     We add two instance variables of type <code>FlyBehavior</code> and <code>QuackBehavior</code> to <code>Duck</code> so we can assign particular behaviors to the instances of <code>Duck</code> in the constructors of the various <code>Duck</code> subclasses. We also include behavior setter methods so that we can change the behaviors at runtime.
   </li>
   <li>
-    We replace <code>fly()</code> and <code>quack()</code> with two similar methods, called
-    <code>performFly()</code> and <code>performQuack()</code> which delegate to the objects referenced by the two instance variables of type <code>FlyBehavior</code> and <code>QuackBehavior</code> respectively.
+    We replace <code>fly()</code> and <code>quack()</code> with two similar methods, called <code>performFly()</code> and <code>performQuack()</code> which delegate to the objects referenced by the two instance variables of type <code>FlyBehavior</code> and <code>QuackBehavior</code> respectively.
   </li>
 </ul>
 
-{{% code-file file="/static/code/programming/design-patterns/Strategy.java" lang="java" %}}
+{{% code-file file="/static/code/design-patterns/strategy/Strategy.java" lang="java" %}}
 
 
 
@@ -94,7 +88,7 @@ different object.
 
 <p>
   <i>
-    Program to an interfaces rather than an implementation.
+    Program to an interface rather than an implementation.
   </i>
 </p>
 
@@ -136,6 +130,6 @@ different object.
 
 <ul>
   <li>
-    <a href="https://www.youtube.com/watch?v=yjZsAl13trk">Change Behaviors with the Strategy Pattern (One Wheel Studio)</a>
+    <a href="https://www.youtube.com/watch?v=yjZsAl13trk">Change Behaviors with the Strategy Pattern (Video)</a>
   </li>
 </ul>

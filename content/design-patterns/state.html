@@ -1,6 +1,6 @@
 ---
-title: "Object Orientation"
-date: 2021-12-21
+title: "State"
+date: 2022-03-05
 draft: false
 ---
 
@@ -13,20 +13,23 @@ draft: false
 
 <ul>
   <li>
-    
+    The State Pattern encapsulates state into separate classes and delegates to the object representing the current state. This way, the behavior of the class changes when the internal state changes and so it appears to the client that the object has changed class.
+  </li>
+  <li>
+    The <code>Context</code> is the class that can have a number of internal states. It delegates to handlers provided by the current state. The <code>State</code> interface defines a common interface for all concrete states so that they are interchangeable.
+  </li>
+  <li>
+    This provides an alternative to putting lots of conditionals in your context; by encapsulating the behaviors within state objects, you can simply change the state object in the context to change its behavior.
   </li>
 </ul>
 
 <!--
-- The State Pattern encapsulates state into separate classes and delegates to the object representing the current state. This way, the behavior of the class changes when the internal state changes and so it appears to the client that the object has changed class.
-- The Context is the class that can have a number of internal states. It delegates to handlers provided by the current state. The State interface defines a common interface for all concrete states so that they are interchangeable.
-- As such, the State Pattern provides an alternative to putting lots of conditionals in your context; by encapsulating the behaviors within state objects, you can simply change the state object in context to change its behavior.
-
----
 
 With the State Pattern, we have a set of behaviors encapsulated in
 state objects; at any time the context is delegating to one of those
-states. Over time, the current state changes across the set of state
+states.
+
+Over time, the current state changes across the set of state
 objects to reflect the internal state of the context, so the context’s
 behavior changes over time as well. The client usually knows very
 little, if anything, about the state objects.
@@ -158,31 +161,9 @@ By structurally changing the implemention, you’ve:
 - Removed all the troublesome if statements that would have been difficult to maintain.
 - Closed each state for modification, and yet left the Gumball Machine open to extension by adding new state classes (and we’ll do this in a second).
 - Created a code base and class structure that maps much more closely to the Mighty Gumball diagram and is easier to read and understand.
-
----
-
-We’ve got a lot of duplicate code in the Sold and Winning
-states and we might want to clean those up. How would we
-do it? We could make State into an abstract class and build
-in some default behavior for the methods; after all, error
-messages like, “You already inserted a quarter,” aren’t going
-to be seen by the customer. So all “error response” behavior
-could be generic and inherited from the abstract State class.
-� The dispense() method always gets called, even if the crank is
-turned when there is no quarter. While the machine operates
-correctly and doesn’t dispense unless it’s in the right state, we
-could easily fix this by having turnCrank() return a boolean
-or by introducing exceptions. Which do you think is a better
-solution?
-� All of the intelligence for the state transitions is in the State
-classes. What problems might this cause? Would we want to
-move that logic into the GumballMachine? What would be
-the advantages and disadvantages of that?
-� Will you be instantiating a lot of GumballMachine objects?
-If so, you may want to move the state instances into static
-instance variables and share them. What changes would this
-require to the GumballMachine and the States?
 -->
+
+{{% code-file file="/static/code/design-patterns/state/State.java" lang="java" %}}
 
 
 <h3>Resources</h3>

@@ -12,100 +12,54 @@ draft: false
 
 <h3>Description</h3>
 
-<!--
-- The Subject object manages some important data. When data in the Subject changes, the observers are notified. New data values are communicated to the observers in some form when they change. The observers have subscribed to (registered with) the Subject to receive updates when the Subject’s data changes. An object that isn’t an observer doesn’t get notified when the Subject’s data changes.
--->
-
-
-The subject and observers define the one-to-many relationship. We
-have one subject, who notifies many observers when something in the subject
-changes. The observers are dependent on the subject—when the subject’s
-state changes, the observers are notified.
-As you’ll discover, there are a few different ways to implement the
-Observer Pattern, but most revolve around a class design that includes
-Subject and Observer interfaces. 
-
-The Observer Pattern
-defines a one-to-many
-relationship between a
-set of objects.
-When the state of one
-object changes, all of its
-dependents are notified.
-
----
-
-A: Because the subject is the sole owner
-of that data, the observers are dependent on
-the subject to update them when the data
-changes. This leads to a cleaner OO design
-than allowing many objects to control the
-same data.
-
----
-
-We say a object is tightly coupled to another object when it is too dependent on that object.
-
-All objects depend on other objects. But a loosely coupled object doesn’t know or care too much about the details of another object.
-
-
----
-
-Here’s the Subject interface. Objects
-use this interface to register as
-observers and also to remove themselves
-from being observers.
-
-Each subject
-can have many
-observers.
-
-All potential observers need
-to implement the Observer
-interface. This interface has
-just one method, update(),
-that is called when the
-Subject’s state changes.
+<ul>
+  <li>
+    The <code>Subject</code> object manages some important data. The observers subscribe to be notified when the data in the subject changes. 
+  </li>
+  <li>
+    The subject and observers thus define a one-to-many relationship. As the subject is the sole owner of that data, the observers are dependent on the subject to update them when the data changes. This results in a cleaner design than allowing many objects to control the same data. 
+  </li>
+  <li>
+    Subjects implement the <code>Subject</code> interface which provides methods for objects to register and deregister as observers. Potential observers implement the <code>Observer</code> interface which has a single <code>update()</code> method that is called by the subject when its data changes.
+  </li>
+</ul>
 
 A concrete subject always implements the Subject interface. In addition to the register and remove methods, the concrete subject implements a notifyObservers() method that is used to update all the current observers whenever state changes.
 
 The concrete subject may also have methods for setting and getting its state (more about this later).
 
-Concrete observers can be
-any class that implements the
-Observer interface. Each observer
-registers with a concrete subject
-to receive updates.
-
 ---
 
-public void registerObserver(Observer o);
-public void removeObserver(Observer o);
-public void notifyObservers();
+ Observers are loosely coupled
+in that the Subject knows
+nothing about them, other
+than that they implement the
+Observer interface.
 
-Both of these methods take an
-Observer as an argument—that is, the
-Observer to be registered or removed.
-
-This method is called to notify all observers
-when the Subject’s state has changed.
+The only thing the subject knows about an observer is that it implements the Observer interface. We can add and remove observers without because the only thing the subject depends on is a list of objects that implement the Observer interface. We never need to modify the subject to add new types of observers. 
 
 
 
 <h3>Example</h3>
 
-<!--
+<ul>
+  <li>
+    We consider the case of an internet-based weather monitoring station.
+  </li>
+  <li>
+    We have a <code>WeatherData</code> object which tracks current weather conditions and provides getter functions to return the most recent temperature, humidity and pressure measurements as well as a <code>measurementsChange()</code> method that is called every time the measurements change.
+  </li>
+  <li>
+    We need to build an application that provides display elements for the current conditions, weather statistics and a simple forecast. All the display elements must be updated in real time as the <code>WeatherData</code> object acquires new measurements.
+  </li>
+  <li>
+    Further, we need to allow other developers to extend the application by writing their own weather display elements.
+  </li>
+  <li>
+    A misguided implementation would be to add code to <code>measurementsChanged()</code> that invokes an <code>update()</code> method on instances of each of the display element classes with the most recent measurements. But then we would have to alter the code for every new display element and there would be no way to add display elements at runtime.
+  </li>
+</ul>
 
-- We consider the case of an internet-based weather monitoring station.
-- We have a WeatherData object which tracks current weather conditions and provides getter functions to return the most recent temperature, humidity and pressure measurements as well as a measurementsChange() method that is called every time the measurements change.
-- We need to build an application that provides display elements for the current conditions, weather statistics and a simple forecast. All the display elements must be updated in real time as the WeatherData object acquires new measurements.
-- Further, we need to allow other developers to extend the application by writing their own weather display elements.
-- A misguided implementation would be to just add code to measurementsChanged() that invokes an update() method on instances of each of the display element classes with the most recent measurements.
-- In this case, we would be coding to concrete implementations and would have to alter the code for every new display element. We would also have to way to add display elements at runtime.
--->
-
-Our WeatherData class is the
-“one,” and our “many” is the various display elements that use the weather measurements.
 
 The WeatherData class certainly has state...that’s the temperature,
 humidity, and barometric pressure, and those definitely change.
@@ -190,44 +144,8 @@ And finally, we modify each concrete Observer to change the signature of its res
 update() methds and get the weather data from the Subject using the WeatherData’s
 getter methods. Here’s the new code for the CurrentConditionsDisplay class:
 
----
 
-The Observer Pattern defines
-a one-to-many relationship
-between objects.
- Subjects update Observers
-using a common interface.
- Observers of any concrete type
-can participate in the pattern
-as long as they implement the
-Observer interface.
- Observers are loosely coupled
-in that the Subject knows
-nothing about them, other
-than that they implement the
-Observer interface.
- You can push or pull data from
-the Subject when using the
-pattern (pull is considered more
-“correct”).
- Swing makes heavy use of the
-Observer Pattern, as do many
-GUI frameworks.
- You’ll also find the pattern in
-many other places, including
-RxJava, JavaBeans, and RMI,
-as well as in other language
-frameworks, like Cocoa, Swift,
-and JavaScript events.
- The Observer Pattern is related
-to the Publish/Subscribe Pattern,
-which is for more complex
-situations with multiple Subjects
-and/or multiple message types.
- The Observer Pattern is a
-commonly used pattern, and
-we’ll see it again when we learn
-about Model-View-Controller.
+{{% code-file file="/static/code/design-patterns/observer/Example.java" lang="java" %}}
 
 
 <h3>Principle: Loose Coupling</h3>
@@ -238,19 +156,24 @@ about Model-View-Controller.
   </i>
 </p>
 
-When two objects are loosely coupled, they can interact, but they typically have very little knowledge
-of each other. As we’re going to see, loosely coupled designs often give us a lot of flexibility (more
-on that in a bit). And, as it turns out, the Observer Pattern is a great example of loose coupling.
-Let’s walk through all the ways the pattern achieves loose coupling:
 
-First, the only thing the subject knows about an observer is that it
-implements a certain interface (the Observer interface). It doesn’t need to
-know the concrete class of the observer, what it does, or anything else about it.
-We can add new observers at any time. Because the only thing the subject depends
-on is a list of objects that implement the Observer interface, we can add new observers
-whenever we want. In fact, we can replace any observer at runtime with another observer
-and the subject will keep purring along. Likewise, we can remove observers at any time.
-We never need to modify the subject to add new types of observers. Let’s say
+<ul>
+  <li>
+
+  </li>
+</ul>
+
+When two objects are loosely coupled, they can interact but they typically have very little knowledge of each other.
+
+Loosely coupled designs allow us to build flexible systems that can handle change because they minimize the interdependency between objects.
+
+Loosely coupled designs often give us a lot of flexibility.
+
+
+
+
+
+Let’s say
 we have a new concrete class come along that needs to be an observer. We don’t need
 to make any changes to the subject to accommodate the new class type; all we have
 to do is implement the Observer interface in the new class and register as an observer.
@@ -263,9 +186,7 @@ Changes to either the subject or an observer will not affect the other.
 Because the two are loosely coupled, we are free to make changes to either, as long as the
 objects still meet their obligations to implement the Subject or Observer interfaces.
 
-Loosely coupled designs allow us to build flexible OO
-systems that can handle change because they minimize
-the interdependency between objects.
+
 
 
 

@@ -1,0 +1,100 @@
+---
+title: "Fan-Out"
+date: 2021-12-20
+draft: false
+---
+
+
+Fan-out evenly distributes messages from an input channel to multiple output
+channels.
+Applicability
+Fan-out receives messages from an input channel, distributing them evenly among
+output channels, and is a useful pattern for parallelizing CPU and I/O utilization.
+For example, imagine that you have an input source, such as a Reader on an input
+stream, or a listener on a message broker, that provides the inputs for some resourceintensive unit of work. Rather than coupling the input and computation processes,
+which would confine the effort to a single serial process, you might prefer to parallel‐
+ize the workload by distributing it among some number of concurrent worker
+processes.
+Participants
+This pattern includes the following participants:
+Source
+An input channel. Accepted by Split.
+Destinations
+An output channel of the same type as Source. Created and provided by Split.
+Split
+A function that accepts Source and immediately returns Destinations. Any input
+from Source will be output to a Destination.
+Implementation
+Fan-out may be relatively conceptually straightforward, but the devil is in the details.
+Typically, fan-out is implemented as a Split function, which accepts a single Source
+channel and integer representing the desired number of Destination channels. The
+Split function creates the Destination channels and executes some background
+process that retrieves values from Source channel and forwards them to one of the
+Destinations.
+Concurrency Patterns | 95
+The implementation of the forwarding logic can be done in one of two ways:
+• Using a single goroutine that reads values from Source and forwards them to the
+Destinations in a round-robin fashion. This has the virtue of requiring only one
+master goroutine, but if the next channel isn’t ready to read yet, it’ll slow the
+entire process.
+• Using separate goroutines for each Destination that compete to read the next
+value from Source and forward it to their respective Destination. This requires
+slightly more resources, but is less likely to get bogged down by a single slowrunning worker.
+The next example uses the latter approach.
+Sample code
+In this example, the Split function accepts a single receive-only channel, source,
+and an integer describing the number of channels to split the input into, n. It returns
+a slice of n send-only channels with the same type as source.
+Internally, Split creates the destination channels. For each channel created, it exe‐
+cutes a goroutine that retrieves values from source in a for loop and forwards them
+to their assigned output channel. Effectively, each goroutine competes for reads from
+source; if several are trying to read, the “winner” will be randomly determined. If
+source is closed, all goroutines terminate and all of the destination channels are
+closed:
+func Split(source <-chan int, n int) []<-chan int {
+ dests := make([]<-chan int, 0) // Create the dests slice
+ for i := 0; i < n; i++ { // Create n destination channels
+ ch := make(chan int)
+ dests = append(dests, ch)
+ go func() { // Each channel gets a dedicated
+ defer close(ch) // goroutine that competes for reads
+ for val := range source {
+ ch <- val
+ }
+ }()
+ }
+ return dests
+}
+Given a channel of some specific type, the Split function will return a number of
+destination channels. Typically, each will be passed to a separate goroutine, as
+demonstrated in the following example:
+96 | Chapter 4: Cloud Native Patterns
+4 While these terms are often used interchangeably, they can also have shades of meaning depending on their
+context. I know. Please don’t write me any angry letters about this.
+func main() {
+ source := make(chan int) // The input channel
+ dests := Split(source, 5) // Retrieve 5 output channels
+ go func() { // Send the number 1..10 to source
+ for i := 1; i <= 10; i++ { // and close it when we're done
+ source <- i
+ }
+ close(source)
+ }()
+ var wg sync.WaitGroup // Use WaitGroup to wait until
+ wg.Add(len(dests)) // the output channels all close
+ for i, ch := range dests {
+ go func(i int, d <-chan int) {
+ defer wg.Done()
+ for val := range d {
+ fmt.Printf("#%d got %d\n", i, val)
+ }
+ }(i, ch)
+ }
+ wg.Wait()
+}
+This example creates an input channel, source, which it passes to Split to receive its
+output channels. Concurrently it passes the values 1 to 10 into source in a goroutine,
+while receiving values from dests in five others. When the inputs are complete, the
+source channel is closed, which triggers closures in the output channels, which ends
+the read loops, which causes wg.Done to be called by each of the read goroutines,
+which releases the lock on wg.Wait, and allows the function to end.

@@ -303,9 +303,9 @@ PING(NodeID) -> ACK{{% /code %}}
 <h3 id="resources">Resources</h3>
 
 <ul>
-  <li>
+  <!-- <li>
     <a href="http://www.scs.stanford.edu/~dm/home/papers/kpos.pdf">Kademlia: A Peer-to-peer Information System Based on the XOR Metric</a>
-  </li>
+  </li> -->
   <li>
     <a href="https://moodlearchive.epfl.ch/2020-2021/pluginfile.php/2327928/mod_resource/content/2/Kademlia.pdf">Kademlia: A Peer-to-peer Information System Based on the XOR Metric (Version with Diagrams)</a>
   </li>
@@ -318,34 +318,169 @@ PING(NodeID) -> ACK{{% /code %}}
   <li>
     <a href="http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html">Kademlia: A Design Specification</a>
   </li>
-  <li>
+  <!-- <li>
     <a href="https://www.youtube.com/watch?v=w9UObz8o8lY">XOR Distance and Basic Routing (Video)</a>
-  </li>
-  <li>
+  </li> -->
+  <!-- <li>
     <a href="https://www.youtube.com/watch?v=A5Y4HcTp-Ks">Distributed Hash Tables, Video, and Fun! (Video)</a>
+  </li> -->
+  <!-- <li>
+    <a href="https://vimeo.com/56044595">BitTorrent Tech Talks: DHT (Video)</a>
+  </li> -->
+  <li>
+    <a href="https://www.youtube.com/watch?v=NxhZ_c8YX8E">Aaron David Goldman on Kademlia: A Peer-to-Peer Information System Based on the XOR Metric (Video)</a>
   </li>
   <li>
-    <a href="https://vimeo.com/56044595">BitTorrent Tech Talks: DHT (Video)</a>
+    <a href="https://docs.google.com/presentation/d/11qGZlPWu6vEAhA7p3qsQaQtWH7KofEC9dMeBFZ1gYeA">Distribute All The Things - The JavaScript Austin Meetup Group (Slides)</a>
+  </li>
+  <li>
+    <a href="http://maude.sip.ucm.es/kademlia/files/pita_kademlia.pdf">A Formal Specification of the Kademlia DHT</a>
   </li>
 </ul>
 
-<!-- 
-  https://www.youtube.com/watch?v=w9UObz8o8lY
-
+<!--
   https://www.youtube.com/watch?v=mJgN3PzepqI
-
-  https://docs.google.com/presentation/d/11qGZlPWu6vEAhA7p3qsQaQtWH7KofEC9dMeBFZ1gYeA/edit#slide=id.g1718cc2bc_0661
-
-
-  ----
-
-  Aaron David Goldman on Kademlia: A Peer-to-Peer Information System Based on the XOR Metric (Video)
-  https://www.youtube.com/watch?v=NxhZ_c8YX8E
 -->
-
 
 <!-- 
   <h3 id="introduction">Unbalanced Routing Tables</h3>
   
   One complication arises in highly unbalanced trees. Suppose node u joins the system and is the only node whose ID begins 000. Suppose further than the system already has more than k nodes with prefix 001. Every node with prefix 001 would have an empty k-bucket into which u should be inserted, yet u's bucket refresh would only notify k of the nodes. To avoid this problem, Kademlia nodes keep all valid contacts in a subtree of size at least k nodes, even if this requires splitting buckets in which the node's own ID does not reside. When u refreshes the split buckets, all nodes with prefix 001 will learn about it.
 -->
+
+
+<!--
+IDENTIFIERS
+
+- Both nodes and files are identified with n-bit quantities.
+- The information of shared files is stored in the nodes with an ID close to the file ID. 
+- The look-up algorithm is based on locating successively closer nodes to any desired key.
+
+
+XOR DISTANCE
+
+- Kademlia defines the distance between two IDs as the bitwise exclusive (XOR) of the n-bit quantities.
+
+
+K-BUCKETS
+
+- Each node stores contact information about others. 
+- Every node keeps a list of (IP address, UDP port and node ID) for nodes of distance between 2^i and 2^i+1 from itself, for i = 1..n where n the ID length.
+- These lists, called k-buckets, have at most k elements, where k is chosen such that any given k nodes are very unlikely to fail within an hour of each other.
+- k-buckets are kept sorted by time last seen.
+- When a node receives any message (request or reply) from another node, it up dates the appropriate k-bucket for the sender's node ID.
+- If the sender node exists, it is moved to the tail of the list.
+- If it does not exist and there is free space in the appropriate k-bucket it is inserted at the tail of the list.
+- Otherwise, the k-bucket has no free space, the no de at the head of the list is contacted and if it fails to respond it is removed from the list and the new contact is added at the tail.
+- In the case the node of the head of the list responds, it is moved to the tail, and the new node is discarded.
+- This policy gives preference to old contacts, and it is due to the analysis of Gnutella data which states that the longer a node has been up, the more likely it is to remain up another hour. 
+
+
+ROUTING TABLE
+
+- k-buckets are organized in a binary tree called the routing table.
+- Each k-bucket is identified by the common prefix of the IDs it contains.
+- Internal tree no des are the common prefix of the k-buckets, while the leaves are the k-buckets.
+- Thus, each k-bucket covers some range of the ID space and together the k-buckets cover the entire ID space with no overlap.
+
+
+PROTOCOL
+
+The Kademlia protocol consists of four RPCs:
+
+- PING: probes a node to see if it is online.
+- STORE: instructs a node to store a file ID together with the contact of the node that shares the file.
+- FIND-NODE takes an ID as argument and the recipient returns the contacts of the k no des it knows ab out closest to the target ID.
+- FIND-VALUE takes an ID as argument. If the recipient has information ab out the argument, it returns the contact of the no de that shares the le, otherwise, it re-turns a list of the k contacts it knows ab out closest to the target.
+
+
+LOOKUP
+
+To find a file ID, a node starts by performing a look up to find the k nodes with closest IDs to the file ID.
+
+First, the node sends a FIND-VALUE RPC to the alpha nodes it knows with an ID closer to the file ID, where alpha is a system concurrency parameter.
+
+As nodes reply, the initiator sends new FIND-VALUE RPCs to nodes it has learned about from previous RPCs, maintaining active RPCs. Nodes that fail to respond quickly are removed from consideration.
+
+If a round of FIND-VALUE RPCs fails to return a node any closer than the closest already seen, the initiator resends the FIND-VALUE to all of the k closest nodes it has not already queried.
+
+The process terminates when any no de returns the value or when the initiator has queried and gotten resp onses from the k closest no des it has seen.
+
+Publishing a shared le. Publishing is p erformed automatically whenever a le needs it. To maintain p ersistence of the data, les are published by the no de that shares them every 24 hours. No des that know ab out a le publish it every hour. To publish a le, a p eer lo cates the k clos-est no des to the key, as it is done in the looking for a value pro cess, although it uses the FIND-NODE RPC. Once it has lo cated the no des, the initiator sends the rst ten a STORE RPC. 
+-->
+
+
+<!-- 
+ORIGINAL PAPER MARK II
+
+- Kademlia is a peer-to-peer DHT with provable consistency and performance in a fault-prone environment.
+- Kademlia routes queries and locates nodes using a novel XOR-based metric topology which has the property that every message exchanged conveys or reinforces useful contact information.
+- The system exploits this information to send parallel, asynchronous query messages that tolerate node failures without imposing timeout delays on users.
+
+
+INTRODUCTION
+
+- Kademlia is a peer-to-peer distributed hash table (DHT) with a number of desirable features not simultaneously offered by any previous DHT.
+- It minimizes the number of configuration messages nodes must send to learn about each other as configuration information spreads automatically as a side-effect of key lookups.
+- Nodes have enough knowledge and flexibility to route queries through low-latency paths.
+- Kademlia uses parallel, asynchronous queries to avoid timeout delays from failed nodes.
+- The algorithm with which nodes record each other’s existence resists certain basic denial of service attacks.
+
+
+  IDENTIFIERS
+
+  - Keys are opaque, 160-bit quantities (e.g., the SHA-1 hash of some larger data).
+  - Participating computers each have a node ID in the 160-bit key space. 
+  - ⟨key,value⟩ pairs are stored on nodes with IDs “close” to the key for some notion of closeness.
+  - Finally, a node-ID-based routing algorithm lets anyone efficiently locate servers near any given target key.
+
+
+  XOR METRIC
+
+  - Many of Kademlia’s benefits result from its use of a novel XOR metric for distance between points in the key space.
+  - XOR is symmetric, allowing Kademlia participants to receive lookup queries from precisely the same distribution of nodes contained in their routing tables.
+  - Without this property, nodes learn useful routing information from queries they receive.
+  - To locate nodes near a particular ID, Kademlia uses a single routing algorithm from start to finish.
+
+
+
+SYSTEM DESCRIPTION
+
+- We assign 160-bit opaque IDs to nodes and provide a lookup algorithm that locates successively “closer” nodes to any desired ID, converging to the lookup target in logarithmically many steps.
+
+
+BINARY TREE DESCRIPTION
+
+- Kademlia effectively treats nodes as leaves in a binary tree, with each node’s position determined by the shortest unique prefix of its ID.
+- For any given node, we divide the binary tree into a series of successively lower subtrees that don’t contain the node.
+- The highest subtree consists of the half of the binary tree not containing the node.
+- The next subtree consists of the half of the remaining tree not containing the node, and so forth.
+- The Kademlia protocol ensures that every node knows of at least one node in each of its subtrees, if that subtree contains a node.
+- With this guarantee, any node can locate any other node by its ID by successively querying the best node it knows of to find contacts in lower and lower subtrees; finally the lookup converges to the target node.
+
+The remainter of this section fills in the details and makes the lookup algo-rithm more concrete. We first define a precise notion of ID closeness, allowing us to speak of storing and looking up⟨key,value⟩pairs on thekclosest nodes to the key. We then give a lookup protocol that works even in cases where nonode shares a unique prefix with a key or some of the subtrees associated with ag i v e nn o d ea r ee m p t y .
+
+
+XOR METRIC
+
+- Each Kademlia node has a 160-bit node ID. Node IDs are currently just random 160-bit identifiers.
+- Every message a node transmits includes its node ID, permitting the recipient to record the sender’s existence if necessary.
+- Keys, too, are 160-bit identifiers.
+- To assign ⟨key,value⟩ pairs to particular nodes, Kademlia relies on a notion of distance between two identifiers.
+- Given two 160-bit identifiers, x and y, Kademlia defines the distance between them as their bitwise exclusive or (XOR) interpreted as an integer.
+- XOR is a valid, albeit non-Euclidean metric.
+
+- XOR captures the notion of distance implicit in our binary-tree-based sketch of the system. In a fully-populated binary tree of 160-bit IDs, the magnitude of the distance between two IDs is the height of the smallest subtree containing them both. When a tree is not fully populated, the closest leaf to an ID x is the leaf whose ID shares the longest common prefix of x.I f there are empty branches in the tree, there might be more than one leaf with the longest common prefix. In that case, the closest leaf to x will be the closest leaf to ID  ̃ x produced by flipping the bits in x corresponding to the empty branches of the tree.
+
+- XOR is unidirectional which ensures that all lookups for the same key converge along the same path, regardless of the originating node. Thus, caching ⟨key,value⟩ pairs along the lookup path alleviates hot spots.
+- The XOR topology is also symmetric (d(x, y)=d(y, x)f o ra l lx and y).
+
+
+NODE STATE
+
+2.2 Node State Kademlia nodes store contact information about each other to route query mes-sages. For each 0 ≤ i<160, every node keeps a list of ⟨IP address,UDP port, Node ID⟩ triples for nodes of distance between 2 i and 2 i+1 from itself. We call these lists k-buckets. Each k-bucket is kept sorted by time last seen—least-recently seen node at the head, most-recently seen at the tail. For small values of i,t h ek-buckets will generally be empty (as no appropriate nodes will exist). For large values of i,t h el i s t sc a ng r o wu pt os i z ek,w h e r ek is a system-wide replication parameter. k is chosen such that any given k nodes are very unlikely to fail within an hour of each other (for example k =2 0When a Kademlia node receives any message (request or reply) from another node, it updates the appropriatek-bucket for the sender’s node ID. If the sending node already exists in the recipient’sk-bucket, the recipient moves it to the tail of the list. If the node is not already in the appropriatek-bucket and the bucket has fewer thankentries, then the recipient just inserts the new sender at the tail of the list. If the appropriatek-bucket is full, however, then the recipient pings thek-bucket’s least-recently seen node to decide what to do. If the least-recently seen node fails to respond, it is evicted from thek-bucket and the new sender inserted at the tail. Otherwise, if the least-recently seen node responds, it is moved to the tail of the list, and the new sender’s contact is discarded. k-buckets effectively implement a least-recently seen eviction policy, except that live nodes are never removed from the list. This preference for old contacts is driven by our analysis of Gnutella trace data collected by Saroiu et. al. [4]. Figure 3 shows the percentage of Gnutella nodes that stay online another hour as afunctionofcurrentuptime.Thelongeranodehasbeenup,themorelikelyitisto remain up another hour. By keeping the oldest live contacts around,k-buckets maximize the probability that the nodes they contain will remain online. Asecondbenefitofk-bucketsis that they provide resistance to certain DoS attacks. One cannot flush nodes’ routing state by flooding the system with new nodes. Kademlia nodes will only insert the new nodes in thek-buckets when old nodes leave the system. 
+
+
+
+-->
+

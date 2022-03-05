@@ -1,0 +1,233 @@
+---
+title: "Logical Time"
+date: 2021-11-24
+draft: false
+---
+
+<ul>
+  <li>
+    A <i>physical clock</i> counts the number of seconds that have elapsed whereas a <i>logical clock</i> counts the number of events that have occurred.
+  </li>
+  <li>
+    Logical clocks are designed to capture causal dependencies (i.e. \((e_1 \rightarrow e_2) \Rightarrow (T(e_1) < T(e_2))\)).
+  </li>
+</ul>
+
+
+
+<h3>Happens-Before</h3>
+
+<!-- TODO: https://www.youtube.com/watch?v=OKHIdpOAxto&list=PLeKd45zvjcDFUEv_ohr_HdUFe97RItdiB&index=11 -->
+
+
+
+<h3>Lamport Clocks</h3>
+
+<ul>
+  <li>
+    A Lamport timestamp is an integer that counts the number of events that have occurred.
+  </li>
+  <li>
+    Each node maintains a counter \(t\) which is initialized to zero and incremented on every local event \(e\).
+  </li>
+  <li>
+    When a message is sent, the current value of \(t\) is incremented and attached to the message.
+  </li>
+  <li>
+    When a message is received, the value of \(t\) is moved forward to the timestamp in the message \(t'\) plus one.
+  </li>
+  <li>
+    Each event \(e\) is associated with the value of \(t\) after the corresponding increment.
+  </li>
+</ul>
+
+<pre>on initialization do
+  t := 0
+end
+
+on any event occurring at the local node do
+  t := t + 1
+end
+
+on request to send message m do
+  t := t + 1
+  send (t, m) via the network link
+end
+
+on receive (t', m) via the network link do
+  t := max(t, t') + 1
+  deliver m to the application
+end</pre>
+
+
+<figure>
+  <img src="/img/distributed-systems/lamport-clock-example.png" height="100%" width="100%" style="max-width: 600px;">
+</figure>
+
+<ul>
+  <li>
+    We have the property that \((e_1 \rightarrow e_2) \Rightarrow (L(e_1) < L(e_2))\). The converse does not hold: \((L(e_1) < L(e_2)) \Rightarrow (e_2 \not \rightarrow e_1)\) but we do not know whether \(e_1 \rightarrow e_2\) or \(a \parallel b\).
+  </li>
+  <li>
+    Two events may also have the same timestamp (i.e. \(L(e_1) = L(e_2) \) for \(e_1 \ne e_2\)). However, given that \(N(e)\) be the node at which event \(e\) occurred, we have that the pair (\(L(e)\), \(N(e)\)) uniquely identifies \(e\).
+  </li>
+  <li>
+    We define a total order: \( (e_1 \prec e_2) \Leftrightarrow (L(e_1) < L(e_2)) \vee (L(e_1) = L(e_2) \wedge N(e_1) < N(e_2))\). This order is causal so \((e_1 \rightarrow e_2) \Rightarrow (e_1 \prec e_2)\).
+  </li>
+</ul>
+
+
+<h3>Vector Clocks</h3>
+
+<ul>
+  <li>
+    If we want to detect when events are concurrent, we need a different type of logical time: a vector clock.
+  </li>
+  <li>
+    Given \(n\) nodes with \(N = \langle N_1, N_2, \dots , N_n \rangle\), a vector timestamp of an event \(e\) is \(V(e) = \langle t_1, t_2, \dots , t_n \rangle\) where \(t_i\) is the number of events known to have occurred at node \(N_i\).
+  </li>
+  <li>
+    Each node has a current vector timestamp \(T\) initialized to \(\langle 0, \dots , 0 \rangle\) and \(T[i]\) is incremented on every local event at node \(N_i\).
+  </li>
+  <li>
+    When a message is sent, the current value of \(T[i]\) is incremented and \(T\) is attached to the message.
+  </li>
+  <li>
+    When a message is received, the value of \(T\) is merged with the attached \(T'\) by taking the element-wise maximum of the two vectors and \(T[i]\) is incremented.
+  </li>
+</ul>
+
+<pre>on initialization do
+  T := [0, 0, ..., 0]
+end
+
+on any event occurring at the local node do
+  T[i] := T[i] + 1
+end
+
+on request to send message m do
+  T[i] := T[i] + 1
+  send (T, m) via the network link
+end
+
+on receive (T', m) via the network link do
+  for j from 1 to n do
+    T[j] := max(T[j], T'[j])
+  end
+
+  T[i] := T[i] + 1
+  
+  deliver m to the application
+end</pre>
+
+<figure>
+  <img src="/img/distributed-systems/vector-clock-example.png" height="100%" width="100%" style="max-width: 600px;">
+</figure>
+
+<ul>
+  <li>
+     The vector timestamp of an event \(e\) thus represents a set of events: \(e\) and its causal dependencies \(\{ e \} \cup \{ e' : e' \rightarrow e \}\).
+  </li>
+  <li>
+    We define the following partial order:
+
+    <ul>
+      <li>
+        \(T = T' \Leftrightarrow T[i] = T'[i] \;\forall\; i \in \{1, \dots, n\}\)
+      </li>
+      <li>
+        \(T \le T' \Leftrightarrow T[i] \le T'[i] \;\forall\; i \in \{1, \dots, n\}\)
+      </li>
+      <li>
+        \(T < T' \Leftrightarrow T \le T' \wedge T \ne T'\)
+      </li>
+      <li>
+        \(T \parallel T' \Leftrightarrow T \not\le T' \wedge T' \not\le T\)
+      </li>
+    </ul>
+  </li>
+  <li>
+    Now, \(V(e_1) \le V(e_2) \Leftrightarrow  (\{ e_1 \} \cup \{ e : e \rightarrow e_1 \}) \subseteq (\{ e_e \} \cup \{ e : e \rightarrow e_e \})\).
+  </li>
+  <li>
+    The partial order over vector timestamps corresponds exactly to the partial order defined by the happens-before relation. Particularly:
+
+    <ul>
+      <li>
+        \((V(e_1) < V(e_2)) \Leftrightarrow (e_1 \rightarrow e_2)\)
+      </li>
+      <li>
+        \((V(e_1) = V(e_2)) \Leftrightarrow (e_1 = e_2)\)
+      </li>
+      <li>
+        \((V(e_1) \parallel V(e_2)) \Leftrightarrow (e_1 \parallel e_2)\)
+      </li>
+    </ul>
+  </li>
+  <li>
+    Thus, the vector clock algorithm provides us with a mechanism for computing the happens-before relation in practice.
+  </li>
+</ul>
+
+
+
+
+
+<script>function increment(T, i) {
+  if (!T[i]) {
+    T[i] = 1;
+  } else {
+    T[i]++;
+  }
+}
+
+function merge(T1, T2) {
+  const T = {};
+
+  for (let i of new Set(Object.keys(T1).concat(Object.keys(T2)))) {
+    T[i] = Math.max(T1[i] || 0, T2[i] || 0);
+  }
+
+  return T;
+}
+
+function compare(T1, T2) {
+  let isGreater = false;
+  let isLess = false;
+
+  for (let i of new Set(Object.keys(T1).concat(Object.keys(T2)))) {
+    const diff = (T1[i] || 0) - (T2[i] || 0);
+
+    if (diff > 0) isGreater = true;
+    if (diff < 0) isLess = true;
+  }
+  
+  if (isGreater && isLess) return 0;
+  if (isLess) return -1;
+  if (isGreater) return 1;
+
+  return 0;
+}</script>
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=x-D8iFU1d-o&list=PLeKd45zvjcDFUEv_ohr_HdUFe97RItdiB&index=12">Distributed Systems 4.1: Logical time</a>
+  </li>
+</ul>
+
+
+<!-- 
+http://lamport.azurewebsites.net/pubs/time-clocks.pdf
+
+https://en.wikipedia.org/wiki/Vector_clock
+
+https://upload.wikimedia.org/wikipedia/commons/5/55/Vector_Clock.svg
+
+https://queue.acm.org/detail.cfm?id=2917756
+
+https://github.com/DistributedClocks/GoVector/blob/master/govec/vclock/vclock.go
+-->

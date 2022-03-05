@@ -10,7 +10,6 @@ struct box {
   };
 };
 
-
 int main() {
 
   struct box b;

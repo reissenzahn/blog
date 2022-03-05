@@ -1,0 +1,239 @@
+abstract class Duck {
+
+  // each concrete duck object will assign a specific behavior to these variables at runtime
+  private FlyBehavior flyBehavior;
+  private QuackBehavior quackBehavior;
+
+  public Duck() {}
+
+  // a Duck subclass delegates its flying and quacking behaviors rather than using inherited or overridden behaviors
+  public void performFly() {
+    flyBehavior.fly();
+  }
+
+Throttle limits the frequency of a function call to some maximum number of invoca‐
+tions per unit of time.
+Applicability
+The Throttle pattern is named after a device used to manage the flow of a fluid, such
+as the amount of fuel going into a car engine. Like its namesake mechanism, Throttle
+restricts the number of times that a function can be called during over a period of
+time. For example:
+• A user may only be allowed 10 service requests per second.
+• A client may restrict itself to call a particular function once every 500 milli‐
+seconds.
+• An account may only be allowed three failed login attempts in a 24-hour period.
+86 | Chapter 4: Cloud Native Patterns
+Perhaps the most common reason to apply a Throttle is to account for sharp activity
+spikes that could saturate the system with a possibly unreasonable number of
+requests that may be expensive to satisfy, or lead to service degradation and eventu‐
+ally failure. While it may be possible for a system to scale up to add sufficient capacity
+to meet user demand, this takes time, and the system may not be able to react quickly
+enough.
+What’s the Difference Between Throttle and Debounce?
+Conceptually, Debounce and Throttle seem fairly similar. After all, they’re both about
+reducing the number of calls per unit of time. However, as illustrated in Figure 4-4,
+the precise timing of each differs quite a bit:
+• Throttle works like the throttle in a car, limiting the amount of fuel going into
+the engine by capping the flow of fuel to some maximum rate. This is illustrated
+in Figure 4-4: no matter how many times the input function is called, Throttle
+only allows a fixed number of calls to proceed per unit of time.
+• Debounce focuses on clusters of activity, making sure that a function is called
+only once during a cluster of requests, either at the start or the end of the cluster.
+A function-first debounce implementation is illustrated in Figure 4-4: for each of
+the two clusters of calls to the input function, Debounce only allows one call to
+proceed at the beginning of each cluster.
+Figure 4-4. Throttle limits the event rate; debounce allows only one event in a cluster
+Stability Patterns | 87
+Participants
+This pattern includes the following participants:
+Effector
+The function to regulate.
+Throttle
+A function that accepts Effector and returns a closure with the same function sig‐
+nature as Effector.
+Implementation
+The Throttle pattern is similar to many of the other patterns described in this chap‐
+ter: it’s implemented as a function that accepts an effector function, and returns a
+Throttle closure with the same signature that provides the rate-limiting logic.
+The most common algorithm for implementing rate-limiting behavior is the token
+bucket, which uses the analogy of a bucket that can hold some maximum number of
+tokens. When a function is called, a token is taken from the bucket, which then refills
+at some fixed rate.
+The way that a Throttle treats requests when there are insufficient tokens in the
+bucket to pay for it can vary depending according to the needs of the developer. Some
+common strategies are:
+Return an error
+This is the most basic strategy and is common when you’re only trying to restrict
+unreasonable or potentially abusive numbers of client requests. A RESTful ser‐
+vice adopting this strategy might respond with a status 429 (Too Many
+Requests).
+Replay the response of the last successful function call
+This strategy can be useful when a service or expensive function call is likely
+to provide an identical result if called too soon. It’s commonly used in the
+JavaScript world.
+Enqueue the request for execution when sufficient tokens are available
+This approach can be useful when you want to eventually handle all requests, but
+it’s also more complex and may require care to be taken to ensure that memory
+isn’t exhausted.
+Sample code
+The following example implements a very basic “token bucket” algorithm that uses
+the “error” strategy:
+88 | Chapter 4: Cloud Native Patterns
+type Effector func(context.Context) (string, error)
+func Throttle(e Effector, max uint, refill uint, d time.Duration) Effector {
+ var tokens = max
+ var once sync.Once
+ return func(ctx context.Context) (string, error) {
+ if ctx.Err() != nil {
+ return "", ctx.Err()
+ }
+ once.Do(func() {
+ ticker := time.NewTicker(d)
+ go func() {
+ defer ticker.Stop()
+ for {
+ select {
+ case <-ctx.Done():
+ return
+ case <-ticker.C:
+ t := tokens + refill
+ if t > max {
+ t = max
+ }
+ tokens = t
+ }
+ }
+ }()
+ })
+ if tokens <= 0 {
+ return "", fmt.Errorf("too many calls")
+ }
+ tokens--
+ return e(ctx)
+ }
+}
+This Throttle implementation is similar to our other examples in that it wraps an
+effector function e with a closure that contains the rate-limiting logic. The bucket is
+initially allocated max tokens; each time the closure is triggered it checks whether it
+has any remaining tokens. If tokens are available, it decrements the token count by
+one and triggers the effector function. If not, an error is returned. Tokens are added
+at a rate of refill tokens every duration d.  public void performQuack() {
+    quackBehavior.quack();
+  }
+
+  // all ducks swim in the same way
+  public void swim() {
+    System.out.println("*splash* *splash* *splash*");
+  }
+  
+  // all duck look completely different
+  public abstract void display();
+
+  public void setFlyBehavior(FlyBehavior flyBehavior) {
+    this.flyBehavior = flyBehavior;
+  }
+
+  public void setQuackBehavior(QuackBehavior quackBehavior) {
+    this.quackBehavior = quackBehavior;
+  }
+}
+
+
+// subclasses that inherit common fields and methods from Duck
+class MallardDuck extends Duck {
+  
+  public MallardDuck() {
+    setQuackBehavior(new Quack());
+    setFlyBehavior(new FlyWithWings());
+  }
+
+  public void display() {
+    System.out.println("Looks like a Mallard duck.");
+  }
+}
+
+class RubberDuck extends Duck {
+  
+  public RubberDuck() {
+    setQuackBehavior(new Squeak());
+    setFlyBehavior(new FlyNope());
+  }
+
+  public void display() {
+    System.out.println("Looks like a rubber duck.");
+  }
+}
+
+
+// interface that defines the quacking behavior and its various implementations
+interface QuackBehavior {
+  public void quack();
+}
+
+// other types of objects can reuse our fly and quack behaviors because these behaviors are no longer hidden away in the Duck subclasses
+class Quack implements QuackBehavior {
+
+  public void quack() {
+    System.out.println("Quack!");
+  }
+}
+
+class Squeak implements QuackBehavior {
+
+  public void quack() {
+    System.out.println("Squeak!");
+  }
+}
+
+class MuteQuack implements QuackBehavior  {
+
+  public void quack() {
+    System.out.println("...");
+  }
+}
+
+
+// interface that defines the flying behavior and its various implementations
+interface FlyBehavior {
+
+  public void fly();
+}
+
+class FlyWithWings implements FlyBehavior {
+
+  public void fly() {
+    System.out.println("*flap wings*");
+  }
+}
+
+class FlyNope implements FlyBehavior {
+
+  public void fly() {
+    System.out.println("*stays put*");
+  }
+}
+
+// we can add new behaviors without modifying any of our existing behavior classes or touching any of the Duck subclasses that use flying behaviors
+class FlyWithRocket implements FlyBehavior {
+
+  public void fly() {
+    System.out.println("*woosh!*");
+  }
+}
+
+public class Example {
+  public static void main(String[] args) {
+
+    Duck mallardDuck = new MallardDuck();
+
+    mallardDuck.performQuack();
+    mallardDuck.performFly();
+
+
+    Duck rubberDuck = new RubberDuck();
+
+    rubberDuck.performFly();
+    rubberDuck.setFlyBehavior(new FlyWithRocket());
+    rubberDuck.performFly();
+  }
+}

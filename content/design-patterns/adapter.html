@@ -1,0 +1,107 @@
+---
+title: "Adapter"
+date: 2021-12-20
+draft: false
+---
+
+<p>
+  The Adapter Pattern converts the interface of a class into another interface the clients expect. Adapter lets classes work together that could not otherwise because of incompatible interfaces.
+</p>
+
+
+<h3>Description</h3>
+
+<ul>
+  <li>
+    The Adapter pattern allows us to use a client with an incompatible interface by creating an adapter that does the conversion.
+  </li>
+  <li>
+    This acts to decouple the client from the implemented interface and, if we expect the interface to change over time, then the adapter encapsulates that change so that the client does not have to be modified each time it needs to operate against a different interface.
+  </li>
+  <li>
+    The Adapter uses object composition to wrap the adaptee with an altered interface. It implements the target interface by delegating to the adaptee instance. This approach has the added advantage that we can use an adapter with any subclass of the adaptee.
+  </li>
+  <li>
+    The adapter acts as the middleman by receiving requests from the client and converting them into requests that make sense on the vendor classes.
+  </li>
+  <li>
+    As such, we bind the client to an interface, not an implementation; we could use several adapters, each converting a different backend set of classes. Or, we could add new implementations after the fact, as long as they adhere to the Target interface.
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/design-patterns/adapter.svg" height="100%" width="100%" style="max-width: 700px;">
+</figure>
+
+
+<!-- The client makes a request to the adapter by
+calling a method on it using the target interface.
+The adapter translates the request into one or
+more calls on the adaptee using the adaptee
+interface.
+The client receives the results of the call and never
+knows there is an adapter doing the translation. -->
+
+
+<h3>Example</h3>
+
+<ul>
+  <li>
+    We consider the case of separate <code>Duck</code> and <code>Turkey</code> interfaces with various implementations. Ducks can fly and quack while turkeys can gobble and fly (though only for short distances).
+  </li>
+  <li>
+    Suppose we are short on <code>Duck</code> objects and so would like to use some <code>Turkey</code> objects in their place. To allow this, we implement the <code>TurkeyAdapter</code> class.
+  </li>
+  <li>
+    The <code>TurkeyAdapter</code> class implements <code>Duck</code> and provides the required methods by delegating to a <code>Turkey</code> object.
+  </li>
+  <li>
+    Notice that the fact turkeys can only fly for short distances means we have to call <code>fly()</code> multiple times.
+  </li>
+</ul>
+
+{{% code-file file="/static/code/design-patterns/adapter/Adapter.java" lang="java" %}}
+
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://java-design-patterns.com/patterns/adapter/">Java Design Patterns: Adapter</a>
+  </li>
+</ul>
+
+
+Convert the interface of a class into another interface the clients expect. Adapter lets classes work together that couldn't otherwise because of incompatible interfaces.
+
+Another example would be the famous power adapter; a three-legged plug can't be connected to a two-pronged outlet, it needs to use a power adapter that makes it compatible with the two-pronged outlets.
+
+Adapter pattern lets you wrap an otherwise incompatible object in an adapter to make it compatible with another class.
+
+
+The adapter pattern is a software design pattern that allows the interface of an existing class to be used as another interface. It is often used to make existing classes work with others without modifying their source code.
+
+
+Applicability
+Use the Adapter pattern when
+
+You want to use an existing class, and its interface does not match the one you need
+You want to create a reusable class that cooperates with unrelated or unforeseen classes, that is, classes that don't necessarily have compatible interfaces
+You need to use several existing subclasses, but it's impractical to adapt their interface by subclassing everyone. An object adapter can adapt the interface of its parent class.
+Most of the applications using third-party libraries use adapters as a middle layer between the application and the 3rd party library to decouple the application from the library. If another library has to be used only an adapter for the new library is required without having to change the application code.
+
+
+Consequences
+Class and object adapters have different trade-offs. A class adapter
+
+Adapts Adaptee to Target by committing to a concrete Adaptee class. As a consequence, a class adapter won’t work when we want to adapt a class and all its subclasses.
+Let’s Adapter override some of Adaptee’s behavior since Adapter is a subclass of Adaptee.
+Introduces only one object, and no additional pointer indirection is needed to get to the adaptee.
+An object adapter
+
+Lets a single Adapter work with many Adaptees—that is, the Adaptee itself and all of its subclasses (if any). The Adapter can also add functionality to all Adaptees at once.
+Makes it harder to override Adaptee behavior. It will require subclassing Adaptee and making the Adapter refer to the subclass rather than the Adaptee itself.
+
+
+
