@@ -1,0 +1,289 @@
+---
+title: "Vim"
+date: 2020-09-29
+draft: false
+---
+
+{{% code vim %}}{{% /code %}}
+
+
+<h3>Concepts</h3>
+
+<h4>Modes</h4>
+
+Finally landed a job offer from Amazon. Now that I know where I stand from an income point of view, it would be great to get your input regarding 
+
+
+The first thing we need to grasp is the concept of modes. It's a bit counterintuitive at first but it becomes second nature once you grok it. Most guides start with this bit, but I find it a bit obtuse to lead with, and I think the transition point from Normal to Insert is a great place to introduce it.
+
+You start in Normal Mode. One of the most annoying things about Vim for beginners is that you can't just open it up and start typing. Well, you can, but things go sideways pretty quick if you do.
+Normal Mode is also known as Command Mode, as it's where you're usually entering commands. Commands can be movements, deletions, or commands that do these things and then enter into Insert Mode.
+Insert Mode is where you make changes to your file, and there are tons of ways of entering Insert Mode from Normal Mode. Again, don't worry, this all becomes ridiculously simple with a bit of practice.
+Visual Mode is a way to select text. It's a lot like Normal Mode, except your movements change your highlighting. You can select text both character-wise or line-wise, and once in one of those modes your movements select more text.
+The purpose of Visual Mode is to then perform some operation on all the content you have highlighted, which makes it very powerful.
+Ex Mode is a mode where you drop down to the bottom, where you get a ":" prompt, and you can enter commands. More on that later. Just know that you can run some powerful command-line stuff from there.
+There are some other modes as well, but we won't mess with them here as they tend to live outside primer territory.
+
+<h3>Configuration</h3>
+
+{{% code vim %}}$ vim ~/.vimrc
+
+" remap ESC to jk
+inoremap jk <ESC>
+
+" remap leader key to '
+let mapleader = "'"
+
+" enable syntax highlighting
+syntax on
+
+" show line numbers
+set number
+
+" disable the swapfile
+set noswapfile
+
+" highlight all search results
+set hlsearch
+
+" ignore case in search
+set ignorecase
+
+" show search results as you type
+set incsearch
+
+" enable spellchecking
+set spell spelllang=en_us{{% /code %}}
+
+
+
+<h3>Files</h3>
+
+{{% code vim %}}" save changes
+:w
+
+" save changes and quit
+:wq
+ZZ
+
+" quit without saving changes
+:q!
+
+" save file to a location
+:saveas ~/path/filename.txt{{% /code %}}
+
+
+<h3>Movement</h3>
+
+<h4>Basic Movements</h4>
+
+{{% code vim %}}" move up one line
+k
+
+" move down one line
+j
+
+" move right one character
+l
+
+" move left one character
+h{{% /code %}}
+
+
+<h4>Moving on the Current Line</h4>
+
+{{% code vim %}}" move to the beginning of the line
+0
+
+" move to the end of the line
+$
+
+" jump to character on line
+f(character)
+
+" jump to just before character on line
+t(character)
+
+" jump backwards to character on line
+F(character)
+
+" jump backwards to just before character on line
+T(character)
+
+" repeat previous jump
+;
+
+" repeat previous jump in opposite direction
+,{{% /code %}}
+
+<!-- 
+  https://stackoverflow.com/questions/12495442/what-do-the-f-and-t-commands-do-in-vim
+-->
+
+
+<h4>Moving by Word, Sentence or Paragraph</h4>
+
+{{% code vim %}}" move to the end of the current word
+e
+
+" move forward one word
+w
+
+" move back one word
+b
+
+" move forward one word (ignore some delimiters that may break words)
+W
+
+" move back one word (ignore some delimiters that may break words)
+B
+
+" move forward one sentence
+)
+
+" move forward one paragraph
+}{{% /code %}}
+
+
+<h4>Moving within the Screen</h4>
+
+{{% code vim %}}" move to the top of the screen
+H
+
+" move to the middle of the screen
+M
+
+" move to the bottom of the screen
+L{{% /code %}}
+
+
+<h4>Moving within the File</h4>
+
+{{% code vim %}}" move to a given line number
+:line_number
+
+" move to the top of the file
+gg
+
+" move to the bottom of the file
+G
+
+" move up half a screen
+^U
+
+" move down half a screen
+^D
+
+" move down a page
+^F
+
+" move up a page
+^B{{% /code %}}
+
+
+<h3>Changing Text</h3>
+
+{{% code vim %}}" insert before the cursor 
+i
+
+" insert at beginning of line
+I
+
+" append after the cursor
+a
+
+" append at the end of the line
+A
+
+" open a new line below the current line
+o
+
+" open a new line above the current line
+O
+
+" replace the character under the cursor
+r
+
+" replace the character under the cursor but keep typing afterwards
+R
+
+
+{{% /code %}}
+
+
+
+<h3>Deleting Text</h3>
+
+{{% code vim %}}" delete character under the cursor
+x
+
+" delete the character before the cursor
+X
+
+" delete the current line
+dd
+
+" delete to end end of the line
+D
+{{% /code %}}
+
+
+
+<h3>Undo and Redo</h3>
+
+{{% code vim %}}" undo your last action
+u
+
+# redo the last action
+CTRL-r
+{{% /code %}}
+
+
+<h3>Copy and Paste</h3>
+
+
+{{% code vim %}}" copy selection
+y
+
+" copy current line
+yy
+
+" paste after the current cursor position
+p
+
+" paste before the current cursor position
+P{{% /code %}}
+
+
+<h3>Searching</h3>
+
+{{% code vim %}}" search for string
+/(query)<CR>
+
+" search backwards for string
+?query<CR>
+
+" go to next search result
+n
+
+" go to previous search result
+N
+
+" search for word under the cursor
+*
+
+" clear search highlights
+:noh
+{{% /code %}}
+
+<!-- 
+https://stackoverflow.com/questions/657447/vim-clear-last-search-highlighting
+-->
+
+
+<h3>Substitution</h3>
+
+{{% code vim %}}" 
+
+{{% /code %}}
+

@@ -2,7 +2,7 @@
 
 # Pre-install
 
-1. DISABLE FAST STARTUP AND HIBERNATION
+0. DISABLE FAST STARTUP AND HIBERNATION
 
 https://www.tenforums.com/tutorials/4189-turn-off-fast-startup-windows-10-a.html
 

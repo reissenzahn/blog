@@ -1,0 +1,76 @@
+---
+title: "Fan-In"
+date: 2021-12-27
+draft: false
+---
+
+<p>
+  Fan-in multiplexes multiple input channels onto one output channel.
+</p>
+
+
+Services that have some number of workers that all generate output may find it useful to combine all of the workers' outputs to be processed as a single unified stream.
+For these scenarios we use the fan-in pattern, which can read from multiple input channels by multiplexing them onto a single destination channel.
+
+Funnel is implemented as a function that receives zero to N input channels (Sources).
+For each input channel in Sources, the Funnel function starts a separate goroutine to
+read values from its assigned channel and forward them to a single output channel
+shared by all of the goroutines (Destination).
+Sample code
+The Funnel function is a variadic function that receives sources: zero to N channels
+of some type (int in the following example):
+func Funnel(sources ...<-chan int) <-chan int {
+ dest := make(chan int) // The shared output channel
+ var wg sync.WaitGroup // Used to automatically close dest
+ // when all sources are closed
+ wg.Add(len(sources)) // Set size of the WaitGroup
+ for _, ch := range sources { // Start a goroutine for each source
+ go func(c <-chan int) {
+ defer wg.Done() // Notify WaitGroup when c closes
+Concurrency Patterns | 93
+ for n := range c {
+ dest <- n
+ }
+ }(ch)
+ }
+ go func() { // Start a goroutine to close dest
+ wg.Wait() // after all sources close
+ close(dest)
+ }()
+ return dest
+}
+For each channel in the list of sources, Funnel starts a dedicated goroutine that reads
+values from its assigned channel and forwards them to dest, a single-output channel
+shared by all of the goroutines.
+Note the use of a sync.WaitGroup to ensure that the destination channel is closed
+appropriately. Initially, a WaitGroup is created and set to the total number of source
+channels. If a channel is closed, its associated goroutine exits, calling wg.Done. When
+all of the channels are closed, the WaitGroup’s counter reaches zero, the lock
+imposed by wg.Wait is released, and the dest channel is closed.
+Using Funnel is reasonably straightforward: given N source channels (or a slice of N
+channels), pass the channels to Funnel. The returned destination channel may be
+read in the usual way, and will close when all source channels close:
+func main() {
+ sources := make([]<-chan int, 0) // Create an empty channel slice
+ for i := 0; i < 3; i++ {
+ ch := make(chan int)
+ sources = append(sources, ch) // Create a channel; add to sources
+ go func() { // Run a toy goroutine for each
+ defer close(ch) // Close ch when the routine ends
+ for i := 1; i <= 5; i++ {
+ ch <- i
+ time.Sleep(time.Second)
+ }
+ }()
+ }
+ dest := Funnel(sources...)
+ for d := range dest {
+ fmt.Println(d)
+ }
+}
+94 | Chapter 4: Cloud Native Patterns
+This example creates a slice of three int channels, into which the values from 1 to 5
+are sent before being closed. In a separate goroutine, the outputs of the single dest
+channel are printed. Running this will result in the appropriate 15 lines being printed
+before dest closes and the function ends.
+

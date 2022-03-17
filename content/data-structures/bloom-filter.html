@@ -1,0 +1,191 @@
+---
+title: "Bloom Filters"
+date: 2020-09-29
+draft: false
+---
+
+<!-- #region introduction -->
+<ul>
+  <li>
+    A Bloom filter is a space-efficient probabilistic data structure that is used to test whether an element is a member of a set.
+  </li>
+  <li>
+    If a query returns false then the queried item is guaranteed not to be present in the set (no false negatives).
+  </li>
+  <li>
+    If a query returns true then it is fairly unlikely that the queried item is not in the set (low false positive rate).
+  </li>
+  <li>
+    In other words, a query can either return "definitely not in set" or "possibly in set".
+  </li>
+</ul>
+<!-- #endregion -->
+
+
+<h3>Structure</h3>
+
+<ul>
+  <li>
+    A Bloom filter consists of an array of \(m\) bits (initially zeroed) and \(k\) hash functions that map elements to one of the \(m\) array positions.
+  </li>
+  <li>
+    The hash functions should be independent, uniformly distributed and fast (e.g. FNV, Murmur, HashMix, xxHash).
+  </li>
+  <li>
+    
+  </li>
+</ul>
+
+<!-- You can easily simulate n hash functions by having just two hash functions around. This can be as simple as this function to create the ith hash of a key, given the results a and b of hashing a key with these two functions:
+
+hash(i) = (a + b * i ) % m
+
+where m is the maximum value of the hash (for example, the number of buckets in a bloom filter).
+
+But here’s a good trick not really worth a paper–but it’s still a good trick. Typically, it’s totally reasonable to limit the size to under the maximum size of an unsigned 32-bit number. These days, at least, it’s probably cheaper to calculate a base hash function on unsigned 64-bit numbers. So, you can take the upper half and the lower half of the 64-bit hashed value and return them as two 32 bit numbers. -->
+
+<!-- 
+  Typically, k is a small constant which depends on the desired false error rate ε, while m is proportional to k and the number of elements to be added.
+-->
+
+
+<h3>Operations</h3>
+
+<h4>Add</h4>
+
+<ul>
+  <li>
+    To add an element \(x\) to a Bloom filter, we hash it using each of the each of the \(k\) hash functions and set the resulting array positions to \(1\) in the bit array.
+  </li>
+  <li>
+
+  </li>
+</ul>
+
+<!-- 
+Unlike a standard hash table using open addressing for collision resolution, a Bloom filter of a fixed size can represent a set with an arbitrarily large number of elements; adding an element never fails due to the data structure "filling up". However, the false positive rate increases steadily as elements are added until all bits in the filter are set to 1, at which point all queries yield a positive result. With open addressing hashing, false positives are never produced, but performance steadily deteriorates until it approaches linear search.
+-->
+
+
+<h4>Test</h4>
+
+<ul>
+  <li>
+    To test whether an element \(y\) is in the set, we hash it using each of the \(k\) hash functions to get \(k\) array positions.
+  </li>
+  <li>
+    If any of the bits at these positions is \(0\) then the \(y\) is definitely not in the set (if it was then all these bits would have been set to when it was inserted).
+  </li>
+  <li>
+    If all the bits at these positions is \(1\) then either the element is in the set or the bits have by chance been set to \(1\) during the insertion of other elements.
+  </li>
+</ul>
+
+
+<!--
+Union and intersection of Bloom filters with the same size and set of hash functions can be implemented with bitwise OR and AND operations, respectively. The union operation on Bloom filters is lossless in the sense that the resulting Bloom filter is the same as the Bloom filter created from scratch using the union of the two sets. The intersect operation satisfies a weaker property: the false positive probability in the resulting Bloom filter is at most the false-positive probability in one of the constituent Bloom filters, but may be larger than the false positive probability in the Bloom filter created from scratch using the intersection of the two sets.
+ -->
+
+
+<h3>Analysis</h3>
+
+<ul>
+  <li>
+    Given a Bloom filter containing \(n\) elements with a bit array of length \(m\) a set of \(k\) has functions, the rate of false positives is given by \(\varepsilon \approx \left(1- e^{-kn/m}\right)^k\).
+  </li>
+  <li>
+    Given a Bloom filter with \(m\) bits in the bitfield and \(n\) elements we want to store, the optimum number of hash functions is \(k = m/n \ln 2\).
+  </li>
+</ul>
+
+<!-- 
+A Bloom filter with a 1% error and an optimal value of k, in contrast, requires only about 9.6 bits per element, regardless of the size of the elements. This advantage comes partly from its compactness, inherited from arrays, and partly from its probabilistic nature.
+
+Bloom filters also have the unusual property that the time needed either to add items or to check whether an item is in the set is a fixed constant, O(k), completely independent of the number of items already in the set.
+ -->
+
+
+<h3>Applications</h3>
+
+<ul>
+  <li>
+    Akamai servers use a Bloom filter to detect the second request for a web object to prevent "one-hit-wonders" from being stored in its disk caches.
+  </li>
+  <li>
+    BigTable, HBase, Cassandra and PostgreSQL use Bloom filters to reduce the disk lookups for non-existent rows or columns.
+  </li>
+  <li>
+    Google Chrome used to use a local Bloom filter to detect malicious URLs.
+  </li>
+  <li>
+    Medium uses Bloom filters to avoid recommending articles a user has previously read.
+  </li>
+</ul>
+
+
+<!--
+
+Elements can be added to the set, but not removed; the more items added, the larger the probability of false positives.
+
+
+The requirement of designing k different independent hash functions can be prohibitive for large k. For a good hash function with a wide output, there should be little if any correlation between different bit-fields of such a hash, so this type of hash can be used to generate multiple "different" hash functions by slicing its output into multiple bit fields. Alternatively, one can pass k different initial values (such as 0, 1, ..., k − 1) to a hash function that takes an initial value; or add (or append) these values to the key. For larger m and/or k, independence among the hash functions can be relaxed with negligible increase in false positive rate.
+
+
+Removing an element from this simple Bloom filter is impossible because there is no way to tell which of the k bits it maps to should be cleared. Although setting any one of those k bits to zero suffices to remove the element, it would also remove any other elements that happen to map onto that bit. Since the simple algorithm provides no way to determine whether any other elements have been added that affect the bits for the element to be removed, clearing any of the bits would introduce the possibility of false negatives.
+
+It is often the case that all the keys are available but are expensive to enumerate (for example, requiring many disk reads). When the false positive rate gets too high, the filter can be regenerated; this should be a relatively rare event.
+-->
+
+
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://www.jasondavies.com/bloomfilter/">Bloom Filter Interactive Demonstration</a>
+  </li>
+  <li>
+    <a href="https://hur.st/bloomfilter/">Bloom Filter Calculator</a>
+  </li>
+  <li>
+    <a href="https://willwhim.wpengine.com/2011/09/03/producing-n-hash-functions-by-hashing-only-once/">Producing n Hash Functions by Hashing Only Once</a>
+  </li>
+  <li>
+    <a href="https://llimllib.github.io/bloomfilter-tutorial/">Bloom Filters by Example</a>
+  </li>
+</ul>
+
+<!-- 
+https://github.com/MagnusS/Java-BloomFilter
+https://github.com/bits-and-blooms/bloom
+https://github.com/jasondavies/bloomfilter.js
+-->
+
+<!--
+In the following text, we will refer to a Bloom filter with k hashes, m bits in the filter, and n elements that have been inserted.
+
+How big should I make my Bloom filter?
+It's a nice property of Bloom filters that you can modify the false positive rate of your filter. A larger filter will have less false positives, and a smaller one more.
+
+Your false positive rate will be approximately (1-e-kn/m)k, so you can just plug the number n of elements you expect to insert, and try various values of k and m to configure your filter for your application.2
+
+This leads to an obvious question:
+
+How many hash functions should I use?
+The more hash functions you have, the slower your bloom filter, and the quicker it fills up. If you have too few, however, you may suffer too many false positives.
+
+Since you have to pick k when you create the filter, you'll have to ballpark what range you expect n to be in. Once you have that, you still have to choose a potential m (the number of bits) and k (the number of hash functions).
+
+It seems a difficult optimization problem, but fortunately, given an m and an n, we have a function to choose the optimal value of k: (m/n)ln(2) 2, 3
+
+So, to choose the size of a bloom filter, we:
+
+Choose a ballpark value for n
+Choose a value for m
+Calculate the optimal value of k
+Calculate the error rate for our chosen values of n, m, and k. If it's unacceptable, return to step 2 and change m; otherwise we're done.
+
+How fast and space efficient is a Bloom filter?
+Given a Bloom filter with m bits and k hashing functions, both insertion and membership testing are O(k). That is, each time you want to add an element to the set or check set membership, you just need to run the element through the k hash functions and add it to the set or check those bits.
+
+The space advantages are more difficult to sum up; again it depends on the error rate you're willing to tolerate. It also depends on the potential range of the elements to be inserted; if it is very limited, a deterministic bit vector can do better. If you can't even ballpark estimate the number of elements to be inserted, you may be better off with a hash table or a scalable Bloom filter4.
+-->

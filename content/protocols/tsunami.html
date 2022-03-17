@@ -1,0 +1,267 @@
+---
+title: "Tsunami UDP"
+date: 2021-12-29
+draft: false
+---
+
+- Tsunami UDP is a UDP-based protocol for high-speed file transfer over network paths that have a high bandwidth-delay product
+- Such protocols are needed because standard TCP does not perform well over paths with high bandwidth-delay products.
+- Tsunami effects a file transfer by chunking the file into 32 kB numbered blocks.
+- Communication between the client and server applications flows over a low bandwidth TCP connection while the bulk data is transferred over UDP.
+
+
+---
+
+
+  http://listserv.indiana.edu/archives/tsunami-l.html
+
+
+A basic Tsunami conversation works like this:
+
+(1) The client connects to the Tsunamid TCP port (46224 by default).
+    The server forks off a child process to deal with the connection.
+
+(2) The client and server exchange protocol revision numbers to make
+    sure that they're talking the same language.  (The revision number
+    is defined in "tsunami.h".)
+
+(3) The client authenticates to the server.  This process is described
+    later in this file.
+
+(4) The server is now waiting for the name of a file to transfer to
+    the client.
+
+(5) Once the file name is received, the server makes sure that it
+    can open and read the file.  If it can, a positive result byte
+    is sent to the client.  If it can't, the server reports failure.
+
+(6) The client and server exchange protocol parameter information.
+
+(7) The client sends the server the number of the UDP port on which
+    the client will listen for the file data.
+
+(8) The server and client both enter their file transmission loops.
+
+========================================================================
+
+The server file transmission loop
+---------------------------------
+
+while the whole file hasn't been sent yet:
+    see if the client has sent a request over the TCP pipe (*)
+    if it has:
+        service that request
+    otherwise:
+	send the next block in the file
+    delay for the next packet
+
+(*) There are three kinds of request:
+      (1) error rate notification
+      (2) retransfer block [nn]
+      (3) restart transfer at block [nn]
+
+========================================================================
+
+The client file transmission loop
+---------------------------------
+
+while the whole file hasn't been received yet:
+    try to receive another block
+    if it's the last block:
+        break out of the loop and notify the server
+    otherwise:
+        on every 50th iteration, see if it's been [update_period] since
+          our last statistics update
+        if it has:
+            display updated statistics
+            notify the server of our current error rate
+            transmit our queue of retransmission requests
+        save the block
+        if the block is later than the one we were expecting:
+	    put intervening blocks in the retransmission queue
+        if the block is earlier than the one we were expecting:
+            remove the block from the retransmission queue
+
+========================================================================
+
+The retransmission queue
+------------------------
+
+This is a (potentially) sparse array of block numbers that we may need
+to have retransmitted.  Each entry is either 0 or a block number.  The
+size of the array is doubled if it runs out of space.  We keep track
+of the lowest index used and the highest index used and rehome the
+data to the base of the array occasionally.
+
+If the queue is extremely large (over [threshold] entries), instead of
+asking for each entry in the queue, we ask to restart the transfer at
+the first block in the queue.
+
+========================================================================
+
+How Tsunami does authentication
+-------------------------------
+
+The Tsunami server and Tsunami client both know a shared secret.
+(Right now it's coded into the Tsunami server as "kitten", but this
+can be overridden with the '--secret' option.)  The client learns the
+shared secret by giving the user a 'password' prompt and reading it in
+with echo turned off.
+
+The following sequence allows the client to prove its knowledge of the
+shared secret to the server:
+
+(1) The server reads 512 bits of random data from /dev/random and
+    sends this data to the client.
+
+(2) The client XORs copies of the shared secret over the random data.
+
+(3) The client sends an MD5 hash of the resulting buffer back to the
+    server.
+
+(4) The server performs the same XOR/MD5 operation on the random data
+    and checks to make sure that they match.  If they do, a positive
+    result byte is sent to the client.  If they don't, the connection
+    is closed.
+
+========================================================================
+
+(1) Everything is endian-independent except for the MD5 code.
+
+
+
+---
+
+Tsunami is a UDP-based transfer protocols that were developed for high speed transfer over network paths that have a high bandwidth-delay product.
+
+Custom UDP protocols are needed because average TCP/IP is not very well suited for paths with a large 
+bandwidth-delay product.
+
+The Tsunami UDP protocol has several advantages over TCP and most other UDP-based similar protocols: it is
+high-speed (a maintained 900Mbps through 1Gbit NICs and switches isn't unusual), it offers data transmission
+with default priority for data integrity, but may also be switched to rate priority by disabling
+retransmissions.
+
+The global settings for a file transfer are specified by the client - this is useful since the Tsunami user
+often has a priori knowledge about the quality of their network connection and the speed of their harddisks,
+and can pass the suitable settings through the client application to the server.
+
+The commands
+available in the Tsunami client are similar to FTP commands.
+
+
+How It Works
+
+Tsunami performs a file transfer by sectioning the file into numbered blocks of usually 32kB size.
+Communication between the client and server applications flows over a low bandwidth TCP connection.
+The bulk data is transferred over UDP.
+
+Most of the protocol intelligence is worked into the client code - the server simply sends out all blocks,
+and resends blocks that the client requests. The client specifies nearly all parameters of the transfer, 
+such as the requested file name, target data rate, blocksize, target port, congestion behaviour, etc, and 
+controls which blocks are requested from the server and when these requests are sent.
+
+Clients connect to the server and authenticate with a MD5 hash in challenge-response using a shared secret.
+The default is "kitten". In the current client, per default the user is not asked for a password.
+
+The client starts file transfers with a get-file request. At the first stage of a transfer the client passes 
+all its transfer parameters to the server inside the request. The server reports back the length of the
+requested file in bytes, so that the client can calculate how many blocks it needs to receive. 
+
+Immediately after a get-file request the server begins to send out file blocks on its own, starting from the 
+first block. It flags these blocks as "original blocks". The client can request blocks to be sent again. These
+blocks are flagged as "retransmitted blocks" by the server.
+
+When sending out blocks, to throttle the transmission rate to the rate specified by the client, the server pauses 
+for the correct amount of time after each block before sending the next.
+
+The client regularly sends error rate information to the server. The server uses this information to adjust
+the transmission rate; the server can gradually slow down the transmission when the client reports it is
+too slow in receiving and processing the UDP packets. This, too, is controlled by the cient. In the settings
+passed from client to server at the start of a transfer, the client configures the server's speed of slowdown
+and recovery/"speed-up", and specifies an acceptable packet loss percentage (for example 7%).
+
+The client keeps track of which of the numbered blocks it has already received and which blocks are still
+pending. This is done by noting down the received blocks into a simple bitfield. When a block has been
+received, in the bitfield the bit corresponding to the received block is set to '1'.
+
+If the block number of a block that the client receives is larger than what would be the correct and expected
+consecutive block, the missing intervening blocks are queued up for a pending retransmission. The
+retransmission "queue" is a simple sorted list of the missing block numbers. The list size is allowed to
+grow dynamically, to a limit. At regular intervals, the retransmission list is processed - blocks that
+have been received in the meantime are removed from the list, after which the list of really missing blocks
+is sent as a normal block transmission request to the server.
+
+When adding a new pending retransmission to the client's list makes the list exceed a hard-coded limit, the
+entire transfer is reinitiated to start at the first block in the list i.e. the earliest block in the entire
+file that has not been successfully transferred yet. This is done by sending a special restart-transmission
+request to the server.
+
+When all blocks of the file have been successfully received, the client sends a terminate-transmission request
+to the server.
+
+During a file transfer, both server and client applications regularly output a summary of transfer statistics
+to the console window, reporting the target and actual rate, transmission error percentage, etc. These
+statistics may be used in e.g. Matlab to graph the characteristics of the transfer and network path.
+
+All client file I/O is performed in a separate disk thread, with a memory ring buffer used to communicate
+new data from the main process to the I/O thread for writing to disk.
+
+
+**Server**
+ start
+ while(running) {
+   wait(new incoming client TCP connection)
+   fork server process:
+   [
+     check_authenticate(MD5, "kitten");
+     exchange settings and values with client;
+     while(live) {
+       wait(request, nonblocking)
+       switch(request) {
+          case no request received yet: { send next block in sequence; }
+          case request_stop:            { close file, clean up; exit; }
+          case request_retransmit:      { send requested blocks; }
+       }
+       sleep(throttling)
+     }
+   ]
+ }
+
+**Client**
+ start, show command line
+ while(running) {
+    read user command;
+    switch(command) {
+       case command_exit:    { clean up; exit; }
+       case command_set:     { edit the specified parameter; }
+       case command_connect: { TCP connect to server; auth; protocol version compare;
+                               send some parameters; }
+       case command_get && connected:  { 
+           send get-file request containing all transfer parameters;
+           read server response - filesize, block count;
+           initialize bit array of received blocks, allocate retransmit list;
+           start separate disk I/O thread;
+           while (not received all blocks yet) {
+              receive_UDP();
+              if timeout { send retransmit request(); }
+
+              if block not marked as received yet in the bit array {
+                 pass block to I/O thread for later writing to disk;
+                 if block nr > expected block { add intermediate blocks to retransmit list; }
+              }
+
+              if it is time { 
+                 process retransmit list, send assembled request_retransmit to server;
+                 send updated statistics to server, print to screen;
+              } 
+           }
+           send request_stop;
+           sync with disk I/O, finalize, clean up;
+       }
+       case command_help:    { display available commands etc; }
+    }
+ }
+
+
+

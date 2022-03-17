@@ -4,35 +4,55 @@ date: 2020-09-29
 draft: false
 ---
 
+
+<h3>Load Balancing</h3>
+
 <ul>
   <li>
-    Consistent hashing is a kind of hashing scheme that allows buckets to be added or removed without inducing a total remapping of keys to buckets.
+    Load balancing is concerned with assigning balls to \(n\) bins such that each bin has roughly the same number of balls.
   </li>
   <li>
-    Instead, only \(n / m \) keys need to be remapped on average where \(n\) is the number of keys and \(m\) is the number of buckets.
+    The load of a bin is defined as the number of balls in the bin.
   </li>
   <li>
-    This is useful for uniformly distributing clients across multiple servers as this is a dynamic environment in which both clients and servers can be added or removed at any time.
+    The load balancing scheme must dynamically adjust to balls and bins being added and removed.
+  </li>
+  <li>
+    To minimize the risk of overloading a bin, all bins should ideally have approximately the same number of balls at all times.
   </li>
 </ul>
+
+<!--
+There cannot be a centralized server to keep track of the load as that server would get overloaded with user requests.
+-->
 
 
 <h3>General Approach</h3>
 
 <ul>
   <li>
-    We visualize the output range of a a hash function as a ring and use the hash function to map each node to a point on the ring.
+    Given a hash function \(h\) we can simply assign item \(i\) to the server \(h(i) \text{ mod } n\). However, any change in the number of servers would require the reassignment of most items.
   </li>
   <li>
-     We can then map a given key to a point on the ring and define the node responsible for the key as the first node in a clockwise direction after the position of the key.
+    Instead, we visualize the output range of a hash function as a circle and use the hash function to map each bin to a point on the circle. 
   </li>
   <li>
-    If a node fails, then only the keys that were mapped to the failed node need to be remapped to the next node in clockwise order.
+    A given ball is similarly mapped to a point on the circle and assigned to the first bin in a clockwise direction after the position of the ball. 
   </li>
   <li>
-    Similarly, if a node is added then only the keys mapped to that node need to be reassigned.
+    If a bin is removed then only the balls that were mapped to that bin need to be remapped to the next bin in clockwise order. If a node is added then only the balls that are now mapped to that bin need to be reassigned.
+  </li>
+  <li>
+    This is efficient for the dynamic setting because the addition or removal of a bin only affects the balls in the closest clockwise bin.
+  </li>
+  <li>
+    The arc length between a bin and its counter-clockwise neighbor determines the fraction of objects assigned to the bin. With equal arc lengths, each bin has the ideal load of \(n / k\) though consistent hashing seldom provides ideal load balancing because the arc lengths have high variance.
   </li>
 </ul>
+
+<!--
+  Consistent hashing is a kind of hashing scheme that allows buckets to be added or removed without inducing a total remapping of keys to buckets. Instead, only \(n / m \) keys need to be remapped on average where \(n\) is the number of keys and \(m\) is the number of buckets.
+-->
 
 <figure>
   <img src="/img/distributed-systems/consistent-hashing.png" height="100%" width="100%" style="max-width: 600px;">
@@ -43,19 +63,22 @@ draft: false
 
 <ul>
   <li>
-    Having a one-to-one mapping between physical nodes and nodes on the ring may lead to a non-uniform distribution of keys among nodes as a result of the random placements of nodes on the circle.
+    Having a one-to-one mapping between physical bins and bins on the circle may lead to a non-uniform distribution of balls among bins as a result of the random placements on balls on the circle.
   </li>
   <li>
-    This problem becomes more evident when a node leaves the ring which requires that all the data handled by that node need to be moved entirely to a single other node.
+    This problem is particularly evident when a bin is removed.
   </li>
   <li>
-    To address this, we can create a M-to-N mapping between physical nodes and virtual nodes in the ring. Each physical node becomes responsible for multiple partitions in the ring.
+    To address this, we can create an M-to-N mapping between physical bins and virtual bins on the circle.
   </li>
   <li>
-    Hence, if a node leaves the ring, the keys handled by this node are evenly dispersed across the remaining nodes in the ring. When a node joins the ring, it receives a roughly equivalent amount of data from the other nodes in the ring.
+    This way, each physical bin becomes responsible for multiple partitions in the circle.
   </li>
   <li>
-    This scheme also helps when the system is comprised of heterogeneous nodes in terms of resources as the number of virtual nodes for each physical node can be chosen considering the characteristics of each physical node.
+    If a bin is removed then the balls handled by that bin will be evenly dispersed across the remaining bins in the ring. When a bin is added, it receives a roughly equivalent amount of balls from the other bins in the circle.
+  </li>
+  <li>
+    This scheme also helps when the system is comprised of heterogeneous bins as the number of virtual nodes for each physical node can be chosen considering the characteristics of each physical bin.
   </li>
 </ul>
 
@@ -68,96 +91,120 @@ draft: false
 
 <ul>
   <li>
-
+    To account for bins not having an infinite capacity we can introduce a maximum bin capacity of \(C = \left \lceil (1 + \epsilon) n/k \right \rceil \) where \(n\) is the number of balls, \(k\) is the number of bins and \(\epsilon \ge 0\) controls the bin capacity.
+  </li>
+  <li>
+    If an object is about to be assigned to a full bin then it overflows into the nearest available bin in the clockwise direction.
+  </li>
+  <li>
+    This ensures that the maximum load on a bin is bounded by \(C\).
   </li>
 </ul>
 
-<!-- 
-  Certain scenarios, they may result in sub-optimal load balancing on many servers.
-
-  Additionally, both clients and servers may be added or removed periodically, and with such changes, we do not want to move too many clients. Thus, while the dynamic allocation algorithm has to always ensure a proper load balancing, it should also aim to minimize the number of clients moved after each change to the system. Such allocation problems become even more challenging when we face hard constraints on the capacity of each server - that is, each server has a capacity that the load may not exceed. Typically, we want capacities close to the average loads.
-
-  In other words, we want to simultaneously achieve both uniformity and consistency in the resulting allocations. There is a vast amount of literature on solutions in the much simpler case where the set of servers is fixed and only the client set is updated, but in this post we discuss solutions that are relevant in the fully dynamic case where both clients and servers can be added and removed.
-
-
--->
-
+<figure>
+  <img src="/img/distributed-systems/bounded-loads.png" height="100%" width="100%" style="max-width: 600px;">
+</figure>
 
 <!--
-While the concept of consistent hashing has been developed in the past to deal with load balancing in dynamic environments, a fundamental issue with all the previously developed schemes is that, in certain scenarios, they may result in sub-optimal load balancing on many servers.
-
-Additionally, both clients and servers may be added or removed periodically, and with such changes, we do not want to move too many clients. Thus, while the dynamic allocation algorithm has to always ensure a proper load balancing, it should also aim to minimize the number of clients moved after each change to the system. Such allocation problems become even more challenging when we face hard constraints on the capacity of each server - that is, each server has a capacity that the load may not exceed. Typically, we want capacities close to the average loads.
-
-In other words, we want to simultaneously achieve both uniformity and consistency in the resulting allocations. There is a vast amount of literature on solutions in the much simpler case where the set of servers is fixed and only the client set is updated, but in this post we discuss solutions that are relevant in the fully dynamic case where both clients and servers can be added and removed.
-
-
-
-
-We can think about the servers as bins and clients as balls to have a similar notation with well-studied balls-to-bins stochastic processes. The uniformity objective encourages all bins to have a load roughly equal to the average density (the number of balls divided by the number of bins). For some parameter ε, we set the capacity of each bin to either floor or ceiling of the average load times (1+ε). This extra capacity allows us to design an allocation algorithm that meets the consistency objective in addition to the uniformity property.
-
-Imagine a given range of numbers overlaid on a circle. We apply a hash function to balls and a separate hash function to bins to obtain numbers in that range that correspond to positions on that circle. We then start allocating balls in a specific order independent of their hash values (let’s say based on their ID). Then each ball is moved clockwise and is assigned to the first bin with spare capacity.
-
-Consider the example above where 6 balls and 3 bins are assigned using two separate hash functions to random locations on the circle. For the sake of this instance, assume the capacity of each bin is set to 2. We start allocating balls in the increasing order of their ID values. Ball number 1 moves clockwise, and goes to bin C. Ball number 2 goes to A. Balls 3 and 4 go to bin B. Ball number 5 goes to bin C. Then ball number 6 moves clockwise and hits bin B first. However bin B has capacity 2 and already contains balls 3 and 4. So ball 6 keeps moving to reach bin C but that bin is also full. Finally, ball 6 ends up in bin A that has a spare slot for it.
-
-Upon any update in the system (ball or bin insertion/deletion), the allocation is recomputed to keep the uniformity objective. The art of the analysis is to show that a small update (a few number of insertions and deletions) results in minor changes in the state of the allocation and therefore the consistency objective is met. In our paper we show that every ball removal or insertion in the system results in O(1/ε2) movements of other balls. The most important thing about this upper bound is that it is independent of the total number of balls or bins in the system. So if the number of balls or bins are doubled, this bound will not change. Having an upper bound independent of the number of balls or bins introduces room for scalability as the consistency objective is not violated if we move to bigger instances. Simulations for the number of movements (relocations) per update is shown below when an update occurs on a bin/server.
-
-The red curve shows the average number of movements and the blue bars indicate the variance for different values of ε (the x-axis). The dashed curve is the upper bound suggested by our theoretical results which fits nicely as a prediction of the actual number of movements. Furthermore, for any value of ε, we know the load of each bin is at most (1+ε) times the average load. Below we see the load distribution of bins for different values of ε=0.1, ε=0.3 and ε=0.9.
-
-The distribution of loads for several values of ε. The load distribution is nearly uniform covering all ranges of loads from 0 to (1+ε) times average, and many bins with load equal to (1+ε) times average.
-As one can see there is a tradeoff — a lower ε helps with uniformity but not with consistency, while larger ε values help with consistency. A lower ε will ensure that many loads will be equal to the hard capacity limit of (1+ε) times the average, and the rest have a decaying distribution.
+The art of the analysis is to show that a small update (a few number of insertions and deletions) results in minor changes in the state of the allocation and therefore the consistency objective is met. In our paper we show that every ball removal or insertion in the system results in O(1/ε2) movements of other balls. The most important thing about this upper bound is that it is independent of the total number of balls or bins in the system. So if the number of balls or bins are doubled, this bound will not change. Having an upper bound independent of the number of balls or bins introduces room for scalability as the consistency objective is not violated if we move to bigger instances. Simulations for the number of movements (relocations) per update is shown below when an update occurs on a bin/server.
  -->
 
+
+<h3>Cascaded Overflow</h3>
+
+<ul>
+  <li>
+    Recall that the expected number of objects assigned to a particular bin is proportional to the arc length of the bin.
+  </li>
+  <li>
+    With bounded loads, as bins fill up, the nearest available (non-full) bin has a longer and longer effective act length.
+  </li>
+  <li>
+    The arc lengths for consecutive full bins add causing the nearest available bin to fill faster in a phenomenon called cascaded overflow.
+  </li>
+  <li>
+    This cascading effect creates an avalanche of overflowing bins that progressively cause the next bin to have an even larger arc length.
+  </li>
+  <li>
+    Overloaded bins often fail and so pass their loads to the nearest clockwise bin which can trigger an avalanche of bin failures as enormous load bounces around the circle.
+  </li>
+</ul>
+
+
+<h3>Random Jumps</h3>
+
+<ul>
+  <li>
+    We may try to address the cascaded overflow problem by rehashing balls that map to a full bin rather than using the nearest clockwise bin. That is, for a ball \(i\) we consider \(h(i)\), then \(h(h(i))\), then \(h(h(h(i)))\) and so on until we find a suitable bin.
+  </li>
+  <li>
+    However, this leads to two issues: a) This is no better than the existing solutions since once two items end up with the same hash code any further hashing results in the same hash codes. This leads to cascading overflow. b) If a hash code is repeated, then this ends up in an infinite cycle.
+  </li>
+  <li>
+    Instead, we can introduce random jumps by continuously rehashing an item \(i\) with 
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/distributed-systems/random-jumps.png" height="100%" width="100%" style="max-width: 600px;">
+</figure>
 
 <h3 id="resources">Resources</h3>
 
 <ul>
   <li>
-    <a href="https://ai.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html">Consistent Hashing with Bounded Loads</a>
+    <a href="https://blog.carlosgaldino.com/consistent-hashing.html">Consistent Hashing</a>
   </li>
   <li>
-    <a href="https://www.youtube.com/watch?v=aUF5erIkBi8">Consistent Hashing With Bounded Load Algorithm (video)</a>
+    <a href="https://arxiv.org/pdf/1608.01350.pdf">Consistent Hashing with Bounded Loads</a>
   </li>
   <li>
-    <a href="https://blog.carlosgaldino.com/consistent-hashing.html">Consistent Hashing (carlosgaldino)</a>
+    <a href=""></a>
   </li>
   <li>
-    <a href="https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed">Improving load balancing with a new consistent-hashing algorithm</a>
+    <a href="https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed">Improving Load Balancing with a New Consistent Hashing Algorithm</a>
+  </li>
+  <li>
+    <a href="https://arxiv.org/pdf/1908.08762.pdf">Revisiting Consistent Hashing with Bounded Loads</a>
   </li>
 </ul>
 
+
 <!--
-  https://www.youtube.com/watch?v=aUF5erIkBi8
+APPLICATIONS
+
+This is useful for uniformly distributing clients across multiple servers as this is a dynamic environment in which both clients and servers can be added or removed at any time.
 -->
 
 
-<!-- 
-  Usually, systems using consistent hashing construct their rings as the output range of a hash function like SHA-1. The range for SHA-1 goes from 0 to 2^160. Using any of these functions to map the nodes in the ring will have the effect of placing the nodes in random positions.
+RANDOM JUMP CONSISTENT HASHING
+
+We can break the cascade effect by introducing random jumps.
+
+
+In practice, the segments of the unit circle are mapped to an array. RJ-CH continuously rehashes objects until they reach an index associated with an available bin. Unlike simple rehashing, the RJ-CH hash function takes two arguments: the object and the failed attempts to find an available bin. The second argument breaks the cascading effect because it ensures that two objects have a low probability of overflowing to the same location. This probability is 1=m, where m is the length of the array. 
+
+RJ-CH prevents cascaded overflow because objects are assigned to any of the available bins with uniform probability by the universal hashing property.
+
+We also note that load balancing methods are usually accompanied by hueristics like time-based expiry and eviction of stale objects [10, 11, 12] to evict duplicates and unused objects. Objects are commonly deleted when they are unused for some time. Many implementations, such as [10], impose stringent eviction criteria. It is also common practice to wipe the cache of a failed server and repopulate the cache as needed when the server is back online. RJ-CH is compatible with all such techniques, since deleting an element simply frees space in the bin. 
+
+When a bin is added, we may encounter a situation where an object is cached in the new bin while also existing somewhere else in the array. In practice, this is not a problem because the system will no longer request the duplicate and it will eventually be evicted by its bin. When a bin is removed, its objects will be cached in the available bin chosen by RJ-CH the next time the objects are requested. 
+
+
+In Random Jump Consistent Hashing (RJCH), we continuously rehash an item i with hash(i + j), where j counts the number of rehashes, and assign item i to server s if the hashes collide. The use of j seems innocuous, but is a simple and clever way to prevent cycles.
+
+Furthermore, the distribution of the load is extremely even, and in combination with the above practical view offsets any need or issues with reassignment.
+
+<!--
+IMPLEMENTATION
+
+usually implemented as the locations hash(s) for server s on a large array.
+
+
+Usually, systems using consistent hashing construct their rings as the output range of a hash function like SHA-1. The range for SHA-1 goes from 0 to 2^160. Using any of these functions to map the nodes in the ring will have the effect of placing the nodes in random positions.
+
+In our proposal, we take a practical view of the state of distributed caching. We observe that items are typically cached after first being requested, as opposed to preemptively moved when servers are added or removed, and that there are some implementations which employ eviction schemes. We also observe that there is still room for improvement due to the cascading overflow effect, where if one server is full the next server will fill up faster leading to cascading overflow.
+
+
+We use a roughly 1000 sparse array of size 2 20 and the hash function Murmurhash. For each trial, we generate a pseudo-random initial string to represent each object and bin. For RJ-CH, whenever an object or bin is hashed into the array, we initialize a new counter with value 0 which is incremented until the object or bin is placed. On each iteration, the counter is converted to a string and concatenated to the pseudo-random initial string as input to Murmurhash, which produces a 128 bit number. The number is split up into four 32 bit numbers to generate the next array indexes. For an array of size 2 20 , we use the first 20 bits of each 32 bit hash code. For CH-BL, we generate the initial array index using Murmurhash and increment the index to walk along the array. For wall clock time and total steps, we map the array to an array of size 2 32 before measuring object insertion. 
 -->
-
-<!-- 
-With consistent hashing is easier to avoid hotspots by using a function f that mixes well, so even if the keys are very similar they end up projected in different and distant points in the ring, causing them to be stored at different nodes. Another benefit is the smoothness for moving keys when nodes join or leave the ring, only the immediate neighbors of a node are impacted and other nodes remain unaffected.
-
-A system using consistent hashing can apply other techniques to reduce even more the impact of changes in the ring structure. If nodes are data stores, like the initial example in this post, the system could replicate the data in the next N nodes after the original node, N1, that is responsible for that data. This gives the advantage that if N1 leaves the ring, its immediate neighbors will already have the data that was stored at N1, preventing an increase of network traffic after a node (in this case, N1) departs. The same technique helps avoiding hotspots even more since requests for the data can be handled by N1 or any of its next N neighbors in the ring.
--->
-
-<!-- 
-
-
-
-If some keys are 
-However, consistent hashing comes with its own problem: uneven distribution of requests. Because of its mathematical properties, consistent hashing only balances loads about as well as choosing a random server for each request, when the distribution of requests is equal. But if some content is much more popular than others (as usual for the internet), it can be worse than that. Consistent hashing will send all of the requests for that popular content to the same subset of servers, which will have the bad luck of receiving a lot more traffic than the others. This can result in overloaded servers, bad video playback, and unhappy users.
-
-Why wasn’t there a way to say “use consistent hashing, but please don’t overload any servers”? As early as August 2015, I had tried to come up with an algorithm based on the power of two random choices that would do just that, but a bit of simulation said that it didn’t work. Too many requests were sent to non-ideal servers to be worthwhile. I was disappointed, but rather than wasting time trying to rescue it, we went ahead with the least-connections and shared cache approach above.
-
-Fast forward to August 2016. I noticed a URL that the inestimable Damian Gryski had tweeted, of an arXiv paper titled Consistent Hashing with Bounded Loads. I read the abstract, and it seemed to be exactly what I wanted: an algorithm that combined consistent hashing with an upper limit on any one server’s load, relative to the average load of the whole pool. I read the paper, and the algorithm was remarkably simple. Indeed, the paper says
-while the idea of consistent hashing with forwarding to meet capacity constraints seems pretty obvious, it appears not to have been considered before.
-The bounded-load algorithm
-Here is a simplified sketch of the algorithm. Some details are left out, and if you intend to implement it yourself, you should definitely go to the original paper for information.
-First, define a balancing factor, c, which is greater than 1. c controls how much imbalance is allowed between the servers. For example, if c = 1.25, no server should get more than 125% of the average load. In the limit as c increases to ∞, the algorithm becomes equivalent to plain consistent hashing, without balancing; as c decreases to near 1 it becomes more like a least-connection policy and the hash becomes less important. In my experience, values between 1.25 and 2 are good for practical use.
-When a request arrives, compute the average load (the number of outstanding requests, m, including the one that just arrived, divided by the number of available servers, n). Multiply the average load by c to get a “target load”, t. In the original paper, capacities are assigned to servers so that each server gets a capacity of either ⌊t⌋ or ⌈t⌉, and the total capacity is ⌈cm⌉. Therefore the maximum capacity of a server is ⌈cm/n⌉, which is greater than c times the average load by less than 1 request. To support giving servers different “weights”, as HAProxy does, the algorithm has to change slightly, but the spirit is the same — no server can exceed its fair share of the load by more than 1 request.
-To dispatch a request, compute its hash and the nearest server, as usual. If that server is below its capacity, then assign the request to that server. Otherwise, go to the next server in the hash ring and check its capacity, continuing until you find a server that has capacity remaining. There has to be one, since the highest capacity is above the average load, and it’s impossible for every server’s load to be above average. This guarantees some nice things:
-No server is allowed to get overloaded by more than a factor of c plus 1 request.
-The distribution of requests is the same as consistent hashing as long as servers aren’t overloaded.
-If a server is overloaded, the list of fallback servers chosen will be the same for the same request hash — i.e. the same server will consistently be the “second choice” for a popular piece of content. This is good for caching.
-If a server is overloaded, the list of fallback servers will usually be different for different request hashes — i.e. the overloaded server’s spillover load will be distributed among the available servers, instead of all landing on a single server. This depends on each server being assigned multiple points in the consistent hash ring.
- -->

@@ -1,0 +1,660 @@
+---
+title: "Raft"
+date: 2021-12-27
+draft: false
+---
+
+<!-- #region introduction -->
+<p>
+  Raft is a consensus algorithm that manages a replicated log among a cluster of servers.
+</p>
+<!-- #endregion -->
+
+<!-- #region replicated state machines -->
+<h3>Replicated State Machines</h3>
+
+<ul>
+  <li>
+    Consensus algorithms typically arise in the context of replicated state machines.
+  </li>
+  <li>
+    In this approach, state machines on a collection of servers compute identical copies of the same state and can continue operating even if some of the servers are down.
+  </li>
+  <li>
+    Replicated state machines are typically implemented using a replicated log.
+  </li>
+  <li>
+    Each server stores a log containing a series of commands which its state machine executes in order.
+  </li>
+  <li>
+    Each log contains the same commands in the same order so each state machine processes the same sequence of commands and, since the state machines are deterministic, each computes the same state and the same sequence of outputs.
+  </li>
+  <li>
+    Keeping the replicated log consistent is the job of the consensus algorithm.
+  </li>
+  <li>
+    The consensus module on a server receives commands from clients and adds them to its log; it also communicates with the consensus modules on other servers to ensure that every log eventually contains the same entries in the same order (even if servers fail).
+  </li>
+  <li>
+    Once commands are properly replicated, each server's state machine processes them in log order and the outputs are returned to clients.
+  </li>
+  <li>
+    As a result, the servers appear to form a single, highly reliable state machine.
+  </li>
+</ul>
+
+
+<!--
+Consensus algorithms are fully functional (available) as long as any majority of the servers are operational and can communicate with each other and with clients.
+
+In the common case, a command can complete as soon as a majority of the cluster has responded to a single round of remote procedure calls; a minority of slow servers need not impact overall system perfor-mance.
+-->
+<!-- #endregion -->
+
+<!-- #region guarantees -->
+<h3>Guarantees</h3>
+
+<p>
+  Raft guarantees that each of the following properties is true at all times:
+</p>
+
+<ul>
+  <li>
+    Election Safety: At most one leader can be elected in a given term.
+  </li>
+  <li>
+    Leader Append-Only: A leader never overwrites or deletes entries in its log; it only appends new entries.
+  </li>
+  <li>
+    Log Matching: If two logs contain an entry with the same index and term then the logs are identical in all entries up through the given index.
+  </li>
+  <li>
+    Leader Completeness: If a log entry is committed in a given term then that entry will be present in the logs of the leaders for all higher-numbered terms.
+  </li>
+  <li>
+    State Machine Safety: If a server has applied a log entry at a given index to its state machine then no other server will ever apply a different log entry for the same index.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region server-states -->
+<h3>Server States</h3>
+
+<ul>
+  <li>
+    At any given time, a server is in one of three states:
+    <ul>
+      <li>
+        <i>Leader</i>: Handles all client requests and log replication.
+      </li>
+      <li>
+        <i>Follower</i>: Issue no RPCs of their own but rather simply respond to incoming RPCs.
+      </li>
+      <li>
+        <code>Candidate</code>: Used to elect a new leader.
+      </li>
+    </ul>
+  </li>
+  <li>
+    In normal operation, there is one leader and all of the other servers are followers. Leaders typically operate until they fail.
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/distributed-systems/raft/server-states.svg" height="100%" width="100%" style="max-width: 500px;">
+</figure>
+<!-- #endregion -->
+
+<!-- #region terms -->
+<h3>Terms</h3>
+
+<ul>
+  <li>
+    Time is divided into periods of arbitrary length called <i>terms</i> which are numbered with consecutive integers.
+  </li>
+  <li>
+    Each term begins with an election in which one or more candidates attempt to become leader.
+  </li>
+  <li>
+    If a candidate wins the election then it serves as leader for the rest of the term. Raft ensures that there is at most one leader in a given term.
+  </li>
+  <li>
+    In some situations, an election will result in a split vote in which case the term will end with no leader; a new term (with a new election) will begin shortly.
+  </li>
+  <li>
+    Different servers may observe the transitions between terms at different times and, in some situations, a server may not observe an election or even entire terms.
+  </li>
+  <li>
+    Each server stores a <i>current term</i> number which is its best guess as to what the current term is.
+  </li>
+  <li>
+    Servers exchange their current term values whenever they communicate; if one server's current term is smaller than the other's then it updates its current term to the larger value.
+  </li>
+  <li>
+    If a candidate or leader discovers that its term is out of date then it immediately reverts to follower state. If a server receives a request with a stale term number, it rejects the request.
+  </li>
+  <li>
+    As such, terms act as a logical clock in Raft and they allow servers to detect obsolete information such as stale leaders.
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/distributed-systems/raft/terms.svg" height="100%" width="100%" style="max-width: 500px;">
+</figure>
+<!-- #endregion -->
+
+<!-- #region rpcs -->
+<h3>RPCs</h3>
+
+<ul>
+  <li>
+    All communication is performed using two RPCs:
+
+    <ul>
+      <li>
+        <code>AppendEntries</code>: Initiated by leaders to replicate log entries and to provide a form of heartbeat.
+      </li>
+      <li>
+        <code>RequestVote</code>: Initiated by candidates during elections.
+      </li>
+    </ul>
+  </li>
+  <li>
+    Servers retry RPCs if they do not receive a response in a timely manner and they issue RPCs in parallel for best performance. 
+  </li>
+  <li>
+    Both RPCs are idempotent.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region heartbeats and timeouts -->
+<h3>Heartbeats and Timeouts</h3>
+
+<ul>
+  <li>
+    Servers start up as followers and remain in the follower state as long as they receive valid RPCs from a leader or candidate.
+  </li>
+  <li>
+    Leaders send periodic heartbeats consisting of <code>AppendEntries</code> RPCs that carry no log entries to all followers in order to maintain their authority.
+  </li>
+  <li>
+    If a follower receives no communication over a period of time called the <i>election timeout</i> then it assumes there is no viable leader and begins an election to choose a new leader.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region elections -->
+<h3>Elections</h3>
+
+<ul>
+  <li>
+    To begin an election, a follower 1) increments its current term, 2) transitions to the candidate state, 3) votes for itself and 4) issues <code>RequestVote</code> RPCs in parallel to each of the other servers in the cluster.
+  </li>
+  <li>
+    Servers will vote for at most one candidate in a given term on a first-come-first-served basis.
+  </li>
+  <li>
+    A candidate requires a majority of votes to win the election which ensures that at most one candidate can win the election for a particular term.
+  </li>
+  <li>
+    A server continues in the candidate state until one of three things happens:
+
+    <ol>
+      <li>
+        It receives a majority of votes and so becomes the leader and sends heartbeats to all of the other servers to establish its authority and prevent new elections.
+      </li>
+      <li>
+        It receives an <code>AppendEntries</code> RPC from a server claiming to be the leader. If the leader's term is at least as large as the candidate's current term then the candidate returns to the follower state. Otherwise, the candidate rejects the RPC.
+      </li>
+      <li>
+        The election timeout elapses with no winner (perhaps due to a split vote) and so the candidate starts a new election.
+      </li>
+    </ol>
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region randomized election timeouts -->
+<h3>Randomized Election Timeouts</h3>
+
+<ul>
+  <li>
+    Election timeouts are chosen randomly from a fixed interval (e.g. 150-300ms) to ensure that split votes are rare and that they are resolved quickly.
+  </li>
+  <li>
+    This spreads out the servers so that in most cases only a single server will time out, win the election and send heartbeats before any other servers time out.
+  </li>
+   <li>
+    Each candidate restarts its randomized election timeout at the start of an election and it waits for that timeout to elapse before starting the next election which reduces the likelihood of another split vote in the new election.
+   </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region log structure -->
+<h3>Log Structure</h3>
+
+<ul>
+  <li>
+    Each server stores its own individual <i>log</i> on stable storage such that it survives crashes.
+  </li>
+  <li>
+    Each log entry stores a state machine command along with the term number when the entry was created by the leader of that term.
+  </li>
+  <li>
+    Each log entry also has a sequential integer index identifying its position in the log.
+  </li>
+  <li>
+    An entry is considered <i>committed</i> if it is known to have been successfully replicated on a majority of the servers.
+  </li>
+  <li>
+    Committed entries are durable and will eventually be executed by state machines.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region log replication -->
+<h3>Log Replication</h3>
+
+<ul>
+  <li>
+    Once a leader has been elected, it begins servicing client requests each of which contains a state machine command.
+  </li>
+  <li>
+    The leader appends the command to its log as a new entry and then issues <code>AppendEntries</code> RPCs in parallel to each of the other servers to replicate the entry.
+  </li>
+  <li>
+    If followers crash or run slowly or if network packets are lost then the leader retries <code>AppendEntries</code> RPCs indefinitely until all followers eventually store all log entries.
+  </li>
+  <li>
+    When the entry has been replicated to a majority of the servers, the leader applies the entry to its state machine and returns the result of that execution to the client.
+  </li>
+  <li>
+    Performance is thus optimal in the common case: one successful RPC must be sent to any majority of servers and one slow server will not cause the client to wait.
+  </li>
+</ul>
+
+<figure>
+  <img src="/img/distributed-systems/raft/committed.svg" height="100%" width="100%" style="max-width: 500px;">
+</figure>
+<!-- #endregion -->
+
+<!-- #region committing entries -->
+<h3>Committing Entries</h3>
+
+<ul>
+  <li>
+    A log entry is committed once the leader that created the entry has successfully replicated it on a majority of the servers.
+  </li>
+  <li>
+    This also commits all preceding entries in the leader's log including entries created by previous leaders.
+  </li>
+  <li>
+    The leader keeps track of the highest index it knows to be committed and it includes that index in future <code>AppendEntries</code> RPCs (including heartbeats) so that the other servers eventually find out.
+  </li>
+  <li>
+    Once a follower learns that a log entry is committed, it applies the entry to its local state machine (in log order).
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region log consistency -->
+<h3>Log Consistency</h3>
+
+<ul>
+  <li>
+    Raft maintains a high level of log coherency using the following two properties (which together constitute the Log Matching Property):
+
+    <ol>
+      <li>
+        If two entries in different logs have the same index and term then they store the same command.
+      </li>
+      <li>
+        If two entries in different logs have the same index and term then the logs are identical in all preceding entries.
+      </li>
+    </ol>
+  </li>
+  <li>
+    The first property follows from the fact that a leader creates at most one entry with a given log index in a given term and log entries never change their position in the log.
+  </li>
+  <li>
+    In order to ensure that the second property holds it is necessary that the <code>AppendEntries</code> RPC performs a consistency check.
+  </li>
+  <li>
+    A consequence of these properties is that if a given entry is committed then all preceding entries are also committed.
+  </li>
+  <li>
+    This holds as if a given entry is the same on a majority of servers then it is committed. But then that majority of servers must be such that their logs are identical in all preceding entries and so those entries must also be committed.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region consistency check -->
+<h3>Consistency Check</h3>
+
+<ul>
+  <li>
+    When sending an <code>AppendEntries</code> RPC, the leader includes the index and term of the entry in its log that immediately precedes the new entries.
+  </li>
+  <li>
+    If the follower does not find an entry in its log with the same index and term then it refuses the new entries.
+  </li>
+  <li>
+    This acts as an induction step: the initial empty state of the logs satisfies the Log Matching Property and the consistency check preserves the Log Matching Property whenever logs are extended.
+  </li>
+  <li>
+    As a result, whenever <code>AppendEntries</code> returns successfully, the leader knows that the follower's log is identical to its own log up through the new entries.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region inconsistencies -->
+<h3>Inconsistencies</h3>
+
+<ul>
+  <li>
+    Leader crashes can leave the logs inconsistent as the old leader may not have fully replicated all of the entries in its log.
+  </li>
+  <li>
+    These inconsistencies can compound over a series of leader and follower crashes.
+  </li>
+  <li>
+    Particularly, when a leader comes to power, it is possible that a follower may be missing entries, have extra uncommitted entries or both.
+  </li>
+  <li>
+    Missing and extraneous entries in a log may span multiple terms.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region repairing follower logs -->
+<h3>Repairing Follower Logs</h3>
+
+<ul>
+  <li>
+    The leader handles inconsistencies by forcing the followers' logs to duplicate its own. This means that conflicting entries in follower logs will be overwritten with entries from the leader's log.
+  </li>
+  <li>
+    To bring a follower's log into consistency with its own, the leader must find the latest log entry where the two logs agree, delete any entries in the follower's log after that point and send the follower all of the leader's entries after that point.
+  </li>
+  <li>
+    All of these actions happen in response to the consistency check performed by <code>AppendEntries</code> RPCs.
+  </li>
+  <li>
+    The leader maintains a <code>nextIndex</code> for each follower which is the index of the next log entry the leader will send to that follower.
+  </li>
+  <li>
+    When a leader first comes to power, it initializes all <code>nextIndex</code> values to the index just after the last one in its log.
+  </li>
+  <li>
+    If a follower's log is inconsistent with the leader's then the <code>AppendEntries</code> consistency check will fail in the next <code>AppendEntries</code> RPC. 
+  </li>
+  <li>
+    After a rejection, the leader decrements <code>nextIndex</code> and retries the <code>AppendEntries</code> RPC.
+  </li>
+  <li>
+    Eventually, <code>nextIndex</code> will reach a point where the leader and follower logs match and the <code>AppendEntries</code> will succeed which removes any conflicting entries in the follower's log and appends entries from the leader's log (if any)
+  </li>
+  <li>
+    Once <code>AppendEntries</code> succeeds, the follower's log is consistent with the leader's and it will remain that way for the rest of the term. 
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region deposed leaders -->
+<h3>Deposed Leaders</h3>
+
+<ul>
+  <li>
+    A leader may temporarily become disconnected from the network in which case another server may be elected as the new leader.
+  </li>
+  <li>
+    If the new leader then becomes reconnected, it could continue to accept client requests and attempt to replicate/commit log entries.
+  </li>
+  <li>
+    In this case, terms are used to detect stale leaders (and candidates).
+  </li>
+  <li>
+    A server that receives an RPC from the deposed server with a higher current term will reject the RPC and consequently cause the deposed server to revert to a follower.
+  </li>
+  <li>
+    As an election updates the terms of the majority of servers, it is ensured that the deposed server cannot commit new log entries.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region safety -->
+<h3>Safety</h3>
+
+<ul>
+  <li>
+    The key safety property is as follows: once a log entry has been applied to the state machine, it must be the case that no other state machine applies a different value for that log entry.
+  </li>
+  <li>
+    Raft approaches this by ensuring that if a leader has decided that a log entry is committed then that entry will be present in the logs of all future leaders.
+  </li>
+  <li>
+    This will guarantee the safety requirement as:
+
+    <ul>
+      <li>
+        Leaders never overwrite entries in their logs.
+      </li>
+      <li>
+        Only entries in the leader's log can be committed.
+      </li>
+      <li>
+        Entries must be committed before being applied to a state machine.
+      </li>
+    </ul>
+  </li>
+  <li>
+    To ensure that we have the an entry being committed implies it will be present in future leaders' logs we change the algorithm in two ways:
+
+    <ol>
+      <li>
+        A restriction is imposed on leader election to exclude a server from becoming leader if it does not have the right entries in its log.
+      </li>
+      <li>
+        A restriction is imposed on commitment so as to delay committing an entry to guarantee it will be present in future leaders' logs.
+      </li>
+    </ol>
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region election restriction -->
+<h3>Election Restriction</h3>
+
+<ul>
+  <li>
+    Suppose a follower becomes unavailable while the leader commits several log entries. If the follower is then elected as leader, it could overwrite the committed entries.
+  </li>
+  <li>
+    It is thus necessary to ensure the leader for any given term contains all of the entries committed in previous terms.
+  </li>
+  <li>
+    Raft guarantees that all the committed entries from previous terms are present on each new leader from the moment of its election without the need to transfer those entries to the leader.
+  </li>
+  <li>
+    This is achieved by using the voting process to prevent a candidate from winning an election unless its log contains all committed entries.
+  </li>
+  <li>
+    A candidate must contact a majority of the cluster in order to be elected which means that every committed entry must be present in at least one of those servers.
+  </li>
+  <li>
+    If the candidate's log is at least as up-to-date as any other log in that majority then it will hold all the committed entries.
+  </li>
+  <li>
+    To ensure this holds, candidates include the index and term of their last log entry in <code>RequestVote</code> RPCs.
+  </li>
+  <li>
+    A voting server denies its vote if its log if either the term of its last log entry is greater than the received last term or if the terms are equal but the index of its last entry is greater than the received index.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region Committing Entries from Previous Terms -->
+<h3>Committing Entries from Previous Terms</h3>
+
+<ul>
+  <li>
+    A leader knows that an entry from its current term is committed once that entry is stored on a majority of the servers.
+  </li>
+  <li>
+    If a leader crashes before committing an entry then future leaders will attempt to finish replicating the entry.
+  </li>
+  <li>
+    However, a leader cannot immediately conclude that an entry from a previous term is committed once it is stored on a majority of servers.
+  </li>
+  <li>
+    To eliminate problems like situations where an old log entry is stored on a majority of servers yet can still be overwritten by a future leader, Raft never commits log entries from previous terms by counting replicas.
+  </li>
+  <li>
+    Only log entries from the leader's current term are committed by counting replicas; once an entry from the current term has been committed in this way, then all prior entries are committed indirectly because of the Log Matching Property.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region follower and candidate crashes -->
+<h3>Follower and Candidate Crashes</h3>
+
+<ul>
+  <li>
+    Follower and candidate crashes are much simpler to handle than leader crashes and they are both handled in the same way.
+  </li>
+  <li>
+    If a follower or candidate crashes then future <code>RequestVote</code> and <code>AppendEntries</code> RPCs sent to it will fail.
+  </li>
+  <li>
+    Raft handles these failures by retrying indefinitely; if the crashed server restarts then the RPC will complete successfully.
+  </li>
+  <li>
+    If a server crashes after completing an RPC but before responding then it will receive the same RPC again after it restarts. Raft RPCs are idempotent so this causes no harm.
+  </li>
+  <li>
+    For example, if a follower receives an <code>AppendEntries</code> request that includes log entries already present in its log then it ignores those entries in the new request.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region timing and availability -->
+<h3>Timing and Availability</h3>
+
+<ul>
+  <li>
+    The ability of the system to respond to clients in a timely manner must inevitably depend on timing.
+  </li>
+  <li>
+    For example, if message exchanges take longer than the typical time between server crashes, candidates will not stay up long enough to win an election; without a steady leader, Raft cannot make progress.
+  </li>
+  <li>
+    Leader election is the aspect of Raft where timing is most critical. Raft will be able to elect and maintain a steady leader as long as <code>broadcastTime &lt;&lt; electionTimeout &lt;&lt; MTBF</code>.
+  </li>
+  <li>
+    Here, <code>broadcastTime</code> is the average time it takes a server to send RPCs in parallel to every server in the cluster and receive their responses and MTBF is the average time between failures for a single server.
+  </li>
+  <li>
+    The broadcast time should be an order of magnitude less than the election timeout so that leaders can reliably send the heartbeat messages required to keep followers from starting elections; given the randomized approach used for election timeouts, this inequality also makes split votes unlikely.
+  </li>
+  <li>
+    The election timeout should be a few orders of magnitude less than MTBF so that the system makes steady progress. When the leader crashes, the system will be unavailable for roughly the election timeout; we would like this to represent only a small fraction of overall time.
+  </li>
+</ul>
+<!-- #endregion -->
+
+<!-- #region client interaction -->
+<h3>Client Interaction</h3>
+
+<ul>
+  <li>
+    Clients send all of their requests to the leader. If the contacted server is not the leader then it will redirect the client to the most recent leader it has heard from.
+  </li>
+  <li>
+    The leader waits until the command has been committed and executed by its state machine before responding.
+  </li>
+  <li>
+    If the request times out (e.g. due to leader crash) then the client will reissue the request to some over server before eventually being redirected to the new leader and retrying the request with the new leader.
+  </li>
+  <li>
+    However, if the leader crashes after committing the log entry but before responding to the client then the client will retry the command with a new leader causing it to be executed a second time.
+  </li>
+  <li>
+    To address this, client assign unique serial numbers to every command. 
+  </li>
+</ul>
+
+What if the leader crashes after executing command but before responding? Must not execute command twice.
+
+Solution: client embeds a unique ID in each command.
+
+- Server includes ID in log entry.
+- Before accepting command, leader checks its log for entry with that ID.
+- If ID found in log then ignore new command and return response from old command.
+
+The result is exactly-once semantics.
+
+<!--
+The solution is for clients to assign unique serial numbers to every command. Then, the state machine tracks the latest serial number processed for each client, along with the associated response.
+
+If it receives a command whose serial number has already been executed, it responds immediately without re-executing the request.
+
+Read-only operations can be handled without writing anything into the log. However, with no additional measures, this would run the risk of returning stale data, since the leader responding to the request might have been superseded by a newer leader of which it is unaware. 
+
+Lin-earizable reads must not return stale data, and Raft needs two extra precautions to guarantee this without using the log. First, a leader must have the latest information on which entries are committed. The Leader Completeness Property guarantees that a leader has all committed en-tries, but at the start of its term, it may not know which those are. To find out, it needs to commit an entry from its term. Raft handles this by having each leader com-mit a blank no-op entry into the log at the start of its term. Second, a leader must check whether it hasbeen de-posed before processing a read-only request (its informa-tion may be stale if a more recent leader has beenelected). Raft handles this by having the leader exchange heart-beat messages with a majority of the cluster before re-sponding to read-only requests.
+-->
+<!-- #endregion -->
+
+<!-- #region summary -->
+<h3>Summary</h3>
+
+<p>
+  <a href="/pdf/raft-summary.pdf">Summary Sheet</a>
+</p>
+<!-- #endregion -->
+
+<!-- #region resources -->
+<h3>Resources</h3>
+
+<ul>
+  <li>
+    <a href="https://raft.github.io/">The Raft Consensus Algorithm</a>
+  </li>
+  <li>
+    <a href="https://raft.github.io/raft.pdf">In Search of an Understandable Consensus Algorithm</a>
+  </li>
+  <li>
+    <a href="http://thesecretlivesofdata.com/raft/">The Secret Lives of Data: Raft</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=vYp4LYbnnW8">Designing for Understandability: The Raft Consensus Algorithm (video)</a>
+  </li>
+  <li>
+    <a href="https://www.youtube.com/watch?v=LAqyTyNUYSY">In Search of an Understandable Consensus Algorithm (video)</a>
+  </li>
+  <li>
+    <a href="https://eli.thegreenplace.net/2020/implementing-raft-part-0-introduction/">Implementing Raft</a>
+  </li>
+</ul>
+
+<!--
+https://groups.google.com/forum/#!topic/raft-dev/95rZqptGpmU
+
+-->
+<!-- #endregion -->
+
+
+<!--
+TODO
+6. Cluster membership changes
+7. Log compaction
+
+
+MISC
+
+This means that log entries only flow from leaders to followers and leaders never overwrite existing entries in their logs.
+
+---
+
+(a) S1 is leader and partially replicates the log entry at index 2. In (b) S1 crashes; S5 is elected leader for term 3 with votes from S3, S4, and itself, and accepts a different entry at log index 2. In (c) S5 crashes; S1 restarts, is elected leader, and continues replication. At this point, the log entry from term 2 has been replicated on a majority of the servers, but it is not committed. If S1 crashes as in (d), S5 could be elected leader (with votes from S2, S3, and S4) and overwrite the entry with its own entry from term 3. However, if S1 replicates an en-try from its current term on a majority of the servers before crashing, as in (e), then this entry is committed (S5 cannot win an election). At this point all preceding entries in the log are committed as well.
+-->

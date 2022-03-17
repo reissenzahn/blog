@@ -15,7 +15,7 @@ func main() {
 	c2 := make(chan string)
 
 	go func() {
-	c2 <- "hello"
+		c2 <- "hello"
 	}()
 
 	// writes to full channels will block and reads from empty channels will block

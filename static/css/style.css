@@ -1,12 +1,9 @@
-/* @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap'); */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap');
-/* @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap'); */
 
-@font-face {
+/* @font-face {
   font-family: DroidSansMono;
   src: url('/font/DroidSansMono.ttf');
-}
+} */
 
 pre code.hljs {
   display: block;
@@ -16,30 +13,20 @@ code.hljs {
   display: inline;
 }
 
-/* mqtt table */
-
-.mqtt-table {
-  width: 100%;
-}
-
-.mqtt-table, .mqtt-table th, .mqtt-table td {
-  text-align: center;
-  border: 1px solid black;
-  border-collapse: collapse;
-  padding: 5px 10px !important;
-}
-
 
 /* variables */
 
 :root {
   --background-color: #fbebd4;
+  /* --background-color: white; */
   --text-color: #151B25;
   --text-color: #00000F;
+  /* --text-color: black; */
   --link-color: #0922c3;
   --heading-color: #151B25;
   --tagline-color: #151B25;
   --title-color: #151B25;
+  /* --title-color: black; */
   --menu-color: #151B25;
   --date-color: #696969;
   
@@ -49,52 +36,6 @@ code.hljs {
   --typewriterSpeed: 0.3s;
   --typewriterCharacters: 4;
 }
-
-
-/* header animation */
-
-/* 
-.header__title {
-  position: relative;
-  position: relative;
-  width: max-content;
-}
-
-.header__title::before,
-.header__title::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-.header__title::before {
-background: var(--background-color);
-animation: typewriter var(--typewriterSpeed)
-  steps(var(--typewriterCharacters)) 1s forwards;
-}
-
-.header__title::after {
-width: 0.125em;
-background: black;
-animation: typewriter var(--typewriterSpeed)
-    steps(var(--typewriterCharacters)) 1s forwards,
-  blink 750ms steps(var(--typewriterCharacters)) infinite;
-}
-
-@keyframes typewriter {
-  to {
-    left: 100%;
-  }
-}
-
-@keyframes blink {
-  to {
-    background: transparent;
-  }
-} */
 
 
 /* table */
@@ -121,7 +62,7 @@ animation: typewriter var(--typewriterSpeed)
   align-items: left;
 }
 
-/* scrollbar */
+/* GENERAL */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -134,10 +75,13 @@ animation: typewriter var(--typewriterSpeed)
 }
 
 * {
-  font-size: 18px;
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
   margin: 0;
   padding: 0;
+}
+
+html {
+  font-size: 18px;
 }
 
 body {
@@ -162,10 +106,6 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--heading-color);
 }
 
-h4 {
-
-}
-
 code {
   font-family: var(--mono-font);
 }
@@ -175,11 +115,9 @@ a {
   color: var(--link-color);
 }
 
-.container {
-}
 
 
-/* header */
+/* HEADER */
 
 .header__container {
   display: flex;
@@ -236,6 +174,8 @@ h3 {
   margin-left: 1.75rem;
 }
 
+/* ARTICLE */
+
 .article__contents {
   margin-top: 1.5rem !important;
   margin-bottom: 2.5rem;
@@ -263,6 +203,10 @@ h3 {
 .article ul ul {
   margin-top: 0;
   list-style-type: disc;
+}
+
+.article ul ol {
+  margin-top: 0 !important;
 }
 
 .article ol {
@@ -341,6 +285,9 @@ h3 {
   text-decoration: none;
 }
 
+
+/* FOOTER */
+
 .footer {
   display: flex;
   align-items: center;
@@ -349,8 +296,8 @@ h3 {
   margin-top: 2rem;
 }
 
-.footer__copyright {
-}
+
+/* ERROR */
 
 .error__title {
   margin-top: 2rem;
@@ -361,6 +308,7 @@ h3 {
   margin-top: 1rem;
   max-width: 300px;
 }
+
 
 @media screen and (max-width: 570px) {
   body {
