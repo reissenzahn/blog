@@ -1,0 +1,142 @@
+---
+title: "Visual Studio Code"
+date: 2022-03-23
+draft: false
+---
+
+
+# open current directory
+code .
+
+# open file
+code <file>
+
+
+<h3>Keyboard Shortcuts</h3>
+
+<h3>Display</h3>
+
+# toggle full screen
+⌃⌘F
+
+# toggle editor layout (horizontal/vertical)
+⌥⌘0
+
+# zoom in/out
+⌘= / ⇧⌘-
+
+# toggle sidebar visibility
+⌘B
+
+# show explorer/toggle focus
+⇧⌘E
+
+# show search
+⇧⌘F
+
+# show source control
+⌃⇧G
+
+# show debug
+⇧⌘D
+
+# show extensions
+⇧⌘X
+
+⇧⌘H Replace in files
+⇧⌘J Toggle Search details
+⇧⌘U Show Output panel
+⇧⌘V Open Markdown preview
+⌘K V Open Markdown preview to the side
+
+# zen mode (Esc Esc to exit)
+⌘K Z
+
+
+
+<h3>File Manager</h3>
+
+# new file
+⌘N
+
+# open file
+⌘O
+
+# save
+⌘S
+
+# save as
+⇧⌘S
+
+# save all
+⌥⌘S
+
+# close
+⌘W
+
+# close all
+⌘K ⌘W
+
+# reopen closed editor
+⇧⌘T
+
+⌘K Enter Keep preview mode editor open
+
+# Tab Open next / previous
+⌃Tab / ⌃⇧Tab
+
+
+⌘K P Copy path of active file
+
+# reveal active file in finder
+⌘K R 
+⌘K O Show active file in new window/instance
+
+
+<h3>Integrated Terminal</h3>
+
+{{% code bash %}}# show integrated terminal
+⌃`
+
+# create new terminal
+⌃⇧`
+
+# copy selection
+⌘C
+
+# scroll up/down
+⌘↑/↓
+
+# scroll page up/down
+PgUp/PgDn
+
+# scroll to top/bottom
+⌘Home/End{{% /code %}}
+
+
+
+<h3>Version Control</h3>
+
+# use visual studio code as editor
+$ git config --global core.editor "code --wait"
+
+# use visual studio code as diff tool
+$ git config --global diff.tool "vscode"
+$ git config --global difftool.vscode.cmd "code --wait --diff \$LOCAL \$REMOTE"
+
+# use visual studio code as merge tool
+$ git config --global merge.tool "vscode"
+$ git config --global mergetool.vscode.cmd = "code --wait \$MERGED"
+
+<!-- 
+  https://www.youtube.com/watch?v=F2DBSH2VoHQ
+  https://www.roboleary.net/vscode/2020/09/15/vscode-git.html
+ -->
+
+
+<h3>Debugging</h3>
+
+<!--
+https://www.youtube.com/watch?v=6cOsxaNC06c
+-->
+

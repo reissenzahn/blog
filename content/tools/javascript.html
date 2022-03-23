@@ -493,89 +493,72 @@ const matches = element.matches('a[href$="zip"]');{{% /code %}}
  -->
 
 
-<h3>Browser Events</h3>
-
-{{% code js %}}{{% /code %}}
-
-
-
-
-
-
-<h3>WebSockets</h3>
-
-{{% code js %}}// websockets provide a means of exchanging data between the browser and server via a persistent connection
-const socket = new WebSocket("wss://javascript.info/article/websocket/demo/hello");
-
-socket.onopen = (event) => {
-  console.log('[open] connection established');
-  socket.send('my name is John');
-};
-
-socket.onmessage = (event) => {
-  console.log(`[message] received from server: ${event.data}`);
-};
-
-socket.onclose = (event) => {
-  if (event.wasClean) {
-    console.log(`[close] connection closed cleanly (code=${event.code} reason=${event.reason})`);
-  } else {
-    alert('[close] connection died');
-  }
-};
-
-socket.onerror = (error) => {
-  alert(`[error] ${error.message}`);
-};{{% /code %}}
+<h3>This</h3>
 
 <!-- 
-  const http = require('http');
-  const ws = require('ws');
-
-  const wss = new ws.Server({noServer: true});
-
-  function accept(req, res) {
-    // all incoming requests must be websockets
-    if (!req.headers.upgrade || req.headers.upgrade.toLowerCase() != 'websocket') {
-      res.end();
-      return;
-    }
-
-    // can be Connection: keep-alive, Upgrade
-    if (!req.headers.connection.match(/\bupgrade\b/i)) {
-      res.end();
-      return;
-    }
-
-    wss.handleUpgrade(req, req.socket, Buffer.alloc(0), onConnect);
-  }
-
-  function onConnect(ws) {
-    ws.on('message', function (message) {
-      let name = message.match(/([\p{Alpha}\p{M}\p{Nd}\p{Pc}\p{Join_C}]+)$/gu) || "Guest";
-      ws.send(`Hello from server, ${name}!`);
-
-      setTimeout(() => ws.close(1000, "Bye!"), 5000);
-    });
-  }
-
-  if (!module.parent) {
-    http.createServer(accept).listen(8080);
-  } else {
-    exports.accept = accept;
-  }
+  Arrow functions and scope
+Regular functions do not block this. For example, this becomes something else in
+the setTimeout callback, not the tahoe object:
+const tahoe = {
+ mountains: ["Freel", "Rose", "Tallac", "Rubicon", "Silver"],
+ print: function(delay = 1000) {
+ setTimeout(function() {
+ console.log(this.mountains.join(", "));
+ }, delay);
+ }
+};
+tahoe.print(); // Uncaught TypeError: Cannot read property 'join' of undefined
+This error is thrown because it’s trying to use the .join method on what this is. If we
+log this, we’ll see that it refers to the Window object:
+console.log(this); // Window {}
+To solve this problem, we can use the arrow function syntax to protect the scope of
+this:
+const tahoe = {
+ mountains: ["Freel", "Rose", "Tallac", "Rubicon", "Silver"],
+ print: function(delay = 1000) {
+16 | Chapter 2: JavaScript for React
 -->
 
 
-
-{{% code js %}}{{% /code %}}
-
-
+<h3>ES6 Modules</h3>
 
 <!-- 
-  Web development
-  ===============
-
-  - Cookies: https://javascript.info/cookie
-
+  ES6 Modules
+A JavaScript module is a piece of reusable code that can easily be incorporated into
+other JavaScript files without causing variable collisions. JavaScript modules are
+stored in separate files, one file per module. There are two options when creating and
+28 | Chapter 2: JavaScript for React
+exporting a module: you can export multiple JavaScript objects from a single module
+or one JavaScript object per module.
+In text-helpers.js, two functions are exported:
+export const print=(message) => log(message, new Date())
+export const log=(message, timestamp) =>
+ console.log(`${timestamp.toString()}: ${message}`)
+export can be used to export any JavaScript type that will be consumed in another
+module. In this example, the print function and log function are being exported.
+Any other variables declared in text-helpers.js will be local to that module.
+Modules can also export a single main variable. In these cases, you can use export
+default. For example, the mt-freel.js file can export a specific expedition:
+export default new Expedition("Mt. Freel", 2, ["water", "snack"]);
+export default can be used in place of export when you wish to export only one
+type. Again, both export and export default can be used on any JavaScript type:
+primitives, objects, arrays, and functions.
+Modules can be consumed in other JavaScript files using the import statement. Mod‐
+ules with multiple exports can take advantage of object destructuring. Modules that
+use export default are imported into a single variable:
+import { print, log } from "./text-helpers";
+import freel from "./mt-freel";
+print("printing a message");
+log("logging a message");
+freel.print();
+You can scope module variables locally under different variable names:
+import { print as p, log as l } from "./text-helpers";
+p("printing a message");
+l("logging a message");
+You can also import everything into a single variable using *:
+import * as fns from './text-helpers`
+This import and export syntax is not yet fully supported by all browsers or by Node.
+However, like any emerging JavaScript syntax, it’s supported by Babel. This means
+you can use these statements in your source code and Babel will know where to find
+the modules you want to include in your compiled JavaScript.
  -->

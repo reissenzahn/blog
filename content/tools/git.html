@@ -1,362 +1,1034 @@
 ---
 title: "Git"
-date: 2020-09-29
+date: 2022-03-23
 draft: false
 ---
 
-<!-- 
-  NEXT UP
+<!-- #region concepts -->
+<h3>Concepts</h3>
 
-  - https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup
-  - https://onlywei.github.io/explain-git-with-d3/#checkout
-  - https://github.blog/2015-06-08-how-to-undo-almost-anything-with-git/
-  - https://nvie.com/posts/a-successful-git-branching-model/
+<h4>Overview</h4>
+
+<!--
+- Git is a distributed version control system that stores data as a series of snapshots of the project over time.
+- Every time you save the state of your project (i.e. commit), Git takes a snapshot of all the project files at that moment. 
 -->
 
 
-<ul>
-  <li>
-    <a href="#help">Help</a>
-  </li>
-  <li>
-    <a href="#config">Config</a>
-  </li>
-  <li>
-    <a href="#init">Init</a>
-  </li>
-  <li>
-    <a href="#add">Add</a>
-  </li>
-  <li>
-    <a href="#remove-and-move">Remove and Move</a>
-  </li>
-  <li>
-    <a href="#diff">Diff</a>
-  </li>
-  <li>
-    <a href="#commit">Commit</a>
-  </li>
-  <li>
-    <a href="#log">Log</a>
-  </li>
-  <li>
-    <a href="gitignore">.gitignore</a>
-  </li>
-  <li>
-    <a href="#ssh-keys">SSH Keys</a>
-  </li>
-  <li>
-    <a href="#resources">Resources</a>
-  </li>
-</ul>
+
+<h4>Repositories</h4>
+
+<!-- 
+A bare repository does not have a working directory which prevents any development happening in the central repository. Instead, a bare repository is typically used for storage and is updated by pushing to it from another repository.
+
+https://stackoverflow.com/questions/7632454/how-do-you-use-git-bare-init-repository
+-->
 
 
-<!-- #region help -->
-<h3 id="help">Help</h3>
+<h4>File Classifications</h4>
 
-{{% code bash %}}# check git version
-$ git version
+<!--
+- Files are classified into three groups:
 
-# get help for command
-$ git config --help
+1. Tracked: A file that is either already in the repository or that is staged in the index.
+2. Ignored: A file that has been declared as ignored in the .gitignore file even though it is present in the working directory.
+3. Untracked: A file that is not in either of the previous two categories.
+-->
 
-# get concise help for command
-$ git config -h
 
-# check status of repository
+<h4>File States</h4>
+
+<!-- 
+A file can be in one of three states:
+
+- Modified: File has been changed but has not been committed yet.
+- Staged: Modified file has been marked to be included in the next commit.
+- Committed: File has been stored in the local repository.
+
+There are three main sections of a Git project:
+
+- Working tree: A single checkout of one version of the project.
+- Staging area (index): Stores changes that will be included in the next commit.
+- Repository: Stores the metadata and object database for the project.
+
+The basic workflow is as follows:
+
+1. Modify files in the working tree.
+2. Selectively add changes to the staging area.
+3. Commit the staged changes by taking a snapshot of their current state and store that snapshot in the repository.
+
+
+- A file can be in one of three main states:
+  - Modified: The file has been changed but those changes have not yet been committed.
+  - Staged: A modified file has been marked so that its current version will go into the next commit.
+  - Committed: The changed have been stored in your local repository.
+- These states correspond to the three main areas of a repository:
+  - Working tree: A single checkout of one version of the project. These files are pulled out of the compressed database in the Git directory and placed on disk for you to use or modify.
+  - Staging area: Stores information about what will go into your next commit.
+  - Git directory: Where Git stores the metadata and object database for your project.
+- The basic Git workflow involves modifying files in your working tree, selectively staging those changes for the next commit and committing those changes to store a snapshot of the files in the staging area.
+-->
+
+<h4>Snapshots</h4>
+
+<!--
+- A snapshot represents the state of your project at a given point in time.
+-->
+
+
+
+<h3>Index</h3>
+
+<!-- 
+We can stage multiple files before actually committing it to the project history.
+Staging gives us the opportunity to group related changes into distinct snapshots.
+
+We have staged a snapshot, but we still need to commit it to the project history.
+
+1. Staging. Telling Git what files to include in the next commit.
+2. Committing. Recording the staged snapshot with a descriptive message.
+
+The distinction between the working directory, the staged snapshot, and committed snapshots is at the very core of Git version control. 
+
+If a particular version of a file is in the Git directory, it’s considered committed. If it has been modified and was added to the staging area, it is staged. And if it was changed since it was checked out but has not been staged, it is modified.
+-->
+
+
+<h4>Commits</h4>
+
+<!--
+- There are three areas of a repository: working tree, staging area and history (i.e. commit graph).
+- Changes are made in the working tree and then added to the staging area. A commit takes a snapshot of the staged changes and adds that snapshot to the history.
+- Focus is place on the changes to a file rather than the file itself. Adding files to the staging area causes git to take note of the current state of that file to be committed later.
+- Only changes that have been added to the staging area will be committed. Further changes to a file will need to be added before they can be committed.
+- A separate staging step allows you to edit multiple files and then separate those changes into separate commits by only staging the changes that are logically related.
+- Each commit is identified by a SHA-1 hash and the first few hexadecimal characters of those hashes are typically used to refer to specific commits.
+
+- Making a commit refers to recording the changes 
+- The fundamental workflow consists of making changes, staging those changes and then committing those changes.
+- A commit is uniquely identified by a SHA-1 checksum of the it contents. A commit is usually referred to by the first seven characters of this checksum.
+- A new commit refers to its parent commit.
+-->
+
+
+<h4>HEAD</h4>
+
+<!--
+- The HEAD pointer determines your current working revision (and thereby the files that are placed in your working directory).
+- HEAD is a special pointer that is used to keep track of which branch you are currently on.
+- Normally, when checking out a proper branch name, Git automatically moves the HEAD pointer along when you create a new commit. You are automatically on the newest commit of the chosen branch.
+
+- The HEAD is a pointer indicating the snapshot that is currently checked out.
+- The HEAD is a pointer to the current branch reference which is in turn a pointer to the last commit made on that branch.
+- This means that HEAD will be the parent of the next commit that is created.
+- The HEAD is automatically moved forward to the new commit as commits are made.
+-->
+
+
+<h4>Detached HEAD</h4>
+
+<!-- 
+- A checkout determines which revision of your project you want to work on.
+- Normally, you checkout a particular branch though you can also checkout a specific commit using its SHA-1 hash. 
+- Checking out a specific commit is called a "detached HEAD" which has the consequence that the HEAD pointer will not be automatically moved when you create a new commit.
+- As such, when you make changes and commit them, these changes do not belong to any branch.
+- This means they can easily get lost once you check out a different revision or branch: not being recorded in the context of a branch, you lack the possibility to access that state easily.
+- If you want to review an older revisions then it is probably preferable to simply create a temporary branch specifying the desired commit and then delete it once you are done.
+
+https://www.git-tower.com/learn/git/faq/detached-head-when-checkout-commit/
+-->
+
+
+<h4>Tags</h4>
+
+<!--
+Tags are convenient references to official releases and other significant milestones in a software project. It lets developers easily browse and check out important revisions.
+
+The -a flag tells Git to create an annotated tag, which lets us record our name, the date, and a descriptive message (specified via
+the -m flag).
+
+
+- Tags are used to indicate that a particular commit in the history of a repository is significant.
+- A lightweight tag simply points to a particular commit while an annotated tag contains the tagger name, email and date as well as a tagging message.
+-->
+
+
+<h4>Branches</h4>
+
+<!--
+- A branch is a movable pointer to a commit.
+- As you make commits, the current branch will move forward automatically to the last commit.
+- A branch is linear history of commits that corresponds to an independent line of development.
+- The currently checkout out branch corresponds to the contents of the working directory.
+- The default branch is called "master".
+-->
+
+
+
+
+<h4>Merge</h4>
+
+<figure>
+  <img src="/img/tools/git/fast-forward-merge.svg" height="100%" width="100%" style="max-width: 400px;">
+  <caption>Fast-Forward Merge</caption>
+</figure>
+
+<figure>
+  <img src="/img/tools/git/3-way-merge.svg" height="100%" width="100%" style="max-width: 400px;">
+  <caption>3-Way Merge</caption>
+</figure>
+
+<!--
+- A "fast-forward" merge occurs when the branch being merged into the current branch is directly ahead of the current branch so the current branch pointer is simply moved forward.
+- If the commit on the current branch is not a direct ancestor of the branch being merged into the current commit then a three-way merge is performed between the two latest branch commits and the most recent common ancestor of the two. Instead of moving the branch pointer forward, a new commit is made with the result of the three-way marge.
+
+- Merging creates a special commit that has two unique parents. A commit with two parents essentially include all the work from both and the set of all their parents.
+- By merging master into your feature branch periodically, you can pick up any changes to master and keep your changes in greet compatible with changes in the mainline.
+
+When the history of two branches diverges, a dedicated commit is required to combine the branches.
+
+A 3-way merge occurs when you try to merge two branches whose history has diverged. It creates an extra merge commit to function as a link between the two branches. As a result, it has two parent commits.
+
+When git branch creates a branch, it uses the current HEAD as the starting point for the new branch.
+
+Fast-forward merges are not reflected in the project history. This is the tangible distinction between fast-forward merges and 3-way merges.
+-->
+
+
+<h4>Rebase</h4>
+
+
+<figure>
+  <img src="/img/tools/git/rebase.svg" height="100%" width="100%" style="max-width: 400px;">
+  <caption>Rebase</caption>
+</figure>
+
+<!--
+- A rebase is similar to a merge except that the commit tree for the current branch will be rewritten so that the merged branch is a part of the commit history. This leaves the chain of commits linear and much easier to read.
+- Don't use rebase if the branch is public and shared or when the exact history of the commit branch is important. Typically, one could use rebase for short-lived, local branches and merge for branches in the public repository.
+
+- Rebasing involves taking all the changes that were committed on one branch and replaying them on a different branch.
+- This works by going to the common ancestor of the two branches, getting the diff introduced by each commit of the current branch, saving those diffs to temporary files, resetting the current branch to the same commit as the branch you are rebasing onto and finally applying each change in turn.
+
+- It is common to rebase local changed before pushing to clean up your work but never rebase anything that has already been pushed.
+-->
+
+
+<h4>Merge Conflicts</h4>
+
+<!-- 
+- A conflict occurs if a merge occurs between branches that have made changes to the same content.
+- The conflict must be manually resolved before anything else can be committed.
+- During a conflict, the <<<<<<<, =======, and >>>>>>> markers are added to the affected lines so the conflict can be manually resolved.
+- These markers should be deleted as part of resolving the conflict after which we can stage the changes made while resolving conflict and make a commit to complete the merge.
+
+- If the same part of the same file has been changed in two branches that are being merged then a merge conflict will occur.
+- In this case, conflict-resolution markers will be added to the files that have conflicts so they can be manually resolved.
+- After the conflicts have been resolved, the conflicted files can be staged to mark them as resolved following which a commit can be made to finalize the merge commit.
+-->
+
+<h4>Merge vs Rebase</h4>
+
+<!--
+When you are ahead of master, both do the same thing.
+
+If you're ahead and behind master, then a fast-forward merge isn't possible, since there are newer commits on master. But in that case, you can rebase, creating new commits based on the commits that are ahead of master.
+
+When you're ahead of master:
+
+            *E-*F-*G-*H-*I    BRANCH
+           /
+*A-*B-*C-*D                   MAIN
+
+When you do a fast forward merge the main pointer is moved forward to the tip of the branch. When you rebase each commit of the branch is moved after the head of MAIN. The end result is the same:
+
+*A-*B-*C-*D-*E-*F-*G-*H-*I MAIN | BRANCH
+
+When you are ahead as well as behind of MAIN:
+
+            *E-*F-*G-*H-*I    BRANCH
+           /
+*A-*B-*C-*D-*J-*K             MAIN
+
+Then you can't fast-forward merge E..I into main, since J..K are in the way. So fast-forward isn't possible in this case.
+
+But you can rebase E..I onto K:
+
+*A-*B-*C-*D-*J-*K-*E'-*F'-*G'-*H'-*I'             MAIN | BRANCH
+
+But what happens is that a new commit is made containing the changes of E and appended to main, then a new commit is made with the changes of F and appended to main... etc etc until all commits from the branch have been "moved"/"replayed" on the other branch. The result is again a single line of history with no branches and merges.
+
+Because the commits had to be re-applied and conflicts potentially resolved, the actual commits will change, a new commit-id generated etc.
+
+Share
+Follow
+
+  
+https://stackoverflow.com/questions/70627750/git-merge-fast-forward-vs-git-rebase
+-->
+
+<h4>Stashing</h4>
+
+
+<h4>Remotes</h4>
+
+<!-- 
+- A remote repository is another repository typically found a remote system (though it could also be local).
+- A local copy of a remote repository is made by cloning the remote repository. The cloned repository identifies the remote repository from which it was cloned as the shortname origin.
+- Branches in the remote repository are not treated as local branches.
+-->
+
+
+
+<h4>Remote-Tracking Branches</h4>
+
+<!-- 
+- Remote-tracking branches are local references to the state of remote branches that are moved automatically when you do any network connection.
+- Remote-tracking branch names take the form <remote>/<branch>.
+- Performing a fetch will move the remote-tracking branch to its up-to-date position.
+- If you make a commit to a local branch and, in the meantime, someone else pushes commits to the corresponding remote branch then the histories will move forward differently and performing a fetch will result in the local branch and the remote-tracking branch diverging.
+-->
+
+
+
+<h4>Synchronization</h4>
+
+<!--
+- The fetch command will fetch new commits from the remote repository, but it will not merge these commits into the local branches whereas pull combines these steps.
+- Local commits can then be pushed to the remote repository.
+
+https://stackoverflow.com/questions/4693588/what-is-a-tracking-branch -->
+
+
+<h4>Ignoring Files</h4>
+
+<!--
+- A special .gitignore file allows us to ignore certain files.
+- Each file or directory specified in the .gitignore will be invisible to Git.
+- Although the .gitignore file has special meaning to Git, it is managed just like any other normal file within your repository. 
+-->
+
+<!-- #endregion -->
+
+<!-- #region commands -->
+<h3>Commands</h3>
+
+<!-- #region config -->
+<h4>config</h4>
+
+{{% code bash %}}# set system variable (/etc/gitconfig)
+$ git config --system <variable> <value>
+
+# set global variable (~/.gitconfig)
+$ git config --global <variable> <value>
+
+# set local variable (.git/config)
+$ git config --local <variable> <value>
+
+# unset variable (similar for system/global/local)
+$ git config --unset --global <variable>
+
+# edit global config file directly
+$ git config --global -e
+
+# get configuration variable
+$ git config <variable>
+
+# get configuration variable and show its origin
+$ git config --show-origin <variable>
+
+# list configuration variables
+$ git config --list
+
+# list configuration variables and show their origins
+$ git config --list --show-origin
+
+# create alias for command
+$ git config --global alias.<alias> <command>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region init -->
+<h4>init</h4>
+
+{{% code bash %}}# initialize a new repository in the current directory
+$ git init
+
+# initialize a bare repository (one that does not have a working tree attached to it)
+$ git init --bare <repository name (.git)>
+{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region status -->
+<h4>status</h4>
+
+{{% code bash %}}# show repository status
 $ git status
 
-# check compact status of working directory
+# show concise repository status
 $ git status -s{{% /code %}}
 <!-- #endregion -->
 
+<!-- #region add -->
+<h4>add</h4>
 
-<!-- #region config -->
-<h3 id="config">Config</h3>
+{{% code bash %}}# add changes to staging area
+$ git add <file>
+  
+# add all changes in the current directory to staging area
+$ git add .
 
-{{% code bash %}}# list all configuration variables and their origin
-$ git config --list --show-origin
+# add portion of changes in file to staging area
+$ git add --patch <file>
 
-# set global options (~/.gitconfig)
-$ git config --global user.name "John Doe"
-$ git config --global user.email "john@example.com"
-$ git config --global core.editor code
+# perform interactive staging
+$ git add --interactive{{% /code %}}
 
-# set local options (.git/config)
-$ git config --local init.defaultBranch master
+<!-- https://www.youtube.com/watch?v=zzh7cRpTNS4 -->
+<!-- #endregion -->
 
-# set line ending preferences
+<!-- #region rm -->
+<h4>rm</h4>
+
+{{% code bash %}}# stage removal of file and remove from working tree
+$ git rm <file>
+
+# stage removal of file without removing it from the working tree
+$ git rm --cached <file>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region mv -->
+<h4>mv</h4>
+
+{{% code bash %}}# stage file move and move file (same as mv followed by git rm and git add)
+$ git mv <file> <new file>{{% /code %}}
+
+<!--
+$ mv foo.html bar.html
+$ git rm foo.html
+$ git add bar.html
+-->
+<!-- #endregion -->
+
+<!-- #region commit -->
+<h4>commit</h4>
+
+{{% code bash %}}# commit staged changes
+$ git commit
+
+# commit staged changes with specified commit message
+$ git commit -m <message>
+
+# commit staged changes and show diff
+$ git commit -v
+
+# stage all tracked files and commit those changes
+$ git commit -a
+
+# amend previous commit
+$ git commit --amend
+
+# stage changes to specified file and commit those changes
+$ git commit <file>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region show -->
+<h4>show</h4>
+
+{{% code bash %}}# show details of most recent commit
+$ git show
+
+# show details of specified commit
+$ git show <commit hash>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region diff -->
+<h4>diff</h4>
+
+{{% code bash %}}# show changes that remain in the working tree but that are not staged
+$ git diff
+
+# shows changes that are staged and will contribute to the next commit
+$ git diff --staged
+
+# show changes between two commits
+$ git diff <commit hash> <other commit hash>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region tag -->
+<h4>tag</h4>
+
+{{% code bash %}}# list existing tags
+$ git tag --list
+
+# search for tags that match a pattern
+$ git tag --list <pattern>
+
+# create a lightweight tag
+$ git tag <tag name>
+
+# create a lightweight tag for a particular commit
+$ git tag <tag name> <commit hash>
+
+# create an annotated tag with the specified tagging message
+$ git tag -a <tag name> -m <message>
+
+# create an annotated tag for a particular commit
+$ git tag -a <tag name> <commit hash>
+
+# delete a tag from local repository
+$ git tag -d <tag name>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region log -->
+<h4>log</h4>
+
+{{% code bash %}}# show commit history for current branch
+$ git log
+
+# show commit history for specified branch
+$ git log <branch name>
+
+# show commit history for specified file
+$ git log <file>
+
+# show commit history for all branches
+$ git log --all
+
+# show graph of the branch and merge history
+$ git log --graph
+
+# show diff introduced in each commit
+$ git log --patch
+
+# show log output with specified format
+$ git log --pretty=<format>
+
+# limit log entries displayed
+$ git log -<number>
+$ git log --after=<date>
+$ git log --before=<date>
+$ git log --author=<author>
+
+# filter commits by keywords in commit messages
+$ git log --grep=<pattern>
+
+# filter commits that changed the number of occurrences of a string
+$ git log -S <string>
+
+# filter commits that introduced changes to file(s)
+$ git log -- <path>
+  
+# compare branches
+$ git log <branch name>..<other branch name>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region blame -->
+<h4>blame</h4>
+
+{{% code bash %}}# show who changed a what and when in the specified file
+$ git blame <file>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region branch -->
+<h4>branch</h4>
+
+<!-- NOTE: Do not rename branches that are still in use by other collaborators. -->
+
+{{% code bash %}}# list local branches
+$ git branch
+
+# list remote branches
+$ git branch -r
+
+# show last commit on each branch
+$ git branch -v
+
+# show local and remote branches
+$ git branch -a
+
+# list branches that have already been merged into the current branch
+$ git branch --merged
+
+# list branches that have not yet been merged into the current branch
+$ git branch --no-merged
+
+# create a new branch
+$ git branch <branch name>
+
+# create a new branch at the specified commit
+$ git branch <branch name> <commit hash> 
+
+# delete a branch
+$ git branch -d <branch name>
+
+# force delete an unmerged branch
+$ git branch -D crazy-alt
+
+# rename a branch
+$ git branch --move <branch name> <new branch name>
+
+# rename current branch
+$ git branch -m <new branch name>
+  
+# have a local branch track a remote  branch
+$ git branch --track <branch name> <shortname>/<branch name>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region checkout -->
+<h4>checkout</h4>
+
+{{% code bash %}}# checkout branch
+$ git checkout <branch name>
+
+# create a new branch and checkout that branch
+$ git checkout -b <branch name>
+  
+# checkout commit
+$ git checkout <commit hash>
+  
+# checkout commit by tag name
+$ git checkout <tag name>
+  
+# checkout file
+$ git checkout -- <file>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region switch -->
+<h4>switch</h4>
+
+{{% code bash %}}# switch to a branch (i.e. checkout branch)
+$ git switch <branch name>
+
+# create a new branch and switch to it
+$ git switch --create <branch name>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region merge -->
+<h4>merge</h4>
+
+{{% code bash %}}# merge specified branch into current branch
+$ git merge <branch name>
+  
+# abort merge to avoid having to resolve merge conflicts
+$ git merge --abort
+
+# force a merge commit when a fast-forward merge would usually be done
+$ git merge --no-ff <branch name>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region rebase -->
+<h4>rebase</h4>
+
+{{% code bash %}}# rebase specified branch into current branch
+$ git rebase <branch name>
+  
+# abort merge to avoid having to resolve merge conflicts
+$ git rebase --abort
+
+# perform interactive rebase
+$ git rebase --interactive
+
+# perform interactive rebase on last n commits from HEAD
+$ git rebase --interactive HEAD~<n>
+
+# rebase specified branch into current branch
+$ git rebase -i <branch name>
+{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region mergetool -->
+<h4>mergetool</h4>
+
+{{% code bash %}}# use configured merge tool to resolve conflicts
+$ git mergetool{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region revert -->
+<h4>revert</h4>
+
+{{% code bash %}}# make a new commit which undoes all the changes from the specified commit
+$ git revert <commit hash>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region reset -->
+<h4>reset</h4>
+
+{{% code bash %}}# remove all changes from the staging area
+$ git reset
+
+# remove changes to specified file from changing area
+$ git reset <file>
+
+# reset all tracked files to match the most recent commit
+$ git reset --hard
+
+# reset all tracked files to match the specified commit
+$ git reset --hard <commit hash>{{% /code %}}
+
+<!-- 
+Discard all local changes in your working  directory
+$ git reset --hard HEAD Discard local changes in a specific file
+$ git checkout HEAD <file> Revert a commit  (by producing a new commit with contrary changes)
+$ git revert <commit> Reset your HEAD pointer to a previous commit ...and discard all changes since then $ git reset --hard <commit> ...and preserve all changes as unstaged changes $ git reset <commit> ...and preserve uncommitted local changes $ git reset --keep <commit> 
+-->
+<!-- #endregion -->
+
+<!-- #region clean -->
+<h4>clean</h4>
+
+{{% code bash %}}# remove all untracked files
+$ git clean -f{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region stash -->
+<h4>stash</h4>
+
+{{% code bash %}}# push a new stash onto the stack
+$ git stash
+
+# list stored stashes
+$ git stash list
+
+# apply most recent stash (but do not remove it from the stack)
+$ git stash apply
+
+# apply stash by number
+$ git stash apply stash@{<n>}
+
+# apply stash and restage staged changes
+$ git stash apply --index
+
+# remove specified stash from stack
+$ git stash drop stash@{<n>}
+
+# apply stash and remove it from the stack
+$ git stash pop{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region clone -->
+<h4>clone</h4>
+
+{{% code bash %}}# clone a local repository
+$ git clone <repo> <repo copy> 
+
+# clone a remote repository
+$ git clone <url>
+
+# clone a remote repository and specify directory name
+$ git clone <url> <directory name>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region remote -->
+<h4>remote</h4>
+
+{{% code bash %}}# list shortnames of remote handles
+$ git remote
+
+# list shortnames and corresponding URLs of remote handles
+$ git remote -v
+
+# add a new remote repository as a shortname
+$ git remote add <shortname> <url>
+
+# show information about a remote
+$ git remote show <remote>
+
+# rename specified remote shortname
+$ git remote rename <shortname> <new shortname>
+
+# remove specified remote
+$ git remote rm <shortname>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region fetch -->
+<h4>fetch</h4>
+
+{{% code bash %}}# fetch from remote with shortname origin (i.e. download remote branch information but do not merge anything)
+$ git fetch
+
+# fetch from specified remote
+$ git fetch <remote>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region pull -->
+<h4>pull</h4>
+
+{{% code bash %}}# fetch from remote with shortname origin and and merge into local master
+$ git pull{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region push -->
+<h4>push</h4>
+
+{{% code bash %}}# push a local branch to a remote
+$ git push <shortname> <branch>
+
+# push tag to remote
+$ git push <shortname> <tag name>
+
+# push all tags to remote
+$ git push origin --tags
+
+# push all annotated tags to remote
+$ git push origin --follow-tags
+
+# delete branch from remote
+$ git push <shortname> --delete <branch name>
+
+# delete tag from remote
+$ git push <shortname> --delete <tag name>{{% /code %}}
+<!-- #endregion -->
+
+<!-- #region archive -->
+<h4>archive</h4>
+
+{{% code bash %}}# export repository as a zip file (removing all version control information)
+$ git archive <branch name> --format=zip --output=<file (.zip)>
+
+# export repository as a tarball
+$ git archive <branch name> --format=tar --output=<file (.tar)>{{% /code %}}
+<!-- #endregion -->
+<!-- #endregion -->
+
+<!-- #region samples -->
+<h3>Samples</h3>
+
+<h4>Setup and Configuration</h4>
+
+{{% code bash %}}
+# generate public/private rsa key pair
+$ cd ~/.ssh
+$ ssh-keygen -t rsa -b 4096 -C <email>
+
+# display contents of public key file which can be added to the account settings of a repository service
+$ cat ~/.ssh/id_rsa.pub
+
+# set various global variables
+$ git config --global user.name "Derek Reissenzahn"
+$ git config --global user.email "dreissenzahn@protonmail.com"
+$ git config --global core.editor "code --wait"
+$ git config --global init.defaultBranch main
 $ git config --global core.autocrlf input
 $ git config --global core.safecrlf true
 
-# view user.name variable
-$ git config --get user.name{{% /code %}}
-
-{{% code toml %}}# .gitconfig
-[alias]
-  co = checkout
-  ci = commit
-  st = status
-  br = branch
-  hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
-  type = cat-file -t
-  dump = cat-file -p{{% /code %}}
-<!-- #endregion -->
+# set useful aliases
+git config --global alias.st status
+git config --global alias.ci commit
+git config --global alias.br branch
+git config --global alias.co checkout
+git config --global alias.unstage "reset HEAD --"
+git config --global alias.last "log -1 HEAD"
+git config --global alias.hist "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short"{{% /code %}}
 
 
-<!-- #region init -->
-<h3 id="init">Init</h3>
+<h4>Initializing a Repository</h4>
 
-{{% code bash %}}# initialize a new git repository
+{{% code bash %}}# initialize a new repository
 $ mkdir project
 $ cd project
-$ touch README
 $ git init
 
 # make initial commit
+$ touch README
 $ git add README
 $ git commit -m "Initial commit."
 
 # remove the repository
 $ rm -r .git{{% /code %}}
-<!-- #endregion -->
 
 
-<!-- #region add -->
-<h3 id="add">Add</h3>
+<h4>Pretty Logs</h4>
 
-{{% code bash %}}# make changes and add those changes to staging area
-$ echo "A" > test.txt
-$ git add test.txt
-
-# add all changes to files in the current directory and below
-$ git add .
-
-# revert changes that have not been added to the staging area
-$ echo "B" > test.txt
-$ git checkout test.txt
-
-# revert changes that have been added to the staging area
-$ echo "A" > test.txt
-$ git add test.txt
-$ git reset HEAD test.txt{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region remove-and-move -->
-<h3 id="remove-and-move">Remove and Move</h3>
-
-{{% code bash %}}# remove file from working tree and stage that change
-$ git rm test.txt
-
-# stage removal but do not remove file from working tree
-$ git rm --cached test.txt
-
-# move file
-$ git mv test.txt test2.txt
-$ git status
-
-# moving without git commands
-$ mv test.txt test2.txt
-$ git add test2.txt
-$ git rm test.txt{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region diff -->
-<h3 id="diff">Diff</h3>
-
-{{% code bash %}}# check changes between working tree and staged changes
-$ git diff
-
-# check changes between staged changes and most recent commit
-$ git diff --staged{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region commit -->
-<h3 id="commit">Commit</h3>
-
-{{% code bash %}}# commit changes with inline message
-$ git commit -m "initial commit"
-
-# commit staged changes and show diff
-$ git commit -v
-
-# revert changes committed to the local repository with a new commit
-$ echo "B" > test.txt
-$ git add test.txt
-$ git commit -m "oops!"
-$ git revert HEAD --no-edit
-
-# make an incomplete commit and amend it
-$ git add test.txt
-$ git commit -m "incomplete"
-$ echo "A" > test.txt
-$ git add test.txt
-$ git commit --amend -m "amended"{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region log -->
-<h3 id="log">Log</h3>
-
-{{% code bash %}}# list commits made in the repository in reverse chronological order
-$ git log
-
-# include difference introduced in each commit
-$ git log --patch
-
-# one line histories
+{{% code bash %}}# show log output using builtin formats
 $ git log --pretty=oneline
+$ git log --pretty=short
+$ git log --pretty=full
+$ git log --pretty=fuller
 
-# show all branches
-$ git log --all
+# show one line log output with graph
+$ git log --oneline --graph
 
-# control which entries are displayed
-$ git log --max-count=2
-$ git log --since='5 minutes ago'
-$ git log --until='5 minutes ago'
-$ git log --author='John Doe'
-
-# custom log format
+# show log output using custom format
 $ git log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short{{% /code %}}
-<!-- #endregion -->
 
 
-<!-- #region checkout -->
-<h3 id="checkout">Checkout</h3>
+<h4>Amending Commits</h4>
 
-{{% code bash %}}# copy snapshot from repository to working directory
-$ git checkout b0f5cf0
+<p>
+  NOTE: Only amend commits that are still local as amending pushed commits and force pushing the branch will cause problems for your collaborators.
+</p>
 
-# copy snapshot of file from repository to working directory
-$ git checkout b0f5cf0 -- test.txt
+{{% code bash %}}# commit changes
+$ git commit -m 'Am I forgetting something?'
 
-# return the latest version in the master branch
-$ git checkout master{{% /code %}}
-<!-- #endregion -->
+# stage forgotten changes
+$ git add README
 
-
-<!-- #region tag -->
-<h3 id="tag">Tag</h3>
-
-{{% code bash %}}# list available tags
-$ git tag
-
-# tag current version as v1
-$ git tag v1
-
-# tag previous commit as v1-beta
-$ git checkout v1^
-$ git tag v1-beta
-
-# checkout commit by tag name
-$ git checkout v1
-$ git checkout v1-beta
-
-# remove tag
-$ git tag -d v1{{% /code %}}
-<!-- #endregion -->
+# replace previous commit
+$ git commit --amend{{% /code %}}
 
 
-<!-- #region branch -->
-<h3 id="branch">Branch</h3>
+<h4>Basic Interactive Rebase</h4>
 
-{{% code bash %}}# list existing local branches
-$ git branch
+{{% code bash %}}# commit changes with bad commit message
+$ git commit -m 'Some changes.'
 
-# list existing local and remote branches
-$ git branch -a 
+# commit more changes
+$ git commit -m 'More changes.'
+$ git commit -m 'Even more changes.'
 
-# create a new branch
+# perform interactive rebase on last 3 commits from HEAD
+$ git rebase -i HEAD~3
+
+# modify commit message
+reword 58c4060 Some changes.
+
+# delete commit
+drop 58c4060 Some changes.
+
+# reorder commits
+pick 80aa505 More changes.
+pick 58c4060 Some changes.
+pick 953ddd0 Even more changes.
+
+# squash commits back into first commit
+pick 58c4060 Some changes.
+squash 80aa505 More changes.
+squash 953ddd0 Even more changes.
+
+# squash commits back into first commit discarding the commit messages
+pick 58c4060 Some changes.
+fixup 80aa505 More changes.
+fixup 953ddd0 Even more changes.{{% /code %}}
+
+<!-- https://www.youtube.com/watch?v=ElRzTuYln0M -->
+
+
+<h4>Basic Merging</h4>
+
+{{% code bash %}}# make two commits on master
+$ git commit -m "m1"
+$ git commit -m "m2"
+
+# make a feature branch
 $ git branch feature
 
-# switch to branch
+# make two commits on feature
 $ git switch feature
+$ git commit -m "f1"
+$ git commit -m "f2"
 
-# create a new branch and switch to it
-$ git switch -c feature
-
-# reset a branch to a commit
-$ git switch feature
-$ git reset --hard 228a31e
-
-# delete feature branch
-$ git branch -d feature{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region merge-and-rebase -->
-<h3 id="merge-and-rebase">Merge and Rebase</h3>
-
-{{% code bash %}}# merge master into feature
-$ git switch feature
-$ git merge master
-
-# merge feature into master
+# make a third commit on master
 $ git switch master
-$ git merge feature
+$ git commit -m "m3"
 
-# rebase master into feature
-$ git switch feature
-$ git rebase master{{% /code %}}
-<!-- #endregion -->
+# merge feature branch into master
+$ git merge feature{{% /code %}}
 
 
-<!-- #region: clone -->
-<h3>Clone</h3>
+<h4>Basic Rebase</h4>
 
-{{% code bash %}}# clone local repository
-$ git clone original copy
-
-# clone remote repository into example directory
-$ git clone git@github.com:username/example.git{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region: remote -->
-<h3 id="remote">Remote</h3>
-
-{{% code bash %}}# list shortnames of remote handles
-$ git remote
-
-# list URLs of remote handles
-$ git remote -v
-
-# show information about remote with shortname origin
-$ git remote show origin
-
-# add a remote git repository as the origin shortname
-$ git remote add origin git@github.com:dreissenzahn/example.git
-
-# rename the shortname of a remote from origin to source
-$ git remote rename origin source
-
-# remove a remote with shortname origin
-$ git remote remove origin{{% /code %}}
-<!-- #endregion -->
-
-
-<!-- #region: fetch-and-push -->
-<h3 id="fetch-and-push">Fetch and Push</h3>
-
-{{% code bash %}}# fetch from remote with shortname origin
-$ git fetch
-
-# merge fetched changes into local master
-$ git merge origin/master
-
-# fetch and merge into local master
+{{% code bash %}}# sync remote master
 $ git pull
 
-# push commits to remote master branch
-$ git push origin master{{% /code %}}
-<!-- #endregion -->
+# create new branch
+$ git checkout -b feature
+
+# make commits on feature branch
+$ git commit -m "C1"
+$ git commit -m "C2"
+
+# sync remote master
+$ git checkout master
+$ git pull
+
+# rebase to re-anchor feature branch against the latest changes to master
+$ git checkout feature
+$ git rebase master
+
+# rebase to replay commits on feature on master
+$ git checkout master
+$ git rebase feature
+
+# push to master
+$ git push{{% /code %}}
+
+<!-- https://www.youtube.com/watch?v=f1wnYdLEpgI -->
 
 
-<!-- #region gitignore -->
-<h3 id="gitignore">.gitignore</h3>
+<h4>Create Branch from Detached Head</h4>
+
+{{% code bash %}}# make some commits
+$ git commit -m "Some changes"
+$ git commit -m "More changes"
+$ git commit -m "Even more changes"
+
+# show commit log
+c127438 (HEAD -> master) Even more changes
+1b48e27 More changes
+b9d1db3 Some changes
+
+# checkout earlier commit
+$ git checkout 1b48e27
+
+# create new branch
+$ git branch feature
+$ git checkout feature
+
+$ make some more commits on branch
+$ git commit -m "What if we did this?"{{% /code %}}
+
+
+<h4>Resolve a Merge Conflict</h4>
+
+<!-- UNTESTED -->
+
+{{% code bash %}}# create README file
+$ touch README]
+$ git add README
+$ git commit -m "Created README"
+
+# make changes in feature
+$ git branch feature
+$ git checkout feature
+$ echo "That" > README
+$ git add README
+$ git commit -m "Modified README"
+
+# make conflicting changes in master
+$ git checkout master
+$ echo "This" > README
+$ git add README
+$ git commit -m "Also Modified README"
+
+# merge feature into master
+$ git merge feature
+$ cat README
+<<<<<<< HEAD
+This
+=======
+That
+>>>>>>> feature
+$ vim README
+$ cat README
+This & That
+
+# finalize merge
+$ git add README
+$ git commit
+{{% /code %}}
+
+
+<h4>Rename a Remote Branch</h4>
+
+{{% code bash %}}# delete the old branch
+$ git push origin --delete old-name
+
+# push a new branch
+$ git push -u origin new-name{{% /code %}}
+
+
+<h4>.gitignore Essentials</h4>
 
 {{% code bash %}}# ignore all .a files
 *.a
@@ -375,116 +1047,50 @@ doc/*.txt
 
 # ignore all .pdf files in the doc/ directory and any of its subdirectories
 doc/**/*.pdf{{% /code %}}
+
+<!-- <h4></h4>
+
+{{% code bash %}}{{% /code %}} -->
+
 <!-- #endregion -->
-
-
-<!-- #region ssh-keys -->
-<h3 id="ssh-keys">SSH Keys</h3>
-
-{{% code bash %}}# generate public/private rsa key pair
-$ cd ~/.ssh
-$ ssh-keygen -t rsa -b 4096 -C "john@example.com"
-
-# display contents of public key file which can be added to the account settings of a repository service
-$ cat ~/.ssh/id_rsa.pub{{% /code %}}
-<!-- #endregion -->
-
 
 <!-- #region resources -->
 <h3>Resources</h3>
 
 <ul>
   <li>
-    <a href="https://gitimmersion.com/lab_43.html">Git Immersion</a>
-  </li>
-  <li>
-    <a href="https://onlywei.github.io/explain-git-with-d3/">Visualizing Git Concepts with D3</a>
+    <a href="https://johnmathews.is/Rys%20Git%20Tutorial.pdf">Ry's Git Tutorial</a>
   </li>
   <li>
     <a href="https://git-scm.com/book/en/v2">Pro Git</a>
   </li>
   <li>
-    <a href="https://www.youtube.com/watch?v=uR6G2v_WsRA">Introduction to Git (David Mahler)</a>
-  </li>
-  <li>
-    <a href="https://github.com/github/gitignore">Example .gitignore Files</a>
+    <a href="https://onlywei.github.io/explain-git-with-d3/">Visualizing Git Concepts with D3</a>
   </li>
   <li>
     <a href="https://marklodato.github.io/visual-git-guide/index-en.html">A Visual Git Reference</a>
   </li>
   <li>
-    <a href="https://learngitbranching.js.org/">Learn Git Branching</a>
+    <a href="https://gitimmersion.com/">Git Immersion</a>
+  </li>
+  <li>
+    <a href="https://github.blog/2015-06-08-how-to-undo-almost-anything-with-git/">How to Undo (Almost) Anything with Git</a>
   </li>
   <li>
     <a href="https://nvie.com/posts/a-successful-git-branching-model/">A Successful Git Branching Model</a>
   </li>
   <li>
-    <a href="https://cuddly-octo-palm-tree.com/posts/2021-09-19-git-elements/">The Elements of Git</a>
-  </li>
-  <li>
-    <a href="https://bakkenbaeck.github.io/a-random-walk-through-git/">A Random Walk Through Git</a>
-  </li>
-  <li>
-    <a href="http://justinhileman.info/article/git-pretty/">Git Pretty</a>
-  </li>
-  <li>
-    <a href="https://mikkel.ca/blog/git-is-my-buddy-effective-solo-developer/">Git is my buddy: Effective Git as a solo developer</a>
-  </li>
-  <li>
-    <a href="https://techtldr.com/19-git-tips-for-everyday-use/">19 Git Tips For Everyday Use</a>
+    <a href="https://github.com/github/gitignore">Example .gitignore Files</a>
   </li>
 </ul>
-<!-- #endregion -->
-
-
-
 
 <!--
-
-  - A file can be in one of three main states:
-    - Modified: The file has been changed but those changes have not yet been committed.
-    - Staged: A modified file has been marked so that its current version will go into the next commit.
-    - Committed: The changed have been stored in your local repository.
-  - These states correspond to the three main areas of a repository:
-    - Working tree: A single checkout of one version of the project. These files are pulled out of the compressed database in the Git directory and placed on disk for you to use or modify.
-    - Staging area: Stores information about what will go into your next commit.
-    - Git directory: Where Git stores the metadata and object database for your project.
-  - The basic Git workflow involves modifying files in your working tree, selectively staging those changes for the next commit and committing those changes to store a snapshot of the files in the staging area.
-
-
-  Commits
-
-  - There are three areas of a repository: working tree, staging area and history (i.e. commit graph).
-  - Changes are made in the working tree and then added to the staging area. A commit takes a snapshot of the staged changes and adds that snapshot to the history.
-  - Focus is place on the changes to a file rather than the file itself. Adding files to the staging area causes git to take note of the current state of that file to be committed later.
-  - Only changes that have been added to the staging area will be committed. Further changes to a file will need to be added before they can be committed.
-  - A separate staging step allows you to edit multiple files and then separate those changes into separate commits by only staging the changes that are logically related.
-  - Each commit is identified by a SHA-1 hash and the first few hexadecimal characters of those hashes are typically used to refer to specific commits.
-  
-  
-  Branching
-
-  - Merging creates a special commit that has two unique parents. A commit with two parents essentially include all the work from both and the set of all their parents.
-  - By merging master into your feature branch periodically, you can pick up any changes to master and keep your changes in greet compatible with changes in the mainline.
-  - A rebase is similar to a merge except that the commit tree for the current branch will be rewritten so that the merged branch is a part of the commit history. This leaves the chain of commits linear and much easier to read.
-  - Don't use rebase if the branch is public and shared or when the exact history of the commit branch is important. Typically, one could use rebase for short-lived, local branches and merge for branches in the public repository.
-
-
-  Remote Repositories
-  
-  - A remote repository is another repository typically found a remote system (though it could also be local).
-  - A local copy of a remote repository is made by cloning the remote repository. The cloned repository identifies the remote repository from which it was cloned as the shortname origin.
-
-  - Branches in the remote repository are not treated as local branches here. If we want our own greet branch, we need to create it ourselves. We will see how to do that in a minute.
-
-  https://stackoverflow.com/questions/4693588/what-is-a-tracking-branch
-
-  - The fetch command will fetch new commits from the remote repository, but it will not merge these commits into the local branches whereas pull combines these steps.
-  - Local commits can then be pushed to the remote repository.
-
-
-  Remote Branching
-  - Remote references are pointers 
-
+https://www.youtube.com/watch?v=uR6G2v_WsRA
+https://www.youtube.com/watch?v=Uszj_k0DGsg
+https://cuddly-octo-palm-tree.com/posts/2021-09-19-git-elements/
+https://learngitbranching.js.org/
+https://bakkenbaeck.github.io/a-random-walk-through-git/
+https://mikkel.ca/blog/git-is-my-buddy-effective-solo-developer/
+http://justinhileman.info/article/git-pretty/
 -->
-
+<!-- #endregion -->

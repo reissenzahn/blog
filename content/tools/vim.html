@@ -11,19 +11,25 @@ draft: false
 
 <h4>Modes</h4>
 
-Finally landed a job offer from Amazon. Now that I know where I stand from an income point of view, it would be great to get your input regarding 
+<ul>
+  <li>
+    Normal/Command Mode: Used for entering commands.
+  </li>
+  <li>
+    Insert Mode: Used for making changes to the file.
+  </li>
+  <li>
+    Visual Mode: Used for selecting text using movements.
+  </li>
+  <li>
+    Ex Mode: Used for entering commands at the ":" prompt.
+  </li>
+</ul>
 
 
-The first thing we need to grasp is the concept of modes. It's a bit counterintuitive at first but it becomes second nature once you grok it. Most guides start with this bit, but I find it a bit obtuse to lead with, and I think the transition point from Normal to Insert is a great place to introduce it.
 
-You start in Normal Mode. One of the most annoying things about Vim for beginners is that you can't just open it up and start typing. Well, you can, but things go sideways pretty quick if you do.
-Normal Mode is also known as Command Mode, as it's where you're usually entering commands. Commands can be movements, deletions, or commands that do these things and then enter into Insert Mode.
-Insert Mode is where you make changes to your file, and there are tons of ways of entering Insert Mode from Normal Mode. Again, don't worry, this all becomes ridiculously simple with a bit of practice.
-Visual Mode is a way to select text. It's a lot like Normal Mode, except your movements change your highlighting. You can select text both character-wise or line-wise, and once in one of those modes your movements select more text.
-The purpose of Visual Mode is to then perform some operation on all the content you have highlighted, which makes it very powerful.
-Ex Mode is a mode where you drop down to the bottom, where you get a ":" prompt, and you can enter commands. More on that later. Just know that you can run some powerful command-line stuff from there.
-There are some other modes as well, but we won't mess with them here as they tend to live outside primer territory.
 
+<!-- #region configuration -->
 <h3>Configuration</h3>
 
 {{% code vim %}}$ vim ~/.vimrc
@@ -40,6 +46,9 @@ syntax on
 " show line numbers
 set number
 
+" show current filetype
+set filetype
+
 " disable the swapfile
 set noswapfile
 
@@ -54,9 +63,9 @@ set incsearch
 
 " enable spellchecking
 set spell spelllang=en_us{{% /code %}}
+<!-- #endregion -->
 
-
-
+<!-- #region files -->
 <h3>Files</h3>
 
 {{% code vim %}}" save changes
@@ -70,9 +79,13 @@ ZZ
 :q!
 
 " save file to a location
-:saveas ~/path/filename.txt{{% /code %}}
+:saveas ~/path/filename.txt
 
+" change file type
+set ft{{% /code %}}
+<!-- #endregion -->
 
+<!-- #region movement -->
 <h3>Movement</h3>
 
 <h4>Basic Movements</h4>
@@ -179,6 +192,7 @@ G
 
 " move up a page
 ^B{{% /code %}}
+<!-- #endregion -->
 
 
 <h3>Changing Text</h3>
@@ -223,20 +237,49 @@ X
 " delete the current line
 dd
 
-" delete to end end of the line
+" delete to end of the line
 D
+
+" join the current line with the next one (delete whatever is between)
+J
+
+" delete movement 'm' (e.g. word, sentence, paragraph)
+dm
 {{% /code %}}
 
 
+<h3>Visual Mode</h3>
 
-<h3>Undo and Redo</h3>
+{{% code vim %}}" enter character-based visual mode
+v
+
+" enter line-based visual mode
+V
+
+" enter paragraph-based visual mode
+CTRL-v
+
+" select inside of parenthesis, brackets, etc.
+vi(
+vi[
+
+
+{{% /code %}}
+
+
+<h3>Undo, Redo and Repeat</h3>
 
 {{% code vim %}}" undo your last action
 u
 
 # redo the last action
 CTRL-r
-{{% /code %}}
+
+# repeat last action
+.
+
+" repeat last 5 actions
+5.{{% /code %}}
 
 
 <h3>Copy and Paste</h3>
@@ -283,7 +326,46 @@ https://stackoverflow.com/questions/657447/vim-clear-last-search-highlighting
 
 <h3>Substitution</h3>
 
-{{% code vim %}}" 
+{{% code vim %}}" change 'foo' to 'bar' on every line
+:%s /foo/bar/g
 
-{{% /code %}}
+" change 'foo' to 'bar' on the current line
+:s /foo/bar/g{{% /code %}}
+
+
+<h3>Macros</h3>
+
+{{% code vim %}}" start recording a macro named 'a'
+qa
+
+" stop recording
+q
+
+" play macro named 'a'
+@a{{% /code %}}
+
+
+<h3>Spellchecking</h3>
+
+{{% code vim %}}" enable spellchecking
+:set spell
+
+" disable spellchecking
+:set nospell
+
+" go to next misspelled word
+]s
+
+" go to previous misspelled word
+[s
+
+" get suggestions for current misspelled word
+z=
+
+" mark a misspelled word as correct
+zg
+
+" mark a word as misspelled
+zw{{% /code %}}
+
 

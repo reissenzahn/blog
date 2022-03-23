@@ -1,0 +1,48 @@
+---
+title: "TypeScript"
+date: 2021-07-07
+draft: false
+---
+
+
+
+<h3>Commands</h3>
+
+# install tsc globally
+$ npm install -g typescript
+
+# compile typescript to javascript
+$ tsc hello.ts
+
+# only emit output if no compiler errors are reported
+$ tsc --noEmitOnError hello.ts
+
+# target a particular ECMAScript version (default is ES3)
+$ tsc --target es2015 hello.ts
+
+
+function greet(person: string, date: Date) {
+  console.log(`Hello ${person}, today is ${date.toDateString()}!`);
+}
+
+greet("Maddison", Date());
+
+
+# omitted types can often be inferred
+let msg = "hello there!";
+
+
+# enable a wide range of type checking behavior that results in stronger guarantees of program correctness
+--strict
+
+# issue an error on any variables whose type is implicitly inferred as any
+--noImplicitAny
+
+# make null and undefined have their own distinct types and issue a  type error if they are used where a concrete value is expected
+--strictNullChecks
+
+---
+
+
+
+

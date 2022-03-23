@@ -1,0 +1,51 @@
+---
+title: "React"
+date: 2022-03-18
+draft: false
+---
+
+
+<h3>Configuration</h3>
+
+{{% code text %}}# create a new create react app project
+$ npx create-react-app hello
+
+# add typescript support
+$ npx create-react-app --template typescript hello
+
+# proxy requests during development
+$ vim package.json
+{
+  "proxy": "http://myapiserver",
+}{{% /code %}}
+
+
+<h3>Hooks</h3>
+
+<h4>useState</h4>
+
+<h3>useEffect</h3>
+
+<h4>useReducer</h4>
+
+
+
+
+<!-- 
+<h4>Cypress</h4>
+
+Cypress runs in a browser but avoids the need for an external web-driver tool. Instead, it communicates directly with a browser, like Chrome or Electron, over a network port and then injects JavaScript to run much of the test code.
+
+$ npm install --save-dev cypress
+
+
+cation. We can do this by creating a cypress.json file in the application directory and
+telling it the uniform resource locator (URL) of our app:
+{
+ "baseUrl": "http://localhost:3000/"
+}
+
+$ npm start
+
+$ npx cypress open
+-->
